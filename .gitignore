@@ -1,0 +1,9 @@
+node_modules
+snippets
+_archive
+javascript.pegjs
+npm-debug.log
+/.vs/feel/v15
+.vscode
+*.njsproj
+*.sln

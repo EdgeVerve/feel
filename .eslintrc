@@ -1,0 +1,11 @@
+{
+    "extends": "airbnb",
+    "rules": {
+        "func-names": ["error", "never"],
+        "max-len": ["error", { "ignoreTrailingComments": true, "ignoreComments": true, "ignoreStrings": true, "code": 200 }],
+        "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ast"] }],
+        "no-shadow":"off",
+        "consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
+        "no-nested-ternary":"off"
+    }
+}
