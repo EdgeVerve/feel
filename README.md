@@ -9,7 +9,7 @@ FEEL also offers an API to implement and execute Decision Table defined in excel
 
 ***FEEL is not available on npm yet and will be published soon.***
 
-FEEL is a completely flexible library which can be used with any project to add support for *Decision Table*. It comes with a powerful expression language termed *FEEL* to define a multitude of decision rules.
+FEEL is a completely flexible library which can be used with any project to add support for *Decision Table*. It also comes with a powerful expression language termed *FEEL* built-in to define a multitude of decision rules.
 
 ## Installation
 
@@ -39,7 +39,7 @@ npm test
 
 ## Using [Decision Table](https://github.com/EdgeVerve/feel/wiki/Decision-Table#what-is-decision-table)
 
-Decision tables are defined in excel (.xlsx). Please check [Sample Rules](feel#sample-rules).
+Decision tables are defined in excel (.xlsx). Please check [Sample Rules](README.md#sample-rules).
 Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic. 
 
 ### Excel to Decision Table
@@ -68,14 +68,14 @@ decisionTable.execute_decision_table("StudentFinancialPackageEligibility", decis
 ```javascript
 const {feel} = require('feel');
 
-const text = 'a + b - c';
+const rule = 'a + b - c';
 const context = {
     a: 10,
     b: 20,
     c: 5
 };
 
-const parsedGrammar = feel.parse(text);
+const parsedGrammar = feel.parse(rule);
 parsedGrammar.build(context).then(result => {
     console.log(result);
 }).catch(err => console.error(err));
