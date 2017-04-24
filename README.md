@@ -1,74 +1,141 @@
-# FEEL (Friendly Enough Expression Language)
+# About
 
-Expression Language based on DMN specification conformance level 3.
+[FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3. 
+Written using [PEG.js](https://pegjs.org/) - JavaScript Parser Generator.
+FEEL is a very powerful language built with the purpose of defining rules in Business Rule Engines.
+FEEL also offers an API to implement and execute Decision Table defined in excel (.xlsx) 
 
-Written using [PEG.js](https://pegjs.org/) - JavaScript Parser Generator
+# Getting Started
 
-## What is FEEL:
-FEEL stands for Friendly Enough Expression Language and it has the following features:
--	Side-effect free
--	Simple data model with numbers, dates, strings, lists, and contexts
--	Simple syntax designed for a wide audience
--	Three-valued logic (true, false, null) based on SQL and PMML
+***FEEL is not available on npm yet and will be published soon.***
 
-We define a graphical notation for decision logic called boxed expressions. This notation serves to decompose the decision logic model into small pieces that can be associated with DRG artifacts. The DRG plus the boxed expressions form a complete, mostly graphical language that completely specifies Decision Models.
-A boxed expression is either:
--	a decision table
--	a boxed FEEL expression
--	a boxed invocation
--	a boxed context
--	a boxed list
--	a relation, or
--	a boxed function
+FEEL is a completely flexible library which can be used with any project to add support for *Decision Table*. It comes with a powerful expression language termed *FEEL* to define a multitude of decision rules.
 
-# Business Rules Engine
+## Installation
 
-## Introduction:
-As name suggests Business Rules Engine is a framework to write pre-defined and custom rules for business validations and decision making. Business Rules Engines is developed based on DMN (Decision Model and Notation v 1.1) specification and use FEEL (Friendly Enough Expression Language) to write expressions for rules.
+### Development
 
-## What is DMN:
-One of the ways to express decision logic is decision table. A decision table is a tabular representation of a set of related input and output expressions, organized into rules indicating which output entry applies to a specific set of input entries. The decision table contains all (and only) the inputs required to determine the output. Moreover, a complete table contains all possible combinations of input values (all the rules). Decision table is part of DRG (Decision Requirement Graph)
+```sh
+# npm install
+npm install git+https://github.com/EdgeVerve/feel.git
 
-A decision table consists of:
+```
 
--	An information item name: the name of an Information Item, if any, for which the decision table is its value expression. This will usually be the name of the Decision or Business Knowledge Model for which the decision table provides the decision logic.
+### Contribution
 
--	An output label, which can be any text to describe the output of the decision table. The result of a decision table must be referenced using the information item name, not the output label, in another expression.
+```sh
+# git clone 
+git clone https://github.com/EdgeVerve/feel.git
 
--	A set of inputs (zero or more). Each input is made of an input expression and a number of input entries. The specification of input expression and all input entries is referred to as the input clause.
+# install dependencies
+npm install
 
--	A set of outputs (one or more). A single output has no name, only a value. Two or more outputs are called output components. Each output component SHALL be named. Each output (component) SHALL specify an output entry for each rule. The specification of output component name (if multiple outputs) and all output entries is referred to as an output clause.
+# run test cases
+npm test
 
--	A list of rules (one or more) in rows or columns of the table (depending on orientation), where each rule is composed of the specific input entries and output entries of the table row (or column). If the rules are expressed as rows, the columns are clauses, and vice versa.
+```
 
-![singleDT](/img/singleDT.png)
-[Figure: Decision Table example (horizontal orientation: rules as rows)]
+# Usage
 
-![multiDT](/img/multiDT.png)
-[Figure: Decision Table example (horizontal orientation: multiple output)]
+## Using [Decision Table](https://github.com/EdgeVerve/feel/wiki/Decision-Table#what-is-decision-table)
 
-DMN input would be given by user in excel file. Here is an example of excel (.xlsx) file content
+Decision tables are defined in excel (.xlsx). Please check [Sample Rules](sample-rules).
+Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic. 
 
-| Holiday | | | |
-| ------- | --------- | -------- | --------- |
-| RuleTable | Condition | Condition | Action |
-| C+ | Age | Years of Service | Holidays |
-| 1 | - | - | 1 |
-| 2 | <18 | - | 5 |
-| 3 | >=60 | - | 5 |
-| 4 | - | [15..30) | 5 |
-| 5 | [18..60) | [15..30) | 2 |
-| 6 | >=60 | - | 3 |
-| 7 | - | >=30 | 3 |
-| 8 | [45..60) | <30 | 2 |
+### Excel to Decision Table
 
-[Figure: Decision Table. Each cell contains an expression written in FEEL]
+```javascript
+const { decisionTable } = require('feel');
 
-Below is the programmatic representation of above input
-![exec-tree](/img/exec-tree.PNG)
-[Figure: Flow of decision through nodes]
+const csv = decisionTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
+const decision_table = decisionTable.csv_to_decision_table(csv[0]);
+``` 
 
-## Sample rules
+### Execute Decision Table
+
+The Decision Table (decision_table) created in the previous step can be executed using;  *decisionTable.execute_decision_table*
+
+```javascript
+
+const payload = {"Student GPA" : 3.6,"Student Extra-Curricular Activities Count" : 4,"Student National Honor Society Membership" : "Yes"};
+decisionTable.execute_decision_table("StudentFinancialPackageEligibility", decision_table,payload, (results)=> {
+    console.log(results)
+});
+```
+
+## Using [FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) Standalone
+
+```javascript
+const {feel} = require('feel');
+
+const text = 'a + b - c';
+const context = {
+    a: 10,
+    b: 20,
+    c: 5
+};
+
+const parsedGrammar = feel.parse(text);
+parsedGrammar.build(context).then(result => {
+    console.log(result);
+}).catch(err => console.error(err));
+```
+
+# Sample FEEL Expressions
+
+Some valid FEEL expressions (logically categorized):
+
+### Arithmetic
+
+- a + b - c
+- ((a + b)/c - (d + e*2))**f
+- 1-(1+rate/12)**-term
+- (a + b)**-c
+
+### Comparision
+
+- 5 in (<= 5)
+- 5 in ((5..10])
+- 5 in ([5..10])
+- 5 in (4,5,6)
+- 5 in (<5,>5)
+- (a + 5) >= (7 + g)
+- (a+b) between (c + d) and (e - f)
+
+### Conjunction
+
+- a or b
+- a and b
+- ((a or b) and (b or c)) or (a and d)
+- ((a > b) and (a > c)) and (b > c)
+- ((a + b) > (c - d)) and (a > b)
+- a or b or a > b
+- (x(i, j) = y) and (a > b)
+- (a + b) > (c - d) and (a > b)
+
+### For
+
+- for a in [1,2,3] return a * a
+- for age in [18..40], name in ["george", "mike", "bob"] return status
+
+### Function Definition
+
+- function(age) age < 21
+- function(rate, term, amount) (amount*rate/12)/(1-(1+rate/12)**-term)
+
+### If
+
+- if applicant.maritalStatus in ("M", "S") then "valid" else "not valid"
+- if Pre-Bureau Risk Category = "DECLINE" or Installment Affordable = false or Age < 18 or Monthly Income < 100 then "INELIGIBLE" else "ELIGIBLE"
+- if "Pre-Bureau Risk Category" = "DECLINE" or "Installment Affordable" = false or Age < 18 or "Monthly Income" < 100 then "INELIGIBLE" else "ELIGIBLE"
+
+### Quantified
+
+- some ch in credit history satisfies ch.event = "bankruptcy"
+
+***Please note: This is not a complete list of FEEL Expressions. Please refer [DMN Specification Document](http://www.omg.org/spec/DMN/1.1/) for detailed documentation on FEEL grammar.***
+
+# Sample Rules
 
 [Validation.xlsx](/examples/validation.xlsx)
 
@@ -76,6 +143,8 @@ Below is the programmatic representation of above input
 
 [ElectricityBill.xlsx](/examples/ElectricityBill.xlsx)
 
-For comprehensive set of documentation on DMN, you can refer to 1.1 specification given in below url:
+# Reference
+
+For comprehensive set of documentation on DMN, you can refer to :
 
 [DMN Specification Document](http://www.omg.org/spec/DMN/1.1/)
