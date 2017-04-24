@@ -5,7 +5,7 @@ The Program may contain/reference third party or open source components, the rig
 Any unauthorized reproduction, storage, transmission in any form or by any means (including without limitation to electronic, mechanical, printing, photocopying, recording or  otherwise), or any distribution of this Program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.
 */
 const decisionTable = require('./utils/decision-table');
-const lang = require('./dist/feel');
+const feel = require('./dist/feel');
 
 module.exports = {
   decisionTable,
