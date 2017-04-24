@@ -39,7 +39,7 @@ npm test
 
 ## Using [Decision Table](https://github.com/EdgeVerve/feel/wiki/Decision-Table#what-is-decision-table)
 
-Decision tables are defined in excel (.xlsx). Please check [Sample Rules](sample-rules).
+Decision tables are defined in excel (.xlsx). Please check [Sample Rules](feel#sample-rules).
 Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic. 
 
 ### Excel to Decision Table
