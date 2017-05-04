@@ -1,6 +1,7 @@
 node_modules
 snippets
 _archive
+dummy.js
 javascript.pegjs
 npm-debug.log
 /.vs/feel/v15

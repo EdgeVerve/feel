@@ -1,8 +1,8 @@
-/*  
- *  
- *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
- *  Bangalore, India. All Rights Reserved.  
- *   
+/*
+ *
+ *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ *  Bangalore, India. All Rights Reserved.
+ *
  */
 
 
@@ -19,24 +19,24 @@ module.exports = function (ast) {
         context: Object.assign({}, _context, builtInFns),
         kwargs: {},
       };
-            // bodybuilding starts here...
-            // let's pump some code ;)
+      // bodybuilding starts here...
+      // let's pump some code ;)
       this.body.build(args)
-                .then((result) => {
-                  if (_type === 'input') {
-                    if (typeof result === 'function') {
-                      resolve(result);
-                    } else {
-                      const fnResult = function (x) {
-                        return x === result;
-                      };
-                      resolve(fnResult);
-                    }
-                  } else {
-                    resolve(result);
-                  }
-                })
-                .catch(err => reject(err));
+        .then((result) => {
+          if (_type === 'input') {
+            if (typeof result === 'function') {
+              resolve(result);
+            } else {
+              const fnResult = function (x) {
+                return x === result;
+              };
+              resolve(fnResult);
+            }
+          } else {
+            resolve(result);
+          }
+        })
+        .catch(err => reject(err));
     });
   };
 
@@ -52,16 +52,16 @@ module.exports = function (ast) {
   ast.IntervalNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       Promise.all([this.startpoint.build(args), this.endpoint.build(args)])
-                .then(results => resolve(x => this.intervalstart.build()(results[0])(x) && this.intervalend.build()(results[1])(x)))
-                .catch(err => reject(err));
+        .then(results => resolve(x => this.intervalstart.build()(results[0])(x) && this.intervalend.build()(results[1])(x)))
+        .catch(err => reject(err));
     });
   };
 
   ast.SimplePositiveUnaryTestNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       this.operand.build(args)
-                .then(result => resolve(fnGen(this.operator || '==')(_, result)))
-                .catch(err => reject(err));
+        .then(result => resolve(fnGen(this.operator || '==')(_, result)))
+        .catch(err => reject(err));
     });
   };
 
@@ -99,19 +99,19 @@ module.exports = function (ast) {
     });
   };
 
-    /*
-    Qualified name is used to define key in context
-    It is assumed that if a context entry is defined as an object,
-    Qualified Name (i.e. Name -> Name...) can be used to extract
-    properties from that object */
+  /*
+  Qualified name is used to define key in context
+  It is assumed that if a context entry is defined as an object,
+  Qualified Name (i.e. Name -> Name...) can be used to extract
+  properties from that object */
   ast.QualifiedNameNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       const [first, ...remaining] = this.names;
       first.build(args).then((firstResult) => {
         if (remaining.length) {
           Promise.all(remaining.map(name => name.build(null, false)))
-                        .then(remResults => resolve(remResults.reduce((prev, next) => prev[next], firstResult)))
-                        .catch(err => reject(err));
+            .then(remResults => resolve(remResults.reduce((prev, next) => prev[next], firstResult)))
+            .catch(err => reject(err));
         } else {
           resolve(firstResult);
         }
@@ -133,8 +133,8 @@ module.exports = function (ast) {
     });
   };
 
-    // _fetch is used to return the name string or
-    // the value extracted from context or kwargs using the name string
+  // _fetch is used to return the name string or
+  // the value extracted from context or kwargs using the name string
   ast.NameNode.prototype.build = function (args, _fetch = true) {
     const nameCharConcat = this.nameChars.reduce((result, next) => Array.prototype.concat.call(result, next), []);
     const name = String.prototype.concat.apply('', nameCharConcat);
@@ -153,17 +153,17 @@ module.exports = function (ast) {
     return Promise.resolve(this.value);
   };
 
-    // Invoking function defined as boxed expression in the context entry
-    // See ast.FunctionDefinitionNode for details on declaring function
-    // Function supports positional as well as named parameters
+  // Invoking function defined as boxed expression in the context entry
+  // See ast.FunctionDefinitionNode for details on declaring function
+  // Function supports positional as well as named parameters
   ast.FunctionInvocationNode.prototype.build = function (args) {
-        // use fnName to get the function body from the context entry
+    // use fnName to get the function body from the context entry
     return new Promise((resolve, reject) => {
       this.fnName.build(args).then((fnMeta) => {
         if (typeof fnMeta === 'function') { // for in-built functions
           this.params.build(args).then((values) => {
             resolve(fnMeta(...values));
-          });
+          }).catch(err => reject(err));
         } else { // for user-defined functions
           const fn = fnMeta.fn;
           const formalParams = fnMeta.params;
@@ -186,7 +186,7 @@ module.exports = function (ast) {
             fn.build(args).then(result => resolve(result)).catch(err => reject(err));
           }
         }
-      });
+      }).catch(err => reject(err));
     });
   };
 
@@ -325,33 +325,33 @@ module.exports = function (ast) {
       let operator = this.operator;
       if (operator === 'between') {
         Promise.all([this.expr_1, this.expr_2, this.expr_3].map(d => d.build(args)))
-                    .then((results) => {
-                      if ((results[0] >= results[1]) && (results[0] <= results[2])) {
-                        resolve(true);
-                      } else {
-                        resolve(false);
-                      }
-                    }).catch(err => reject(err));
+          .then((results) => {
+            if ((results[0] >= results[1]) && (results[0] <= results[2])) {
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          }).catch(err => reject(err));
       } else if (operator === 'in') {
         this.expr_1.build(args).then((operand) => {
           this.expr_2 = Array.isArray(this.expr_2) ? this.expr_2 : [this.expr_2];
           Promise.all(this.expr_2.map(d => d.build())).then((tests) => {
             resolve(tests.map(test => test(operand))
-                            .reduce((accu, next) => accu || next, false));
+              .reduce((accu, next) => accu || next, false));
           }).catch(err => reject(err));
         }).catch(err => reject(err));
       } else {
         Promise.all([this.expr_1, this.expr_2].map(d => d.build(args)))
-                    .then((results) => {
-                      operator = operator !== '=' ? operator : '==';
-                      resolve(fnGen(operator)(results[0])(results[1]));
-                    }).catch(err => reject(err));
+          .then((results) => {
+            operator = operator !== '=' ? operator : '==';
+            resolve(fnGen(operator)(results[0])(results[1]));
+          }).catch(err => reject(err));
       }
     });
   };
 
-    // implement item and object filter
-    // see if the filter returns a function which can be applied on the list during execution
+  // implement item and object filter
+  // see if the filter returns a function which can be applied on the list during execution
   ast.FilterExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       this.expr.build(args).then((result) => {
@@ -429,9 +429,9 @@ module.exports = function (ast) {
   ast.ContextNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       this.entries
-                .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
-                .then(result => resolve(result.kwargs))
-                .catch(err => reject(err));
+        .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
+        .then(result => resolve(result.kwargs))
+        .catch(err => reject(err));
     });
   };
 

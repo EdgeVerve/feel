@@ -52,17 +52,16 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
     it('Successfully executes a combination of user-defined function built-in function and if expression', function(done) {
         debugger;
-        var _context_text = '{ x : function(a, b, c, d) if d>a then min([d-a,b])*c else 0 }';
-        var _text = 'x(0,30,3,27)';
-
-        var parsedContext = FEEL.parse(_context_text);
-        var parsedGrammar = FEEL.parse(_text);
+        const _context_text = '{ x : function(a, b, c, d) if d<a then min([d-a,b])*c else 0 }';
+        const _text = 'x(0,30,3,27)';
+        const parsedContext = FEEL.parse(_context_text);
+        const parsedGrammar = FEEL.parse(_text);
 
 
         parsedContext.build().then(context => {
             parsedGrammar.build(context).then(result => {
-
                 expect(result).not.to.be.undefined;
+                console.log(result);
                 done();
             }).catch(err => done(err));
         }).catch(err => done(err));
@@ -85,31 +84,5 @@ describe(chalk.blue('Function definition grammar test'), function() {
             }).catch(err => done(err));
         }).catch(err => done(err));
     });
-
-    // it('Successfully creates external function definition', function (done) {
-    //     var text = 'function(angle) external {java: {class : "java.lang.Math", "method signature": "cos(double)"}}';
-
-    //     try {
-    //         var parsedGrammar = FEEL.parse(text);
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //     } catch (e) {
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //         expect(e).to.be.undefined;
-    //     }
-    //     done();
-    // });
-
-    // it('Successfully creates external function definition', function (done) {
-    //     var text = 'function(angle) external {java: {class : "java.lang.Math", method signature: "cos(double)"}}';
-
-    //     try {
-    //         var parsedGrammar = FEEL.parse(text);
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //     } catch (e) {
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //         expect(e).to.be.undefined;
-    //     }
-    //     done();
-    // });
 
 });
