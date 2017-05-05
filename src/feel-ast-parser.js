@@ -13,17 +13,17 @@ const fnNot = require('../utils/fn-negation');
 const builtInFns = require('../utils/built-in-functions');
 
 module.exports = function (ast) {
-  ast.ProgramNode.prototype.build = function (_context, _type = 'output') {
+  ast.ProgramNode.prototype.build = function (context, type = 'output') {
     return new Promise((resolve, reject) => {
       const args = {
-        context: Object.assign({}, _context, builtInFns),
+        context: Object.assign({}, context, builtInFns),
         kwargs: {},
       };
       // bodybuilding starts here...
       // let's pump some code ;)
       this.body.build(args)
         .then((result) => {
-          if (_type === 'input') {
+          if (type === 'input') {
             if (typeof result === 'function') {
               resolve(result);
             } else {
@@ -216,13 +216,13 @@ module.exports = function (ast) {
 
   ast.NamedParameterNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.expr.build(args).then((result) => {
-        this.paramName.build(null, false).then((paramName) => {
-          const obj = {};
-          obj[paramName] = result;
-          resolve(obj);
-        });
-      }).catch(err => reject(err));
+      Promise.all([this.expr.build(args), this.paramName.build(null, false)])
+      .then(([value, paramName]) => {
+        const obj = {};
+        obj[paramName] = value;
+        resolve(obj);
+      })
+      .catch(err => reject(err));
     });
   };
 
@@ -235,9 +235,10 @@ module.exports = function (ast) {
   ast.PathExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       const [expr, ...names] = this.exprs;
-      expr.build(args).then((result) => {
-        Promise.all(names.map(d => d.build(null, false))).then(pathNames => resolve(pathNames.reduce((accu, next) => accu[next], result))).catch(err => reject(err));
-      });
+      Promise.all([].concat.call([expr.build(args)], names.map(d => d.build(null, false))))
+      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => accu[next], root))
+      .then(result => resolve(result))
+      .catch(err => reject(err));
     });
   };
 
