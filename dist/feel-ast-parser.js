@@ -243,30 +243,38 @@ module.exports = function (ast) {
   };
 
   ast.ForExpressionNode.prototype.build = function (args) {
-    // utility method used later in the function
-    const evalSatisfies = argsNew => new Promise((resolve, reject) => {
-      this.expr.build(argsNew).then(result => resolve(result)).catch(err => reject(err));
-    });
     return new Promise((resolve, reject) => {
-      Promise.all(this.inExprs.map(d => d.build(args))).then((exprs) => {
+      const evalSatisfies = argsNew => this.expr.build(argsNew);
+
+      const listArgsReduceCb = variables => (res, arg, i) => {
+        const objectWithNewProperty = {};
+        objectWithNewProperty[variables[i]] = arg;
+        return Object.assign({}, res, objectWithNewProperty);
+      };
+
+      const zipListsCb = variables => (...listArgs) => {
+        const obj = listArgs.reduce(listArgsReduceCb(variables), {});
+        const argsNew = addKwargs(listArgs, obj);
+        return evalSatisfies(Object.assign({}, args, argsNew));
+      };
+
+      const zipLists = (variables, lists) => _.zipWith(...lists, zipListsCb(variables));
+
+      const processLists = (variables, lists) => Promise.all(zipLists(variables, lists));
+
+      Promise.all(this.inExprs.map(d => d.build(args)))
+      .then((exprs) => {
         const variables = exprs.map(expr => expr.variable);
         const lists = exprs.map(expr => expr.list);
-
-        Promise.all(_.zipWith(...lists, (...listArgs) => {
-          const obj = listArgs.reduce((res, arg, i) => {
-            const objectWithNewProperty = {};
-            objectWithNewProperty[variables[i]] = arg;
-            return Object.assign({}, res, objectWithNewProperty);
-          }, {});
-          const argsNew = addKwargs(listArgs, obj);
-          return evalSatisfies.call(this, argsNew);
-        })).then(results => resolve(results)).catch(err => reject(err));
-      }).catch(err => reject(err));
+        return processLists(variables, lists);
+      })
+      .then(result => resolve(result))
+      .catch(err => reject(err));
     });
   };
 
   ast.InExpressionNode.prototype.build = function (args) {
-    return Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.name.build(null, false).then((name) => {
         this.expr.build(args).then((result) => {
           if (!Array.isArray(result)) {
