@@ -275,18 +275,15 @@ module.exports = function (ast) {
 
   ast.InExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.name.build(null, false).then((name) => {
-        this.expr.build(args).then((result) => {
-          if (!Array.isArray(result)) {
-            reject("'In Expression' expects an array to operate on");
-          } else {
-            resolve({
-              list: result,
-              variable: name,
-            });
-          }
-        }).catch(err => reject(err));
-      }).catch(err => reject(err));
+      Promise.all([this.name.build(null, false), this.expr.build(args)])
+      .then(([variable, list]) => {
+        if (!Array.isArray(list)) {
+          reject("'In Expression' expects an array to operate on");
+        } else {
+          resolve({ list, variable });
+        }
+      })
+      .catch(err => reject(err));
     });
   };
 
