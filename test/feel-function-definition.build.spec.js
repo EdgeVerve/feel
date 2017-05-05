@@ -61,7 +61,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
         parsedContext.build().then(context => {
             parsedGrammar.build(context).then(result => {
                 expect(result).not.to.be.undefined;
-                console.log(result);
                 done();
             }).catch(err => done(err));
         }).catch(err => done(err));
