@@ -366,13 +366,15 @@ module.exports = function (ast) {
             }
           }).catch(err => reject(err));
       } else if (operator === 'in') {
-        this.expr_1.build(args).then((operand) => {
+        const processExpr = (operand) => {
           this.expr_2 = Array.isArray(this.expr_2) ? this.expr_2 : [this.expr_2];
-          Promise.all(this.expr_2.map(d => d.build())).then((tests) => {
-            resolve(tests.map(test => test(operand))
-              .reduce((accu, next) => accu || next, false));
-          }).catch(err => reject(err));
-        }).catch(err => reject(err));
+          return Promise.all(this.expr_2.map(d => d.build()))
+          .then(tests => tests.map(test => test(operand)).reduce((accu, next) => accu || next, false));
+        };
+        this.expr_1.build(args)
+        .then(operand => processExpr(operand))
+        .then(result => resolve(result))
+        .catch(err => reject(err));
       } else {
         Promise.all([this.expr_1, this.expr_2].map(d => d.build(args)))
           .then((results) => {
@@ -383,8 +385,8 @@ module.exports = function (ast) {
     });
   };
 
-  // implement item and object filter
-  // see if the filter returns a function which can be applied on the list during execution
+  // TODO : implement item and object filter
+  // TODO : see if the filter returns a function which can be applied on the list during execution
   ast.FilterExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       this.expr.build(args).then((result) => {
@@ -470,14 +472,14 @@ module.exports = function (ast) {
 
   ast.ContextEntryNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.expr.build(args).then((res) => {
+      Promise.all([this.expr.build(args), this.key.build(null, false)])
+      .then(([value, key]) => {
         const obj = {};
-        this.key.build(null, false).then((key) => {
-          obj[key] = res;
-          const argsNew = addKwargs(args, obj);
-          resolve(argsNew);
-        }).catch(err => reject(err));
-      }).catch(err => reject(err));
+        obj[key] = value;
+        const argsNew = addKwargs(args, obj);
+        resolve(argsNew);
+      })
+      .catch(err => reject(err));
     });
   };
 };
