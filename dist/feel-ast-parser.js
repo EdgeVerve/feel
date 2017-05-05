@@ -289,45 +289,56 @@ module.exports = function (ast) {
 
   ast.IfExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.condition.build(args).then((condition) => {
+      this.condition.build(args)
+      .then((condition) => {
+        let returnPromise;
         if (condition) {
-          this.thenExpr.build(args).then(res => resolve(res)).catch(err => reject(err));
+          returnPromise = this.thenExpr.build(args);
         } else {
-          this.elseExpr.build(args).then(res => resolve(res)).catch(err => reject(err));
+          returnPromise = this.elseExpr.build(args);
         }
-      }).catch(err => reject(err));
+        return returnPromise;
+      })
+      .then(result => resolve(result))
+      .catch(err => reject(err));
     });
   };
 
   ast.QuantifiedExpressionNode.prototype.build = function (args) {
-    // utility method used later in the function
-    const evalSatisfies = argsNew => new Promise((resolve, reject) => {
-      this.expr.build(argsNew).then((result) => {
-        resolve(result);
-      }).catch(err => reject(err));
-    });
     return new Promise((resolve, reject) => {
-      Promise.all(this.inExprs.map(d => d.build(args))).then((exprs) => {
+      const evalSatisfies = argsNew => this.expr.build(argsNew);
+
+      const listArgsReduceCb = variables => (res, arg, i) => {
+        const objectWithNewProperty = {};
+        objectWithNewProperty[variables[i]] = arg;
+        return Object.assign({}, res, objectWithNewProperty);
+      };
+
+      const zipListsCb = variables => (...listArgs) => {
+        const obj = listArgs.reduce(listArgsReduceCb(variables), {});
+        const argsNew = addKwargs(listArgs, obj);
+        return evalSatisfies(Object.assign({}, args, argsNew));
+      };
+
+      const zipLists = (variables, lists) => _.zipWith(...lists, zipListsCb(variables));
+
+      const processLists = (variables, lists) => Promise.all(zipLists(variables, lists));
+
+      Promise.all(this.inExprs.map(d => d.build(args)))
+      .then((exprs) => {
         const variables = exprs.map(expr => expr.variable);
         const lists = exprs.map(expr => expr.list);
-
-        Promise.all(_.zipWith(...lists, (...listArgs) => {
-          const obj = listArgs.reduce((res, arg, i) => {
-            const objectWithNewProperty = {};
-            objectWithNewProperty[variables[i]] = arg;
-            return Object.assign({}, res, objectWithNewProperty);
-          }, {});
-          const argsNew = addKwargs(listArgs, obj);
-          return evalSatisfies.call(this, argsNew);
-        })).then((results) => {
-          const truthy = results.filter(d => Boolean(d) === true).length;
-          if (this.quantity === 'some') {
-            resolve(Boolean(truthy));
-          } else {
-            resolve(truthy === results.length);
-          }
-        }).catch(err => reject(err));
-      }).catch(err => reject(err));
+        return processLists(variables, lists);
+      })
+      .then((results) => {
+        const truthy = results.filter(d => Boolean(d) === true).length;
+        if (this.quantity === 'some') {
+          resolve(Boolean(truthy));
+        } else {
+          resolve(truthy === results.length);
+        }
+      })
+      .catch(err => reject(err));
     });
   };
 
