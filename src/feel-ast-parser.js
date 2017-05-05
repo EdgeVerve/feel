@@ -102,20 +102,22 @@ module.exports = function (ast) {
   /*
   Qualified name is used to define key in context
   It is assumed that if a context entry is defined as an object,
-  Qualified Name (i.e. Name -> Name...) can be used to extract
-  properties from that object */
+  Qualified Name (i.e. Name -> Name -> Name , e.g. b -> c -> d -> e)
+  can be used to extract properties from that object */
   ast.QualifiedNameNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       const [first, ...remaining] = this.names;
+      const processRemaining = firstResult => Promise.all(remaining.map(name => name.build(null, false)))
+            .then(remResults => remResults.reduce((prev, next) => prev[next], firstResult));
+
       first.build(args).then((firstResult) => {
         if (remaining.length) {
-          Promise.all(remaining.map(name => name.build(null, false)))
-            .then(remResults => resolve(remResults.reduce((prev, next) => prev[next], firstResult)))
-            .catch(err => reject(err));
-        } else {
-          resolve(firstResult);
+          return processRemaining(firstResult);
         }
-      }).catch(err => reject(err));
+        return firstResult;
+      })
+      .then(result => resolve(result))
+      .catch(err => reject(err));
     });
   };
 
@@ -128,7 +130,7 @@ module.exports = function (ast) {
 
         return d.build(args);
       }))
-        .then(results => resolve(fnGen(this.operator)(results[0])(results[1])))
+        .then(([first, second]) => resolve(fnGen(this.operator)(first)(second)))
         .catch(err => reject(err));
     });
   };
@@ -157,36 +159,46 @@ module.exports = function (ast) {
   // See ast.FunctionDefinitionNode for details on declaring function
   // Function supports positional as well as named parameters
   ast.FunctionInvocationNode.prototype.build = function (args) {
-    // use fnName to get the function body from the context entry
     return new Promise((resolve, reject) => {
-      this.fnName.build(args).then((fnMeta) => {
-        if (typeof fnMeta === 'function') { // for in-built functions
-          this.params.build(args).then((values) => {
-            resolve(fnMeta(...values));
-          }).catch(err => reject(err));
-        } else { // for user-defined functions
-          const fn = fnMeta.fn;
-          const formalParams = fnMeta.params;
-          let argsNew = {};
-          if (formalParams) {
-            this.params.build(args).then((values) => {
-              if (values && Array.isArray(values)) {
-                const kwParams = values.reduce((recur, next, i) => {
-                  const obj = {};
-                  obj[formalParams[i]] = next;
-                  return Object.assign({}, recur, obj);
-                }, {});
-                argsNew = addKwargs(args, kwParams);
-              } else {
-                argsNew = addKwargs(args, values);
-              }
-              fn.build(argsNew).then(result => resolve(result)).catch(err => reject(err));
-            }).catch(err => reject(err));
-          } else {
-            fn.build(args).then(result => resolve(result)).catch(err => reject(err));
+      const processFormalParameters = (fn, formalParams) => this.params.build(args)
+        .then((values) => {
+          if (values && Array.isArray(values)) {
+            const kwParams = values.reduce((recur, next, i) => {
+              const obj = {};
+              obj[formalParams[i]] = next;
+              return Object.assign({}, recur, obj);
+            }, {});
+            return addKwargs(args, kwParams);
           }
+          return addKwargs(args, values);
+        });
+
+      const processUserDefinedFunction = (fnMeta) => {
+        const fn = fnMeta.fn;
+        const formalParams = fnMeta.params;
+
+        if (formalParams) {
+          return processFormalParameters(fn, formalParams)
+          .then(argsNew => fn.build(argsNew));
         }
-      }).catch(err => reject(err));
+        return fn.build(args);
+      };
+
+      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(...values));
+
+      const processFnMeta = (fnMeta) => {
+        if (typeof fnMeta === 'function') {
+          // for built-in functions like min,max,etc...
+          return processInBuiltFunction(fnMeta);
+        }
+
+        return processUserDefinedFunction(fnMeta);
+      };
+
+      this.fnName.build(args)
+      .then(processFnMeta)
+      .then(result => resolve(result))
+      .catch(err => reject(err));
     });
   };
 
