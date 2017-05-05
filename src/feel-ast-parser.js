@@ -51,8 +51,12 @@ module.exports = function (ast) {
 
   ast.IntervalNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
+      const processIntervalStartAndEnd = (startpoint, endpoint) => Promise.all([this.intervalstart.build(), this.intervalend.build()])
+        .then(([intervalstart, intervalend]) => x => intervalstart(startpoint)(x) && intervalend(endpoint)(x));
+
       Promise.all([this.startpoint.build(args), this.endpoint.build(args)])
-        .then(results => resolve(x => this.intervalstart.build()(results[0])(x) && this.intervalend.build()(results[1])(x)))
+        .then(([startpoint, endpoint]) => processIntervalStartAndEnd(startpoint, endpoint))
+        .then(result => resolve(result))
         .catch(err => reject(err));
     });
   };
