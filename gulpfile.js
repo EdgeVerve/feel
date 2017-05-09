@@ -16,6 +16,7 @@ const gulpif = require('gulp-if');
 const minimist = require('minimist');
 const gutil = require('gulp-util');
 const mocha = require('gulp-mocha');
+var istanbul = require('gulp-istanbul');
 const eslint = require('gulp-eslint');
 
 const knownOptions = {
@@ -100,6 +101,23 @@ gulp.task('utils:lint', ()=>{
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(eslint.failAfterError());
+});
+
+gulp.task('pre-test-ci', function () {
+  return gulp.src(['dist/**/*.js'])
+    .pipe(istanbul()) 
+    .pipe(istanbul.hookRequire());
+});
+ 
+gulp.task('test-ci', ['pre-test-ci'], function () {
+  return gulp.src(['test/*.js'])
+    .pipe(mocha()) 
+    .pipe(istanbul.writeReports({
+      dir: './coverage',
+      reporters: [ 'lcovonly'],
+      reportOpts: { dir: './coverage' }
+    }))
+    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 70, branches: 60, lines: 70, functions: 85 }} }));
 });
 
 gulp.task('build', ['initialize:feel', 'clean:src:feel', 'concat:feel', 'clean:temp']);

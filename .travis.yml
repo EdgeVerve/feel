@@ -7,4 +7,5 @@ cache:
     - node_modules
 before_script:
   - npm install -g gulp
-script: gulp lint && gulp mocha
+script: gulp lint && gulp test-ci
+after_script: "npm install coveralls@2.10.0 && cat ./coverage/lcov.info | coveralls"

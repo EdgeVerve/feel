@@ -8,3 +8,6 @@ npm-debug.log
 .vscode
 *.njsproj
 *.sln
+
+# Coveralls
+coverage
