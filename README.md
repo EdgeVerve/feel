@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EdgeVerve/feel.svg?branch=master)](https://travis-ci.org/EdgeVerve/feel)
+
 # About
 
 [FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3. 
