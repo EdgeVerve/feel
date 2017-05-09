@@ -1,3 +1,10 @@
 language: node_js
 node_js:
   - "6"
+sudo: false
+cache:
+  directories:
+    - node_modules
+before_script:
+  - npm install -g gulp
+script: gulp lint && gulp mocha
