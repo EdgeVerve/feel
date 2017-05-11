@@ -19,15 +19,17 @@ FEEL is a completely flexible library which can be used with any project to add 
 
 ```sh
 # npm install
-npm install git+https://github.com/EdgeVerve/feel.git
+npm install https://github.com/EdgeVerve/feel.git --save
 
 ```
 
 ### Contribution
 
 ```sh
-# git clone 
+# clone repo 
 git clone https://github.com/EdgeVerve/feel.git
+
+# or fork repo
 
 # install dependencies
 npm install
@@ -35,6 +37,17 @@ npm install
 # run test cases
 npm test
 
+# watch for changes in source and grammar
+gulp watch
+
+# generate parser from grammar
+gulp generate
+
+# lint source files
+npm run lint
+
+# lint-fix source files
+npm run lintfix
 ```
 
 # Usage
