@@ -9,8 +9,6 @@ FEEL also offers an API to implement and execute Decision Table defined in excel
 
 # Getting Started
 
-***FEEL is not available on npm yet and will be published soon.***
-
 FEEL is a completely flexible library which can be used with any project to add support for *Decision Table*. It also comes with a powerful expression language termed *FEEL* built-in to define a multitude of decision rules.
 
 ## Installation
@@ -19,7 +17,7 @@ FEEL is a completely flexible library which can be used with any project to add 
 
 ```sh
 # npm install
-npm install https://github.com/EdgeVerve/feel.git --save
+npm install js-feel --save
 
 ```
 
