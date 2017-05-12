@@ -1,6 +1,6 @@
 {
   "name": "js-feel",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "FEEL(Friendly Enough Expression Language) based on DMN specification 1.1 for conformance level 3",
   "main": "index.js",
   "scripts": {
@@ -9,8 +9,8 @@
     "test": "./node_modules/.bin/mocha",
     "build": "./node_modules/.bin/gulp"
   },
-  "engines" : { 
-	"node" : ">=6.9.2" 
+  "engines": {
+    "node": ">=6.9.2"
   },
   "repository": {
     "type": "git",
