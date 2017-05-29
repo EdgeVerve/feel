@@ -72,10 +72,10 @@ const createDecisionTree = (dTable) => {
   return root;
 };
 
-const prepareOutput = (outputSet, output, payload) => {
-  return new Promise((resolve, reject) => {
-    Promise.all(output.map((i) => {
-      const keys = Object.keys(outputSet[i]);
+const prepareOutput = (outputSet, output, payload) =>
+new Promise((resolve, reject) => {
+  Promise.all(output.map((i) => {
+    const keys = Object.keys(outputSet[i]);
       return new Promise((resolve, reject) => { // eslint-disable-line
         Promise.all(keys.map(k => outputSet[i][k].ast.build(payload))).then((results) => {
           resolve(results.reduce((res, val, j) => {
@@ -85,10 +85,9 @@ const prepareOutput = (outputSet, output, payload) => {
           }, {}));
         }).catch(err => reject(err));
       });
-    })).then(results =>
+  })).then(results =>
         resolve(results)).catch(err => reject(err));
-  });
-};
+});
 
 const resolveConflictRules = (root, payload, rules) => {
   let output = [];
