@@ -7,7 +7,7 @@
 
 
 const FEEL = require('../dist/feel').parse;
-const hitPolicy = require('./hit-policy.js').hitPolicyPass;
+const { getOrderedOutput, hitPolicyPass } = require('./hit-policy.js');
 
 function Node(data, type) {
   this.data = data;
@@ -20,7 +20,7 @@ function Tree(data) {
   this.root = node;
 }
 
-function createDecisionTree(dTable) {
+const createDecisionTree = (dTable) => {
   const ruleTree = new Tree('Rule');
   const root = ruleTree.root;
   const classNodeList = dTable.inputExpressionList;
@@ -30,6 +30,9 @@ function createDecisionTree(dTable) {
   const outputSet = {};
 
   root.hitPolicy = dTable.hitPolicy;
+  if (root.hitPolicy === 'P' || root.hitPolicy === 'O') {
+    root.priorityList = dTable.priorityList;
+  }
   if (dTable.context !== null) {
     root.context = new Node(dTable.context, 'Context');
     root.context.ast = FEEL(root.context.data);
@@ -67,9 +70,9 @@ function createDecisionTree(dTable) {
 
   root.outputSet = outputSet;
   return root;
-}
+};
 
-function prepareOutput(outputSet, output, payload) {
+const prepareOutput = (outputSet, output, payload) => {
   return new Promise((resolve, reject) => {
     Promise.all(output.map((i) => {
       const keys = Object.keys(outputSet[i]);
@@ -85,9 +88,9 @@ function prepareOutput(outputSet, output, payload) {
     })).then(results =>
         resolve(results)).catch(err => reject(err));
   });
-}
+};
 
-function resolveConflictRules(root, payload, rules) {
+const resolveConflictRules = (root, payload, rules) => {
   let output = [];
   const rootChildren = root.children;
   const classArr = Object.keys(rootChildren);
@@ -112,13 +115,12 @@ function resolveConflictRules(root, payload, rules) {
   });
 
   if (output.length > 0) {
-    output = root.hitPolicy === 'F' ? output.sort().slice(0, 1) : root.hitPolicy === 'R' ? output.sort() : output;
-    return prepareOutput(root.outputSet, output, payload);
+    return prepareOutput(root.outputSet, getOrderedOutput(root, output), payload);
   }
   return Promise.resolve([]);
-}
+};
 
-function traverseDecisionTreeUtil(root, payload) {
+const traverseDecisionTreeUtil = (root, payload) => {
   const classArr = Object.keys(root.children);
   return new Promise((resolve, reject) => {
     Promise.all(classArr.map((classKey) => {
@@ -135,23 +137,23 @@ function traverseDecisionTreeUtil(root, payload) {
         resolveConflictRules(root, payload, results).then(results =>
             resolve(results))).catch(err => reject(err));
   });
-}
+};
 
-function prepareContext(root, payload) {
+const prepareContext = (root, payload) => {
   if (root.context !== null) {
     return root.context.ast.build(payload);
   }
   return Promise.resolve(payload);
-}
+};
 
-function traverseDecisionTree(root, payload, cb) {
+const traverseDecisionTree = (root, payload, cb) => {
   prepareContext(root, payload).then((context) => {
     const ctx = Object.assign({}, payload, context);
     traverseDecisionTreeUtil(root, ctx).then((results) => {
-      cb(hitPolicy(root.hitPolicy, results));
-    });
-  });
-}
+      hitPolicyPass(root.hitPolicy, results, cb);
+    }).catch(err => cb(err, null));
+  }).catch(err => cb(err, null));
+};
 
 module.exports = {
   createTree: createDecisionTree,

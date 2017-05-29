@@ -6,6 +6,7 @@
         "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ast"] }],
         "no-shadow":"off",
         "consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
-        "no-nested-ternary":"off"
+        "no-nested-ternary":"off",
+        "no-useless-escape":"off"
     }
 }

@@ -1,8 +1,8 @@
-/*  
-*  
-*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
-*  Bangalore, India. All Rights Reserved.  
-*   
+/*
+*
+*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+*  Bangalore, India. All Rights Reserved.
+*
 */
 var chalk = require('chalk');
 var chai = require('chai');
@@ -29,7 +29,10 @@ describe(chalk.blue('Decision table evaluation'), function () {
     
     it('Adjustments table evaluation', function (done) {
         var payload = { "Customer" : "Private", "Order size" : 12 };
-        DTable.execute_decision_table("Adjustments", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("Adjustments", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.Shipping).to.equal('Air');
             expect(results.Discount).to.equal(0.05);
             done();
@@ -38,7 +41,10 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('Applicant_Risk_Rating table evaluation', function (done) {
         var payload = { "Applicant Age" : 25, "Medical History" : "good" };
-        DTable.execute_decision_table("Applicant_Risk_Rating", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("Applicant_Risk_Rating", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results['Applicant Risk Rating']).to.equal('Medium');
             done();
         });
@@ -46,7 +52,10 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('ApplicantRiskRating table evaluation', function (done) {
         var payload = { "Applicant Age" : -24, "Medical History" : "bad" };
-        DTable.execute_decision_table("ApplicantRiskRating", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("ApplicantRiskRating", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results['Applicant Risk Rating']).to.equal('Medium');
             done();
         });
@@ -54,7 +63,10 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('Discount table evaluation', function (done) {
         var payload = { "Customer" : "Business", "Order size" : 10 };
-        DTable.execute_decision_table("Discount", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("Discount", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.Discount).to.equal(0.15);
             done();
         });
@@ -62,7 +74,10 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('ElectricityBill table evaluation', function (done) {
         var payload = { "State" : "Karnataka", "Units" : 31 };
-        DTable.execute_decision_table("ElectricityBill", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("ElectricityBill", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.Amount).to.equal(94.4);
             done();
         });
@@ -70,18 +85,26 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('Holidays table evaluation', function (done) {
         var payload = { "Age" : 100, "Years of Service" : 200 };
-        DTable.execute_decision_table("Holidays", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("Holidays", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.length).to.equal(5);
             expect(results[0].Holidays).to.equal(22);
-            expect(results[1].Holidays).to.equal(3);
+            expect(results[1].Holidays).to.equal(5);
             expect(results[2].Holidays).to.equal(5);
+            expect(results[3].Holidays).to.equal(3);
+            expect(results[4].Holidays).to.equal(3);
             done();
         });
     });
 
     it('PostBureauRiskCategory table evaluation', function (done) {
         var payload = {"Applicant": {"ExistingCustomer" : true}, "Report": {"CreditScore" : 600}, "b" : 60};
-        DTable.execute_decision_table("PostBureauRiskCategory", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("PostBureauRiskCategory", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.PostBureauRiskCategory).to.equal('MEDIUM');
             done();
         });
@@ -89,18 +112,27 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('RoutingRules table evaluation', function (done) {
         var payload = {"Age" : 18, "Risk category" : "High", "Debt review" : "false"};
-        DTable.execute_decision_table("RoutingRules", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("RoutingRules", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.length).to.equal(2);
-            expect(results[0].Routing).to.equal('Accept');
-            expect(results[0]['Review level']).to.equal('None');
-            expect(results[0].Reason).to.equal('Acceptable');
+            expect(results[0].Routing).to.equal('Refer');
+            expect(results[0]['Review level']).to.equal('Level1');
+            expect(results[0].Reason).to.equal('High risk application');
+            expect(results[1].Routing).to.equal('Accept');
+            expect(results[1]['Review level']).to.equal('None');
+            expect(results[1].Reason).to.equal('Acceptable');
             done();
         });
     });
 
     it('StudentFinancialPackageEligibility table evaluation', function (done) {
         var payload = {"Student GPA" : 3.6,"Student Extra-Curricular Activities Count" : 4,"Student National Honor Society Membership" : "Yes"};
-        DTable.execute_decision_table("StudentFinancialPackageEligibility", decision_table, payload, (results)=> {
+        DTable.execute_decision_table("StudentFinancialPackageEligibility", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
             expect(results.length).to.equal(2);
             expect(results[0]['Student Financial Package Eligibility List']).to.equal('20% Scholarship');
             expect(results[1]['Student Financial Package Eligibility List']).to.equal('30% Loan');

@@ -7,12 +7,13 @@
 
 
 const XLSX = require('xlsx');
+const _ = require('lodash');
 const tree = require('./decision-tree.js');
-// const hitPolicy = require('./hit-policy.js');
+
 const rootMap = {};
 const delimiter = '&SP';
 
-function parseXLS(path) {
+const parseXLS = (path) => {
   const workbook = XLSX.readFile(path);
   const csv = [];
   workbook.SheetNames.forEach((sheetName) => {
@@ -22,9 +23,11 @@ function parseXLS(path) {
   });
 
   return csv;
-}
+};
 
-function parseContext(csv) {
+const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
+
+const parseContext = (csv) => {
   let context = {};
   let i = 1;
 
@@ -35,17 +38,39 @@ function parseContext(csv) {
     } else if (arr.length > 0) {
       const count = arr[1].split('"').length - 1;
       if (count > 0) {
-        arr[1] = arr[1].replace(/"/g, '');
-        arr[1] = `"${arr[1]}"`;
+        arr[1] = getFormattedValue(arr[1]);
       }
       context[arr[0]] = arr[1];
     }
   }
   context = Object.keys(context).length > 0 ? JSON.stringify(context).replace(/"/g, '').replace(/\\/g, '"') : '';
   return context.length > 0 ? context : null;
-}
+};
 
-function createDecisionTable(commaSeparatedValue) {
+const preparePriorityList = (priorityClass, priorityValues) => {
+  const priority = {};
+  priorityClass.forEach((pClass, index) => {
+    priority[pClass] = priority[pClass] || {};
+    let p = 1;
+    priorityValues[index].forEach((value) => {
+      priority[pClass][value] = p;
+      p += 1;
+    });
+  });
+  return priority;
+};
+
+const calculatePriority = (priorityMat, outputs) => {
+  const sortedPriority = _.sortBy(priorityMat, outputs);
+  const rulePriority = {};
+  sortedPriority.forEach((priority, index) => {
+    const key = `Rule${priority.Rule}`;
+    rulePriority[key] = index + 1;
+  });
+  return rulePriority;
+};
+
+const createDecisionTable = (commaSeparatedValue) => {
   const decisionTable = {};
   decisionTable.inputExpressionList = [];
   decisionTable.inputValuesList = [];
@@ -58,6 +83,8 @@ function createDecisionTable(commaSeparatedValue) {
   const inputValuesSet = {};
   const outputValuesList = [];
   let outputLabel = false;
+  let priority = {};
+  const priorityMat = [];
 
   const csv = commaSeparatedValue.split('\n');
 
@@ -112,7 +139,7 @@ function createDecisionTable(commaSeparatedValue) {
     values = csv[i].split(/&SP(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/);
   }
     // "Collect" Hit Policy Check
-  if (decisionTable.hitPolicy.charAt(0) === 'C' && numOfActions > 1) {
+  if (decisionTable.hitPolicy && decisionTable.hitPolicy.charAt(0) === 'C' && decisionTable.hitPolicy.charAt(1) !== '' && numOfActions > 1) {
     throw new Error({
       hitPolicy: decisionTable.hitPolicy,
       actionItems: numOfActions,
@@ -126,19 +153,27 @@ function createDecisionTable(commaSeparatedValue) {
       let value = classValue;
       value = value.replace(/(^")|("$)/g, '');
       if (index < numOfConditions) {
-        inputValuesSet[inputExpressionList[index]] = value.split(',').filter(String);
+        inputValuesSet[inputExpressionList[index]] = value.split(',').filter(String).map((inVal) => {
+          let val = inVal;
+          if (val.split('"').length - 1 > 0) {
+            val = val.replace(/""/g, '\"');
+          }
+          return val;
+        });
       } else {
         outputValuesList[index - numOfConditions] = [];
         outputValuesList[index - numOfConditions] = value.split(',').filter(String).map((outVal) => {
           let val = outVal;
           if (val.split('"').length - 1 > 0) {
-            val = val.replace(/"/g, '');
-            val = `"${val}"`;
+            val = val.replace(/""/g, '\"');
           }
           return val;
         });
       }
     });
+    if (decisionTable.hitPolicy === 'P' || decisionTable.hitPolicy === 'O') {
+      priority = preparePriorityList(outputs, outputValuesList);
+    }
     i += 1;
   } else {
     inputExpressionList.forEach((condition) => {
@@ -156,28 +191,37 @@ function createDecisionTable(commaSeparatedValue) {
     let cellValue = value;
     if (cellValue === '') {
       cellValue = prevRuleRow[index];
-    }
-    const count = cellValue.split('"').length - 1;
-    if (count > 0) {
-      cellValue = cellValue.replace(/"/g, '');
-      cellValue = `"${cellValue}"`;
-    }
-    if (index < numOfConditions && inputValuesSet[inputExpressionList[index]].indexOf(cellValue) === -1) {
-      inputValuesSet[inputExpressionList[index]].push(cellValue);
-    } else if (index >= numOfConditions && outputValuesList[index - numOfConditions].indexOf(cellValue) === -1) {
-      outputValuesList[index - numOfConditions].push(cellValue);
+    } else {
+      const count = cellValue.split('"').length - 1;
+      if (count > 0) {
+        cellValue = cellValue.replace(/""/g, '\"').replace(/^\"|\"$/g, '');
+      }
+      if ((decisionTable.hitPolicy === 'P' || decisionTable.hitPolicy === 'O') && (index >= numOfConditions)) {
+        priorityMat[decisionTable.ruleList.length] = priorityMat[decisionTable.ruleList.length] || {};
+        priorityMat[decisionTable.ruleList.length].Rule = decisionTable.ruleList.length + 1;
+        priorityMat[decisionTable.ruleList.length][outputs[index - numOfConditions]] = priority[outputs[index - numOfConditions]][cellValue] || 0;
+      }
+      if (index < numOfConditions && inputValuesSet[inputExpressionList[index]].indexOf(cellValue) === -1) {
+        inputValuesSet[inputExpressionList[index]].push(cellValue);
+      } else if (index >= numOfConditions && outputValuesList[index - numOfConditions].indexOf(cellValue) === -1) {
+        outputValuesList[index - numOfConditions].push(cellValue);
                 // problem in xls 0.10 is treated as 0.1 but string treats 0.10 as 0.10
+      }
     }
     return cellValue;
   };
 
   for (; i < csv.length; i += 1) {
-    let currentRuleRow = csv[i].split(delimiter).slice(1);// csv[i].split(",").slice(1);
+    let currentRuleRow = csv[i].split(delimiter).slice(1);
     currentRuleRow = currentRuleRow.map(processCellValue);
     if (currentRuleRow.length > 0) {
       decisionTable.ruleList.push(currentRuleRow);
       prevRuleRow = currentRuleRow;
     }
+  }
+
+  if (priorityMat.length > 0) {
+    decisionTable.priorityList = calculatePriority(priorityMat, outputs);
   }
 
   Object.keys(inputValuesSet).forEach((classKey) => {
@@ -187,11 +231,9 @@ function createDecisionTable(commaSeparatedValue) {
   decisionTable.outputs = outputs;
   decisionTable.outputValues = outputValuesList;
   decisionTable.context = parseContext(csv);
-    // if (decisionTable["hitPolicy"] === "P" || decisionTable["hitPolicy"] === "O") {
-    //    var priorityList = getPriorityList(outputValuesList);
-    // }
+
   return decisionTable;
-}
+};
 
 // function updateDecisionTable(id, csv) {
 //   let table = {};
@@ -202,12 +244,12 @@ function createDecisionTable(commaSeparatedValue) {
 //   return table;
 // }
 
-function executeDecisionTable(id, table, payload, cb) {
+const executeDecisionTable = (id, table, payload, cb) => {
   if (rootMap[id] == null || rootMap[id] === 'undefined') {
     rootMap[id] = tree.createTree(table);
   }
   tree.traverseTree(rootMap[id], payload, cb);
-}
+};
 
 module.exports = {
   csv_to_decision_table: createDecisionTable,

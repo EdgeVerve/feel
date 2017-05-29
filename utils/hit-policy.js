@@ -18,7 +18,6 @@ However, first hit tables are not considered good practice because they do not o
 logic. It is important to distinguish this type of table from others because the meaning depends on the order of the
 rules. The last rule is often the catch-remainder. Because of this order, the table is hard to validate manually and
 therefore has to be used with care.
-
 Multiple hit policies for single output decision tables can be:
 5. Output order: returns all hits in decreasing output priority order. Output priorities are specified in the ordered list of
 output values in decreasing order of priority.
@@ -39,42 +38,54 @@ order, Rule order and Collect without operator, because the collect operator is 
 
 const _ = require('lodash');
 
-function checkEntriesEquality(output) {
-  let isEqual = true;
-  if (output.length > 1) {
-    const value = output[0];
-    output.every((other) => { isEqual = _.isEqual(value, other); return isEqual; });
-    return isEqual;
+const getDistinct = arr => arr.filter((item, index, arr) => arr.indexOf(item) === index);
+
+const sum = (arr) => {
+  const distinctArr = getDistinct(arr);
+  const elem = distinctArr[0];
+  if (typeof elem === 'string') {
+    return distinctArr.join(' ');
+  } else if (typeof elem === 'number') {
+    return distinctArr.reduce((a, b) => a + b, 0);
+  } else if (typeof elem === 'boolean') {
+    return distinctArr.reduce((a, b) => a && b, true);
   }
-  return isEqual;
-}
+  throw new Error(`sum operation not supported for type ${typeof elem}`);
+};
 
+const count = (arr) => {
+  if (Array.isArray(arr)) {
+    const distinctArr = getDistinct(arr);
+    return distinctArr.length;
+  }
+  throw new Error(`count operation not supported for type ${typeof arr}`);
+};
 
-function sum(arr) {
-  const isBoolean = arr.reduce((prev, next) => prev && typeof next === 'boolean', true);
-  return isBoolean ? arr.reduce((a, b) => a && b, true) : arr.reduce((a, b) => a + b, 0);
-}
+const min = (arr) => {
+  const elem = arr[0];
+  if (typeof elem === 'string') {
+    arr.sort();
+    return arr[0];
+  } else if (typeof elem === 'number') {
+    return Math.min(...arr);
+  } else if (typeof elem === 'boolean') {
+    return arr.reduce((a, b) => a && b, true) ? 1 : 0;
+  }
+  throw new Error(`min operation not supported for type ${typeof elem}`);
+};
 
-function count(arr) {
-  return arr.length;
-}
-
-function min(arr) {
-  return Math.min(...arr);
-}
-
-function max(arr) {
-  return Math.max(...arr);
-}
-
-// function getDistinct(arr) {
-//   arr = arr.filter((item, index, arr) => arr.indexOf(item) === index);
-//   return arr;
-// }
-
-// function getPriorityList(outputValuesList) {
-//     // TO-DO
-// }
+const max = (arr) => {
+  const elem = arr[0];
+  if (typeof elem === 'string') {
+    arr.sort();
+    return arr[arr.length - 1];
+  } else if (typeof elem === 'number') {
+    return Math.max(...arr);
+  } else if (typeof elem === 'boolean') {
+    return arr.reduce((a, b) => a || b, false) ? 1 : 0;
+  }
+  throw new Error(`max operation not supported for type ${typeof elem}`);
+};
 
 const collectOperatorMap = {
   '+': sum,
@@ -83,11 +94,31 @@ const collectOperatorMap = {
   '>': max,
 };
 
-function hitPolicyPass(hitPolicy, output) {
+const checkEntriesEquality = (output) => {
+  let isEqual = true;
+  if (output.length > 1) {
+    const value = output[0];
+    output.every((other) => {
+      isEqual = _.isEqual(value, other);
+      return isEqual;
+    });
+    return isEqual;
+  }
+  return isEqual;
+};
+
+const getValidationErrors = output =>
+   output.filter(ruleStatus => ruleStatus.isValid === false).map((rule) => {
+     const newRule = rule;
+     delete newRule.isValid;
+     return newRule;
+   });
+
+const hitPolicyPass = (hitPolicy, output, cb) => {
   const policy = hitPolicy.charAt(0);
   let ruleOutput = [];
   switch (policy) {
-// Multiple hit policies
+// Single hit policies
     case 'U':
       ruleOutput = output.length > 1 ? {} : output[0];
       break;
@@ -95,11 +126,10 @@ function hitPolicyPass(hitPolicy, output) {
       ruleOutput = checkEntriesEquality(output) ? output[0] : undefined;
       break;
     case 'P':
-            // TO-DO
       ruleOutput = output[0];
       break;
     case 'F':
-      ruleOutput = output[0];// resolved before preparing the output values
+      ruleOutput = output[0];
       break;
 // Multiple hit policies
     case 'C': {
@@ -109,7 +139,11 @@ function hitPolicyPass(hitPolicy, output) {
         const key = Object.keys(output[0])[0];
         const arr = output.map(item => item[key]);
         const result = {};
-        result[key] = fn(arr);
+        try {
+          result[key] = fn(arr);
+        } catch (e) {
+          cb(e, null);
+        }
         ruleOutput = result;
       } else {
         ruleOutput = output;
@@ -117,18 +151,52 @@ function hitPolicyPass(hitPolicy, output) {
       break;
     }
     case 'R':
-      ruleOutput = output;// resolved before preparing the output values
+      ruleOutput = output;
       break;
     case 'O':
-            // TO-DO
       ruleOutput = output;
+      break;
+    case 'V':
+      ruleOutput = getValidationErrors(output);
       break;
     default :
       ruleOutput = output;
   }
-  return ruleOutput;
-}
-
-module.exports = {
-  hitPolicyPass,
+  cb(null, ruleOutput);
 };
+
+const prepareOutputOrder = (output, priorityList) => {
+  const arr = output.map((rule) => {
+    const obj = {};
+    obj.rule = rule;
+    obj.priority = priorityList[rule];
+    return obj;
+  });
+  const sortedPriorityList = _.sortBy(arr, ['priority']);
+  const outputList = sortedPriorityList.map(ruleObj => ruleObj.rule);
+  return outputList;
+};
+
+const getOrderedOutput = (root, outputList) => {
+  const policy = root.hitPolicy.charAt(0);
+  let outputOrderedList = [];
+  switch (policy) {
+    case 'P':
+      outputOrderedList.push(prepareOutputOrder(outputList, root.priorityList)[0]);
+      break;
+    case 'O':
+      outputOrderedList = prepareOutputOrder(outputList, root.priorityList);
+      break;
+    case 'F':
+      outputOrderedList = outputList.sort().slice(0, 1);
+      break;
+    case 'R':
+      outputOrderedList = outputList.sort();
+      break;
+    default :
+      outputOrderedList = outputList;
+  }
+  return outputOrderedList;
+};
+
+module.exports = { hitPolicyPass, getOrderedOutput };
