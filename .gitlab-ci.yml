@@ -1,0 +1,20 @@
+build_job:
+  script:
+    - time npm install --no-optional
+    - gulp lint
+    - export exit_status=0
+    - if gulp test-ci-html; then exit_status=0; else exit_status=1; fi
+    - if echo $CI_BUILD_REPO | grep "oecloud.io/feel.git"; then export MAIN_BRANCH=1; else export MAIN_BRANCH=0; fi
+    - export MAIN_BRANCH=1
+    - if [ $MAIN_BRANCH -eq 0 ]; then echo "Not the main project, hence not sending coverage report to evgit..."; exit $exit_status; fi
+    - echo "Sending coverage reports to evgit..."
+    - tar -cf feel.tar -C ./coverage/lcov-report/ .
+    - ssh root@10.73.53.167 'rm -rf /data/documentation-portal/coverage/feel'
+    - scp feel.tar root@10.73.53.167:/data/documentation-portal/coverage/
+    - ssh root@10.73.53.167 'mkdir -p /data/documentation-portal/coverage/feel'
+    - ssh root@10.73.53.167 'tar -xf /data/documentation-portal/coverage/feel.tar -C /data/documentation-portal/coverage/feel'
+    - ssh root@10.73.53.167 'rm -rf /data/documentation-portal/coverage/feel.tar'
+    - echo "Coverage report updated"
+    - exit $exit_status
+  tags:
+    - EVF-PAAS

@@ -1,4 +1,4 @@
-/*  
+﻿/*  
  *  
  *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
  *  Bangalore, India. All Rights Reserved.  
@@ -115,6 +115,17 @@ gulp.task('test-ci', ['pre-test-ci'], function () {
     .pipe(istanbul.writeReports({
       dir: './coverage',
       reporters: [ 'lcovonly'],
+      reportOpts: { dir: './coverage' }
+    }))
+    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 70, branches: 60, lines: 70, functions: 85 }} }));
+});
+
+gulp.task('test-ci-html', ['pre-test-ci'], function () {
+  return gulp.src(['test/*.js'])
+    .pipe(mocha())
+    .pipe(istanbul.writeReports({
+      dir: './coverage',
+      reporters: [ 'lcov'],
       reportOpts: { dir: './coverage' }
     }))
     .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 70, branches: 60, lines: 70, functions: 85 }} }));
