@@ -52,8 +52,8 @@ function buildLogicalExpression(head, tail, loc) {
   }, head);
 }
 
-function parseDateTimeLiteral(head, tail, loc) {
-  return utility[head](tail);
+function parseDateTimeLiteral(head, tail) {
+  return utility[head](tail.value);
 }
 
  }

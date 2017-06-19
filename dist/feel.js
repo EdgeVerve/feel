@@ -7413,8 +7413,8 @@ function peg$parse(input, options) {
     }, head);
   }
 
-  function parseDateTimeLiteral(head, tail, loc) {
-    return utility[head](tail);
+  function parseDateTimeLiteral(head, tail) {
+    return utility[head](tail.value);
   }
 
    
