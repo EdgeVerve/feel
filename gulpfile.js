@@ -122,14 +122,14 @@ gulp.task('test-ci', ['pre-test-ci'], function () {
 
 gulp.task('build', ['initialize:feel', 'clean:src:feel', 'concat:feel', 'clean:temp']);
 
-gulp.task('generate', ['generate:parser', 'dist:feel:ast', 'dist:feel:ast:parser']);
+gulp.task('generate', ['build', 'generate:parser', 'dist:feel:ast', 'dist:feel:ast:parser']);
 
 gulp.task('default', ['build', 'generate', 'mocha']);
 
 gulp.task('watch', () => {
-  gulp.watch('./grammar/*', ['build']);
+  gulp.watch('./grammar/*', ['build', 'generate']);
   gulp.watch('./src/*.js', ['dist:feel:ast', 'dist:feel:ast:parser']);
-  gulp.watch('./utils/*.js',['utils:lint']);
+  gulp.watch('./utils/*.js', ['utils:lint']);
 });
 
 

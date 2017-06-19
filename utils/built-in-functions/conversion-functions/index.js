@@ -6,4 +6,5 @@
 */
 
 module.exports = Object.assign({},
-require('./time'));
+require('./time'),
+require('./value'));

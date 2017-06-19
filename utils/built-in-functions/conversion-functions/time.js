@@ -21,59 +21,18 @@ Description : hour, minute, second, are numbers, offset is a days and time durat
 e.g. : time(“T23:59:00z") = time(23, 59, 0, duration(“PT0H”))
 */
 
-// proxy return value somehow to include a marker
-// which specifies the type for other functions
-// to use for checking types before applying functions on them.
-
-const moment = require('moment');
-const applyMixin = require('./apply-mixin');
+const moment = require('moment-timezone');
+const addProperties = require('./add-properties');
 
 const isNumber = (...args) => args.reduce((prev, next) => prev && typeof next === 'number', true);
 
-const prepareTime = (value) => {
-  let remainingTime = value;
-  const hour = Math.floor(remainingTime / 3600);
-  remainingTime = value % 3600;
-  const minute = Math.floor(remainingTime / 60);
-  remainingTime = value % 60;
-  const second = remainingTime;
-
-  return moment({ hour, minute, second }).format('THH:mm:ss');
-};
-
-const mixin = {
-  hour: {
-    fn() { return this.hour(); },
-    executeOnApply: true,
-  },
-  minute: {
-    fn() { return this.minute(); },
-    executeOnApply: true,
-  },
-  second: {
-    fn() { return this.second(); },
-    executeOnApply: true,
-  },
-  time_offset: {
-    fn() { return this.utcOffset(); },
-    executeOnApply: true,
-  },
-  timezone: {
-    fn() { return this._z && this._z.name; },  // eslint-disable-line no-underscore-dangle
-    executeOnApply: true,
-  },
-  value: {
-    fn() { return (this.hour() * 3600) + (this.minute() * 60) + this.second(); },
-  },
-  valueInverse: {
-    fn(value) {
-      if (value >= 0 && value <= 86400) {
-        return prepareTime(value);
-      }
-      const secondsFromMidnight = value - (Math.floor(value / 86400) * 86400);
-      return prepareTime(secondsFromMidnight);
-    },
-  },
+const properties = {
+  hour() { return this.hour(); },
+  minute() { return this.minute(); },
+  second() { return this.second(); },
+  time_offset() { return this.utcOffset(); },
+  timezone() { return this._z && this._z.name; },  // eslint-disable-line no-underscore-dangle,
+  isTime: true,
 };
 
 const timeFormat = 'HH:mm:ssZ';
@@ -82,7 +41,7 @@ const parseMomentFormat = (str) => {
   const format = timeFormat;
   try {
     const t = moment(str, format);
-    return t.isValid() ? t : new Error('Invalid Time');
+    return t.isValid() ? t : new Error('Invalid Time. This is usually caused by an inappropriate format. Please check the input format.');
   } catch (err) {
     return err;
   }
@@ -111,7 +70,7 @@ const time = (...args) => {
   if (args.length === 1) {
     const arg = args[0];
     if (typeof arg === 'string') {
-      t = parseTzId(arg) && parseMomentFormat(arg);
+      t = parseTzId(arg) || parseMomentFormat(arg);
     } else if (typeof arg === 'object' && arg.isDateTime) {
       const timePart = arg.format(timeFormat);
       t = parseMomentFormat(timePart);
@@ -125,7 +84,7 @@ const time = (...args) => {
     if (offset && offset.isDuration) {
       t.utcOffset(offset.value);
     } else {
-      throw new Error('Type Mismatch - the fourth parameter is expected to be of type "duration"');
+      throw new Error('Type Mismatch - the fourth argument in "time" in-built function is expected to be of type "duration"');
     }
   } else {
     throw new Error('Invalid number of arguments specified with "time" in-built function');
@@ -134,7 +93,7 @@ const time = (...args) => {
   if (t && t instanceof Error) {
     throw t;
   } else {
-    return applyMixin(t, mixin);
+    return addProperties(t, properties);
   }
 };
 
