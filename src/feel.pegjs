@@ -15,7 +15,7 @@ require('./feel-ast-parser')(ast);
 
 // require all the built-in functions
 // used to parse date
-const utility = require('../utils/built-in-functions');
+const utility = require('../utils/helper/built-in-functions');
 
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;

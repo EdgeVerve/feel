@@ -7,7 +7,7 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var FEEL = require('../dist/feel');
+var FEEL = require('../../dist/feel');
 
 describe(chalk.blue('Function definition grammar test'), function () {
 

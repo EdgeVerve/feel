@@ -6,7 +6,7 @@
 */
 
 
-const FEEL = require('../dist/feel').parse;
+const FEEL = require('../../dist/feel').parse;
 const { getOrderedOutput, hitPolicyPass } = require('./hit-policy.js');
 
 function Node(data, type) {

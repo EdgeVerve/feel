@@ -8,8 +8,8 @@ Any unauthorized reproduction, storage, transmission in any form or by any means
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var DTable = require('../utils/decision-table');
-var DTree = require('../utils/decision-tree');
+var DTable = require('../../utils/helper/decision-table');
+var DTree = require('../../utils/helper/decision-tree');
 var xlArr = ['RoutingRules', 'ElectricityBill', 'Holidays', 'Membership', 'LoanEligibility', 'Validation'];
 var decision_table = {};
 
@@ -17,7 +17,7 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     before('setup test data, read excel file and get the decision table', function (done) {
         xlArr.forEach(fileName => {
-            const path = './test/' + fileName + '.xlsx';
+            const path = './test/data/' + fileName + '.xlsx';
             const csv = DTable.xls_to_csv(path);
             decision_table[fileName] = DTable.csv_to_decision_table(csv[0]);
         });

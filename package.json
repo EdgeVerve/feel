@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
-    "test": "./node_modules/.bin/mocha",
+    "test": "./node_modules/.bin/mocha ./test/**/*.spec.js",
     "build": "./node_modules/.bin/gulp"
   },
   "engines": {

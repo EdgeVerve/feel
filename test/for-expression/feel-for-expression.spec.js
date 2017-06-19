@@ -7,12 +7,12 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var FEEL = require('../dist/feel');
+var FEEL = require('../../dist/feel');
 
-describe(chalk.blue('Quantified expression grammar test'), function () {
+describe(chalk.blue('For expression grammar test'), function () {
 
-    it('Successfully creates ast from simple quantified expression', function (done) {
-        var text = 'some ch in credit history satisfies ch.event = "bankruptcy"';
+    it('Successfully creates ast from for expression', function (done) {
+        var text = 'for a in [1,2,3] return a * a';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -24,16 +24,17 @@ describe(chalk.blue('Quantified expression grammar test'), function () {
         done();
     });
 
-    it('Fails to create ast from quantified expression', function (done) {
-        var text = 'somech in credit history satisfies ch.event = "bankruptcy"';
-
+    it('Successfully creates ast from for expression', function (done) {
+        var text = 'for age in [18..40], name in ["george", "mike", "bob"] return status';
+        
         try {
             var parsedGrammar = FEEL.parse(text);
-            expect(parsedGrammar).to.be.undefined;
+            expect(parsedGrammar).not.to.be.undefined;
         } catch (e) {
-            expect(parsedGrammar).to.be.undefined;
-            expect(e).not.to.be.undefined;
+            expect(parsedGrammar).not.to.be.undefined;
+            expect(e).to.be.undefined;
         }
         done();
     });
+
 });
