@@ -5,7 +5,7 @@
 *
 */
 
-const decisionTable = require('./utils/decision-table');
+const decisionTable = require('./utils/helper/decision-table');
 const feel = require('./dist/feel');
 
 module.exports = {

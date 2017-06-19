@@ -7,14 +7,14 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var DTable = require('../utils/decision-table');
-var DTree = require('../utils/decision-tree');
+var DTable = require('../../utils/helper/decision-table');
+var DTree = require('../../utils/helper/decision-tree');
 var decision_table = {};
 
 describe(chalk.blue('Decision table to decision tree'), function () {
     
     before('setup test data, read excel file and get the decision table', function (done) {
-        var csv = DTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
+        var csv = DTable.xls_to_csv('./test/data/StudentFinancialPackageEligibility.xlsx');
         decision_table = DTable.csv_to_decision_table(csv[0]);
         done();
     });

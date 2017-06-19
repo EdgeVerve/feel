@@ -7,25 +7,12 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var FEEL = require('../dist/feel');
+var FEEL = require('../../dist/feel');
 
-describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
+describe(chalk.blue('Comparision expression grammar test'), function () {
 
-    it('Successfully creates ast from simple disjunction expression', function(done) {
-        var text = 'a or b';
-
-        try {
-            var parsedGrammar = FEEL.parse(text);
-            expect(parsedGrammar).not.to.be.undefined;
-        } catch (e) {
-            expect(parsedGrammar).not.to.be.undefined;
-            expect(e).to.be.undefined;
-        }
-        done();
-    });
-
-    it('Successfully creates ast from simple conjunction expression', function(done) {
-        var text = 'a and b';
+    it('Successfully creates ast from simple comparision expression', function (done) {
+        var text = '5 in (<= 5)';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -37,8 +24,8 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 1', function(done) {
-        var text = '((a or b) and (b or c)) or (a and d)';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '5 in ((5..10])';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -50,8 +37,8 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 2', function(done) {
-        var text = '((a > b) and (a > c)) and (b > c)';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '5 in ([5..10])';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -63,8 +50,8 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 3', function(done) {
-        var text = '((a + b) > (c - d)) and (a > b)';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '5 in (4,5,6)';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -76,8 +63,8 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 4', function(done) {
-        var text = 'a or b or a > b';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '5 in (<5,>5)';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -89,8 +76,8 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 5', function(done) {
-        var text = '(x(i, j) = "somevalue") and (a > b)';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '(a + 5) >= (7 + g)';
 
         try {
             var parsedGrammar = FEEL.parse(text);
@@ -102,18 +89,16 @@ describe(chalk.blue('Disjunction-Conjunction grammar test'), function() {
         done();
     });
 
-    it('Successfully creates ast from given logical expression 6', function(done) {
-        var text = '(a + b) > (c - d) and (a > b)';
+    it('Successfully creates ast from comparision expression', function (done) {
+        var text = '(a+b) between (c + d) and (e - f)';
 
         try {
             var parsedGrammar = FEEL.parse(text);
             expect(parsedGrammar).not.to.be.undefined;
-            expect(parsedGrammar.body.type).to.equal("LogicalExpression");
         } catch (e) {
             expect(parsedGrammar).not.to.be.undefined;
             expect(e).to.be.undefined;
         }
         done();
     });
-
 });

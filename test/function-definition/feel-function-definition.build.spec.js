@@ -7,7 +7,7 @@ Any unauthorized reproduction, storage, transmission in any form or by any means
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var FEEL = require('../dist/feel');
+var FEEL = require('../../dist/feel');
 
 describe(chalk.blue('Function definition grammar test'), function() {
 
@@ -16,7 +16,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
-            console.log(result);
             expect(result).not.to.be.undefined;
             done();
         }).catch(err => done(err));
@@ -27,7 +26,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
-            console.log(result);
             expect(result).not.to.be.undefined;
             done();
         }).catch(err => done(err));
@@ -45,7 +43,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
         parsedContext.build().then(context => {
             parsedGrammar.build(context).then(result => {
-                console.log(result);
                 expect(result).not.to.be.undefined;
                 done();
             }).catch(err => done(err));
@@ -63,7 +60,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
         parsedContext.build().then(context => {
             parsedGrammar.build(context).then(result => {
-                console.log(result);
                 expect(result).not.to.be.undefined;
                 done();
             }).catch(err => done(err));
@@ -81,7 +77,6 @@ describe(chalk.blue('Function definition grammar test'), function() {
 
         parsedContext.build().then(context => {
             parsedGrammar.build(context).then(result => {
-                console.log(result);
                 expect(result).not.to.be.undefined;
                 done();
             }).catch(err => done(err));
@@ -103,37 +98,10 @@ describe(chalk.blue('Function definition grammar test'), function() {
             expect(result).to.be.undefined;
             done(result);
         }).catch(err => {
-            console.log(err);
             expect(err).not.to.be.undefined;
             done();
         });
 
     });
-
-    // it('Successfully creates external function definition', function (done) {
-    //     var text = 'function(angle) external {java: {class : "java.lang.Math", "method signature": "cos(double)"}}';
-
-    //     try {
-    //         var parsedGrammar = FEEL.parse(text);
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //     } catch (e) {
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //         expect(e).to.be.undefined;
-    //     }
-    //     done();
-    // });
-
-    // it('Successfully creates external function definition', function (done) {
-    //     var text = 'function(angle) external {java: {class : "java.lang.Math", method signature: "cos(double)"}}';
-
-    //     try {
-    //         var parsedGrammar = FEEL.parse(text);
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //     } catch (e) {
-    //         expect(parsedGrammar).not.to.be.undefined;
-    //         expect(e).to.be.undefined;
-    //     }
-    //     done();
-    // });
 
 });

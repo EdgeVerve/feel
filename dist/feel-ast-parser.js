@@ -7,9 +7,9 @@
 
 
 const _ = require('lodash');
-const fnGen = require('../utils/fn-generator');
-const addKwargs = require('../utils/add-kwargs');
-const fnNot = require('../utils/fn-negation');
+const fnGen = require('../utils/helper/fn-generator');
+const addKwargs = require('../utils/helper/add-kwargs');
+const fnNot = require('../utils/helper/fn-negation');
 const builtInFns = require('../utils/built-in-functions');
 
 module.exports = function (ast) {

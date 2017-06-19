@@ -7,12 +7,12 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var DTable = require('../utils/decision-table');
+var DTable = require('../../utils/helper/decision-table');
 
 describe(chalk.blue('Excel to decision table conversion test'), function () {
 
     it('Parse excel and convert it to csv format', function (done) {
-        var csv = DTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
+        var csv = DTable.xls_to_csv('./test/data/StudentFinancialPackageEligibility.xlsx');
         var decision_table = DTable.csv_to_decision_table(csv[0]);
         
         expect(decision_table.hitPolicy).to.equal('R');

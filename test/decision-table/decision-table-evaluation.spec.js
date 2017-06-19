@@ -7,8 +7,8 @@
 var chalk = require('chalk');
 var chai = require('chai');
 var expect = chai.expect;
-var DTable = require('../utils/decision-table');
-var DTree = require('../utils/decision-tree');
+var DTable = require('../../utils/helper/decision-table');
+var DTree = require('../../utils/helper/decision-tree');
 var xlArr = ['Adjustments.xlsx', 'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx', 'Discount.xlsx', 'ElectricityBill.xlsx', 'Holidays.xlsx', 'PostBureauRiskCategory.xlsx', 'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx'];
 var decision_table = {};
 var csv = {};
@@ -21,7 +21,7 @@ describe(chalk.blue('Decision table evaluation'), function () {
     });
     
     beforeEach('prepare decision table from excel and set the payload', function (done) {
-        var path = './test/' + xlArr[i++];
+        var path = './test/data/' + xlArr[i++];
         csv = DTable.xls_to_csv(path);
         decision_table = DTable.csv_to_decision_table(csv[0]);
         done();
