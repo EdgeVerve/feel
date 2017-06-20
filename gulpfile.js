@@ -1,8 +1,8 @@
-/*  
- *  
- *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
- *  Bangalore, India. All Rights Reserved.  
- *   
+/*
+ *
+ *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ *  Bangalore, India. All Rights Reserved.
+ *
  */
 
 const gulp = require('gulp');
@@ -10,9 +10,8 @@ const concat = require('gulp-concat');
 const watch = require('gulp-watch');
 const insert = require('gulp-insert');
 const clean = require('gulp-clean');
-const peg = require('./utils/gulp-utils/gulp-pegjs');
+const peg = require('./utils/dev/gulp-pegjs');
 const gulpif = require('gulp-if');
-// var backtrace = require("./utils/gulp-utils/gulp-backtrace");
 const minimist = require('minimist');
 const gutil = require('gulp-util');
 const mocha = require('gulp-mocha');
@@ -105,13 +104,13 @@ gulp.task('utils:lint', ()=>{
 
 gulp.task('pre-test-ci', function () {
   return gulp.src(['dist/**/*.js'])
-    .pipe(istanbul()) 
+    .pipe(istanbul())
     .pipe(istanbul.hookRequire());
 });
- 
+
 gulp.task('test-ci', ['pre-test-ci'], function () {
   return gulp.src(['test/**/*.spec.js'])
-    .pipe(mocha()) 
+    .pipe(mocha())
     .pipe(istanbul.writeReports({
       dir: './coverage',
       reporters: [ 'lcovonly'],
@@ -122,36 +121,11 @@ gulp.task('test-ci', ['pre-test-ci'], function () {
 
 gulp.task('build', ['initialize:feel', 'clean:src:feel', 'concat:feel', 'clean:temp']);
 
-gulp.task('generate', ['build', 'generate:parser', 'dist:feel:ast', 'dist:feel:ast:parser']);
-
 gulp.task('default', ['build', 'generate', 'mocha']);
 
 gulp.task('watch', () => {
-  gulp.watch('./grammar/*', ['build', 'generate']);
+  gulp.watch('./grammar/*', ['build']);
+  gulp.watch('./src/*.pegjs',['generate:parser']);
   gulp.watch('./src/*.js', ['dist:feel:ast', 'dist:feel:ast:parser']);
   gulp.watch('./utils/*.js', ['utils:lint']);
 });
-
-
-// gulp.task("generate:parser:trace", function() {
-// 	var generate_condition = function() {
-// 		if (options && options.g) {
-// 			return true;
-// 		} else {
-// 			return false;
-// 		}
-// 	}
-// 	return gulp.src('src/feel.pegjs')
-// 		.pipe(gulpif(generate_condition, peg({
-// 			trace: true,
-// 			format: "commonjs"
-// 		})))
-// 		.pipe(gulpif(generate_condition, gulp.dest("./trace")));
-// });
-
-// gulp.task("backtrace", ["generate:parser:trace"], function() {
-// 	var expr = options.expr;
-// 	if (expr && typeof expr === 'string') {
-// 		backtrace(expr);
-// 	}
-// });
