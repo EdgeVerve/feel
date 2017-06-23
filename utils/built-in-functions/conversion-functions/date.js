@@ -51,7 +51,7 @@ const date = (...args) => {
   if (args.length === 1) {
     const arg = args[0];
     if (typeof arg === 'string') {
-      d = parseDate(date_ISO_8601);
+      d = parseDate(arg);
     } else if (typeof arg === 'object' && arg.isDateTime) {
       const datePart = arg.format(date_ISO_8601);
       d = parseDate(datePart);
