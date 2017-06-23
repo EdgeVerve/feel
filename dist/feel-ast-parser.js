@@ -9,7 +9,6 @@
 const _ = require('lodash');
 const fnGen = require('../utils/helper/fn-generator');
 const addKwargs = require('../utils/helper/add-kwargs');
-const fnNot = require('../utils/helper/fn-negation');
 const builtInFns = require('../utils/built-in-functions');
 
 module.exports = function (ast) {
@@ -74,7 +73,7 @@ module.exports = function (ast) {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
           if (this.not) {
-            const negResults = results.map(result => fnNot(result));
+            const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
           } else {
             resolve(x => results.reduce((result, next) => result || next(x), false));
@@ -91,7 +90,7 @@ module.exports = function (ast) {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
           if (this.not) {
-            const negResults = results.map(result => fnNot(result));
+            const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
           } else {
             resolve(x => results.reduce((result, next) => result || next(x), false));

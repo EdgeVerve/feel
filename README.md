@@ -4,10 +4,10 @@
 
 # About
 
-[FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3. 
+[FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3.
 Written using [PEG.js](https://pegjs.org/) - JavaScript Parser Generator.
 FEEL is a very powerful language built with the purpose of defining rules in Business Rule Engines.
-FEEL also offers an API to implement and execute Decision Table defined in excel (.xlsx) 
+FEEL also offers an API to implement and execute Decision Table defined in excel (.xlsx)
 
 # Getting Started
 
@@ -26,7 +26,7 @@ npm install js-feel --save
 ### Contribution
 
 ```sh
-# clone repo 
+# clone repo
 git clone https://github.com/EdgeVerve/feel.git
 
 # or fork repo
@@ -55,7 +55,7 @@ npm run lintfix
 ## Using [Decision Table](https://github.com/EdgeVerve/feel/wiki/Decision-Table#what-is-decision-table)
 
 Decision tables are defined in excel (.xlsx). Please check [Sample Rules](README.md#sample-rules).
-Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic. 
+Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic.
 
 ### Excel to Decision Table
 
@@ -64,7 +64,7 @@ const { decisionTable } = require('feel');
 
 const csv = decisionTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
 const decision_table = decisionTable.csv_to_decision_table(csv[0]);
-``` 
+```
 
 ### Execute Decision Table
 
@@ -152,11 +152,11 @@ Some valid FEEL expressions (logically categorized):
 
 # Sample Rules
 
-[Validation.xlsx](/examples/validation.xlsx)
+[Validation.xlsx](/test/data/Validation.xlsx)
 
-[PostBureauRiskCategory.xlsx](/examples/PostBureauRiskCategory.xlsx)
+[PostBureauRiskCategory.xlsx](/test/data/PostBureauRiskCategory.xlsx)
 
-[ElectricityBill.xlsx](/examples/ElectricityBill.xlsx)
+[ElectricityBill.xlsx](/test/data/ElectricityBill.xlsx)
 
 # Reference
 
