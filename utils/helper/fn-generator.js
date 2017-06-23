@@ -262,7 +262,7 @@ function checkEquality(x, y, props) {
 }
 
 function checkInequality(op) {
-  const fn = operatorMap(op);
+  const fn = operatorMap[op];
   return function (x, y, props) {
     return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
   };
