@@ -15,6 +15,12 @@
  Page : 126
 */
 
+/*
+Note :
+As some of the moment functions are overwritten with properties, native functions like moment.format() might not work.
+In that case format function should also be overwritten to suit the requirements
+*/
+
 const metadata = {
   time_ISO_8601: 'THH:mm:ssZ',
   time_IANA_tz: /([0-9]{2}):([0-9]{2}):([0-9]{2})(?:@(.+))+/,
@@ -31,7 +37,7 @@ const metadata = {
   },
   properties: {
     year() { return this.year(); },
-    month() { return this.month() + 1; },
+    month() { return this.month(); },
     day() { return this.date(); },
     hour() { return this.hour(); },
     minute() { return this.minute(); },

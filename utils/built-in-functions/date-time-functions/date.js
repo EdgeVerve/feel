@@ -35,7 +35,7 @@ const { date_ISO_8601, types, properties } = require('./meta');
 const { year, month, day } = properties;
 const props = Object.assign({}, { year, month, day, type: types.date, isDate: true });
 
-const isNumber = (...args) => args.reduce((prev, next) => prev && typeof next === 'number', true);
+const isNumber = args => args.reduce((prev, next) => prev && typeof next === 'number', true);
 
 const parseDate = (str) => {
   try {
@@ -53,8 +53,10 @@ const date = (...args) => {
     if (typeof arg === 'string') {
       d = parseDate(arg);
     } else if (typeof arg === 'object' && arg.isDateTime) {
-      const datePart = arg.format(date_ISO_8601);
-      d = parseDate(datePart);
+      const year = arg.year;
+      const month = arg.month;
+      const day = arg.day;
+      d = moment({ year, month, day });
     } else {
       throw new Error('Invalid format encountered. Please specify date in one of these formats :\n- "date("2012-12-25")"\n- date_and_time object');
     }

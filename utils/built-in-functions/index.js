@@ -5,8 +5,8 @@
 *
 */
 
-const conversion = require('./conversion-functions');
+const dateTime = require('./date-time-functions');
 const list = require('./list-functions');
 const boolean = require('./boolean-functions');
 
-module.exports = Object.assign({}, conversion, list, boolean);
+module.exports = Object.assign({}, dateTime, list, boolean);

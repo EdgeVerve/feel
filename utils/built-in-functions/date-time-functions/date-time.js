@@ -25,7 +25,7 @@ e.g. : date and time("2012-12-24T23:59:00") + duration("PT1M") = date and time("
 
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { time_ISO_8601, date_ISO_8601, date_time_IANA_tz, types, properties } = require('./meta');
+const { date_time_IANA_tz, types, properties } = require('./meta');
 
 const { year, month, day, hour, minute, second, time_offset, timezone } = properties;
 const props = Object.assign({}, { year, month, day, hour, minute, second, time_offset, timezone, type: types.date_and_time, isDateTime: true });
@@ -47,7 +47,7 @@ const parseIANATz = (str) => {
   return match;
 };
 
-const date_and_time = (...args) => { // eslint-disable-line camelcase
+const dateandtime = (...args) => { // eslint-disable-line camelcase
   let dt;
   if (args.length === 1) {
     const arg = args[0];
@@ -56,7 +56,13 @@ const date_and_time = (...args) => { // eslint-disable-line camelcase
   } else if (args.length === 2) {
     const [date, time] = args;
     if (date && date.isDate && time && time.isTime) {
-      dt = moment(`${date.format(date_ISO_8601)}${time.format(time_ISO_8601)}`);
+      const year = date.year;
+      const month = date.month;
+      const day = date.day;
+      const hour = time.hour;
+      const minute = time.minute;
+      const second = time.second;
+      dt = moment({ year, month, day, hour, minute, second });
       dt = dt.isValid() ? dt : new Error('Invalid date_and_time');
     } else {
       throw new Error('Type Mismatch - args specified with date_and_time are expected to be of type date and time respectively. Please check the arguments order or type');
@@ -72,4 +78,4 @@ const date_and_time = (...args) => { // eslint-disable-line camelcase
   }
 };
 
-module.exports = { date_and_time }; // eslint-disable-line camelcase
+module.exports = { dateandtime }; // eslint-disable-line camelcase

@@ -9,7 +9,7 @@
 const Big = require('big.js');
 const _ = require('lodash');
 const { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD } = require('./value');
-const { date, time, date_and_time } = require('../built-in-functions/conversion-functions');
+const { date, time, dateandtime } = require('../built-in-functions');
 
 // property collection is in the order of priority of check
 // priority order is essential for inequality check
@@ -19,7 +19,7 @@ const { date, time, date_and_time } = require('../built-in-functions/conversion-
 const dateTimeComponent = {
   time: ['hour', 'minute', 'second', 'time_offset', 'timezone'],
   date: ['year', 'month', 'day'],
-  date_and_time: ['year', 'month', 'day', 'hour', 'minute', 'second', 'time_offset', 'timezone'],
+  dateandtime: ['year', 'month', 'day', 'hour', 'minute', 'second', 'time_offset', 'timezone'],
 };
 
 
@@ -128,7 +128,7 @@ const operatorMap = {
         } else if (x.isDate && y.isDate) {
           return checkEquality(x, y, dateTimeComponent.date); // eslint-disable-line no-use-before-define
         } else if (x.isDateTime && y.isDateTime) {
-          return checkEquality(x, y, dateTimeComponent.date_and_time); // eslint-disable-line no-use-before-define
+          return checkEquality(x, y, dateTimeComponent.dateandtime); // eslint-disable-line no-use-before-define
         } else if (x.isTime && y.isTime) {
           return checkEquality(x, y, dateTimeComponent.time); // eslint-disable-line no-use-before-define
         } else if (x.isDtd && y.isDtd) {
@@ -170,9 +170,9 @@ const operatorMap = {
     } else if (x.isDtd && y.isDtd) {
       return valueInverseDTD(valueDTD(x) + valueDTD(y));
     } else if ((x.isDateTime || x.isDate) && y.isYmd) {
-      return date_and_time(date(x.year + y.years + Math.floor((x.month + y.months) / 12), (x.month + y.months) - (Math.floor((x.month + y.months) / 12) * 12), x.day), time(x));
+      return dateandtime(date(x.year + y.years + Math.floor((x.month + y.months) / 12), (x.month + y.months) - (Math.floor((x.month + y.months) / 12) * 12), x.day), time(x));
     } else if (x.isYmd && (y.isDateTime || y.isDate)) {
-      return date_and_time(date(y.year + x.years + Math.floor((y.month + x.months) / 12), (y.month + x.months) - (Math.floor((y.month + x.months) / 12) * 12), y.day), time(y));
+      return dateandtime(date(y.year + x.years + Math.floor((y.month + x.months) / 12), (y.month + x.months) - (Math.floor((y.month + x.months) / 12) * 12) - 1, y.day), time(y));
     } else if ((x.isDateTime || x.isDate) && y.isDtd) {
       return valueInverseDT(valueDT(x) + valueDTD(y));
     } else if (x.isDtd && (y.isDateTime || y.isDate)) {
@@ -199,7 +199,7 @@ const operatorMap = {
     } else if (x.isDtd && y.isDtd) {
       return valueInverseDTD(valueDTD(x) - valueDTD(y));
     } else if ((x.isDateTime || x.isDate) && y.isYmd) {
-      return date_and_time(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+      return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
     } else if (x.isYmd && (y.isDateTime || y.isDate)) {
       throw new Error(`${x.type} - ${y.type} : operation unsupported for one or more operands types`);
     } else if ((x.isDateTime || x.isDate) && y.isDtd) {

@@ -10,9 +10,9 @@ const FEEL = require('../../dist/feel');
 
 const expect = chai.expect;
 
-describe(chalk.blue('date_and_time built-in function grammar test'), () => {
+describe(chalk.blue('dateandtime built-in function grammar test'), () => {
   it('should parse date_and_time with format "YYYY-MM-DDTHH:mm:ssZ"', (done) => {
-    const text = 'date_and_time("2012-12-24T23:59:00").isDateTime';
+    const text = 'dateandtime("2012-12-24T23:59:00").isDateTime';
     try {
       const parsedGrammar = FEEL.parse(text);
       parsedGrammar.build()
@@ -27,8 +27,8 @@ describe(chalk.blue('date_and_time built-in function grammar test'), () => {
     }
   });
 
-  it('should parse date_and_time with format "([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(?:@(.+))+"', (done) => {
-    const text = 'date_and_time("2012-12-24T00:01:00@Etc/UTC").isDateTime';
+  it('should parse dateandtime with format "([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(?:@(.+))+"', (done) => {
+    const text = 'dateandtime("2012-12-24T00:01:00@Etc/UTC").isDateTime';
     try {
       const parsedGrammar = FEEL.parse(text);
       parsedGrammar.build()

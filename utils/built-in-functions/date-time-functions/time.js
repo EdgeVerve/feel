@@ -35,7 +35,7 @@ const { time_ISO_8601, time_IANA_tz, types, properties } = require('./meta');
 const { hour, minute, second, time_offset, timezone } = properties;
 const props = Object.assign({}, { hour, minute, second, time_offset, timezone, type: types.time, isTime: true });
 
-const isNumber = (...args) => args.reduce((prev, next) => prev && typeof next === 'number', true);
+const isNumber = args => args.reduce((prev, next) => prev && typeof next === 'number', true);
 
 const parseTime = (str) => {
   try {
@@ -70,8 +70,10 @@ const time = (...args) => {
     if (typeof arg === 'string') {
       t = parseIANATz(arg) || parseTime(arg);
     } else if (typeof arg === 'object' && arg.isDateTime) {
-      const timePart = arg.format(time_ISO_8601);
-      t = parseTime(timePart);
+      const hour = arg.hour;
+      const minute = arg.minute;
+      const second = arg.second;
+      t = moment({ hour, minute, second });
     } else {
       throw new Error('Invalid format encountered. Please specify time in one of these formats :\n- "23:59:00z"\n- "00:01:00@Etc/UTC"\n- date_and_time object');
     }

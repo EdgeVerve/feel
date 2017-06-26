@@ -14,6 +14,7 @@ These are used for performing calculations and conversions.
 */
 
 const moment = require('moment');
+const { time, dateandtime, duration } = require('../built-in-functions');
 
 const prepareTime = (value) => {
   let remainingTime = value;
@@ -35,10 +36,10 @@ const valueT = (obj) => {
 
 const valueInverseT = (value) => {
   if (value >= 0 && value <= 86400) {
-    return prepareTime(value);
+    return time(prepareTime(value));
   }
   const secondsFromMidnight = value - (Math.floor(value / 86400) * 86400);
-  return prepareTime(secondsFromMidnight);
+  return time(prepareTime(secondsFromMidnight));
 };
 
 const valueDT = (obj) => {
@@ -52,7 +53,7 @@ const valueDT = (obj) => {
 
 const valueInverseDT = (value) => {
   const epoch = moment('1970-01-01', 'YYYY-MM-DD');
-  return epoch.add(value, 'seconds');
+  return dateandtime(epoch.add(value, 'seconds').format());
 };
 
 const valueDTD = (obj) => {
@@ -62,7 +63,7 @@ const valueDTD = (obj) => {
   throw new Error('Type Error');
 };
 
-const valueInverseDTD = value => moment.duration(value, 'seconds');
+const valueInverseDTD = value => duration(`PT${value}S`);
 
 const valueYMD = (obj) => {
   if (obj.isYmd) {
@@ -71,6 +72,6 @@ const valueYMD = (obj) => {
   throw new Error('Type Error');
 };
 
-const valueInverseYMD = value => moment.duration(value, 'months');
+const valueInverseYMD = value => duration(`P${value}M`);
 
 module.exports = { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD };

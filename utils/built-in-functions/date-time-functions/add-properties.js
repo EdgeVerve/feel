@@ -6,16 +6,15 @@
 */
 
 const addProperties = (obj, props) => {
-  const o = Object.assign({}, obj);
   Object.keys(props).forEach((key) => {
     const value = props[key];
     if (typeof value === 'function') {
-      o[key] = value.call(obj);
+      obj[key] = value.call(obj); // eslint-disable-line no-param-reassign
     } else {
-      o[key] = value;
+      obj[key] = value; // eslint-disable-line no-param-reassign
     }
   });
-  return o;
+  return obj;
 };
 
 module.exports = addProperties;

@@ -49,7 +49,7 @@ describe(chalk.blue('date built-in function grammar test'), () => {
       const parsedGrammar = FEEL.parse(text);
       parsedGrammar.build()
           .then((result) => {
-            expect(result).to.equal(6);
+            expect(result).to.equal(5);
             done();
           }).catch((err) => {
             done(err);

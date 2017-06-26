@@ -1,8 +1,8 @@
-/*  
- *  
- *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
- *  Bangalore, India. All Rights Reserved.  
- *   
+/*
+ *
+ *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ *  Bangalore, India. All Rights Reserved.
+ *
  */
 // initializer section start
 
@@ -14,7 +14,7 @@ require('./feel-ast-parser')(ast);
 
 // require all the built-in functions
 // used to parse date
-const utility = require('../utils/helper/built-in-functions');
+const utility = require('../utils/built-in-functions');
 
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;
