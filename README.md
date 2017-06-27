@@ -106,6 +106,9 @@ Some valid FEEL expressions (logically categorized):
 - ((a + b)/c - (d + e*2))**f
 - 1-(1+rate/12)**-term
 - (a + b)**-c
+- date("2012-12-25") + date("2012-12-24")
+- time("T13:10:06") - time("T13:10:05")
+- dateandtime("2012-12-24T23:59:00") + duration("P1Y")
 
 ### Comparision
 
@@ -116,6 +119,8 @@ Some valid FEEL expressions (logically categorized):
 - 5 in (<5,>5)
 - (a + 5) >= (7 + g)
 - (a+b) between (c + d) and (e - f)
+- date("2012-12-25") > date("2012-12-24")
+- dateandtime("2012-12-24T23:59:00") < dateandtime("2012-12-25T00:00:00")
 
 ### Conjunction
 
@@ -147,6 +152,29 @@ Some valid FEEL expressions (logically categorized):
 ### Quantified
 
 - some ch in credit history satisfies ch.event = "bankruptcy"
+
+### Date Time Semantics
+
+- time("13:10:05@Etc/UTC").hour
+- time("13:10:05@Etc/UTC").minute
+- time("13:01:05+05:30").second
+- dateandtime("2012-12-24T23:59:00").year
+- date("2017-06-10").month
+- date("2017-06-10").day
+- duration("P13M").years
+- duration("P1Y11M").months
+- duration("P5DT12H10M").days
+- duration("P5DT12H10M").hours
+- duration("P5DT12H10M").minutes
+- duration("P5DT12H10M25S").seconds
+
+### Date Time Conversion and Equality
+
+- date("2012-12-25") – date("2012-12-24") = duration("P1D")
+- dateandtime("2012-12-24T23:59:00") + duration("PT1M") = dateandtime("2012-12-25T00:00:00")
+- time("23:59:00z") + duration("PT2M") = time("00:01:00@Etc/UTC")
+- dateandtime("2012-12-24T23:59:00") - dateandtime("2012-12-22T03:45:00") = duration("P2DT20H14M")
+- duration("P2Y2M") = duration("P26M")
 
 ***Please note: This is not a complete list of FEEL Expressions. Please refer [DMN Specification Document](http://www.omg.org/spec/DMN/1.1/) for detailed documentation on FEEL grammar.***
 
