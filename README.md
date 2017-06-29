@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/EdgeVerve/feel.svg?branch=master)](https://travis-ci.org/EdgeVerve/feel) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![npm](https://img.shields.io/npm/v/js-feel.svg)](https://npmjs.org/package/js-feel)
+[![Build Status](https://travis-ci.org/EdgeVerve/feel.svg?branch=master)](https://travis-ci.org/EdgeVerve/feel) [![Coverage Status](https://coveralls.io/repos/github/EdgeVerve/feel/badge.svg?branch=master)](https://coveralls.io/github/EdgeVerve/feel?branch=master) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![npm](https://img.shields.io/npm/v/js-feel.svg)](https://npmjs.org/package/js-feel) 
 
 [![NPM](https://nodei.co/npm/js-feel.png?compact=true)](https://npmjs.org/package/js-feel)
 
