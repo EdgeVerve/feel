@@ -103,7 +103,7 @@ gulp.task('utils:lint', ()=>{
 });
 
 gulp.task('pre-test-ci', function () {
-  return gulp.src(['dist/**/*.js'])
+  return gulp.src(['./dist/**/*.js','./utils/**/*.js','!./dist/**/feel.js','!./utils/**/index.js'])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire());
 });

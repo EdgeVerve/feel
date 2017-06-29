@@ -30,7 +30,7 @@ e.g. : date(2012, 12, 25) = date("2012-12-25")
 
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { date_ISO_8601, types, properties } = require('./meta');
+const { types, properties, UTC, UTCTimePart } = require('../../helper/meta');
 
 const { year, month, day } = properties;
 const props = Object.assign({}, { year, month, day, type: types.date, isDate: true });
@@ -39,8 +39,11 @@ const isNumber = args => args.reduce((prev, next) => prev && typeof next === 'nu
 
 const parseDate = (str) => {
   try {
-    const d = moment(str, date_ISO_8601);
-    return d.isValid() ? d : new Error('Invalid date. This is usually caused by an inappropriate format. Please check the input format.');
+    const d = moment.tz(`${str}${UTCTimePart}`, UTC);
+    if (d.isValid()) {
+      return d;
+    }
+    throw new Error('Invalid date. This is usually caused by an inappropriate format. Please check the input format.');
   } catch (err) {
     return err;
   }
@@ -51,28 +54,31 @@ const date = (...args) => {
   if (args.length === 1) {
     const arg = args[0];
     if (typeof arg === 'string') {
-      d = parseDate(arg);
+      try {
+        d = parseDate(arg);
+      } catch (err) {
+        throw err;
+      }
     } else if (typeof arg === 'object' && arg.isDateTime) {
-      const year = arg.year;
-      const month = arg.month;
-      const day = arg.day;
-      d = moment({ year, month, day });
+      const { year, month, day } = arg;
+      d = moment.tz({ year, month, day, hour: 0, minute: 0, second: 0 }, UTC);
+      if (!d.isValid()) {
+        throw new Error('Invalid date. Parsing error while attempting to create date from dateandtime');
+      }
     } else {
       throw new Error('Invalid format encountered. Please specify date in one of these formats :\n- "date("2012-12-25")"\n- date_and_time object');
     }
   } else if (args.length === 3 && isNumber(args)) {
     const [year, month, day] = args;
-    d = moment({ year, month, day });
-    d = d.isValid() ? d : new Error('Invalid date');
+    d = moment.tz({ year, month: month - 1, day, hour: 0, minute: 0, second: 0 }, UTC);
+    if (!d.isValid()) {
+      throw new Error('Invalid date. Parsing error while attempting to create date from parts' );
+    }
   } else {
     throw new Error('Invalid number of arguments specified with "date" in-built function');
   }
 
-  if (d instanceof Error) {
-    throw d;
-  } else {
-    return addProperties(d, props);
-  }
+  return addProperties(d, props);
 };
 
 module.exports = { date };

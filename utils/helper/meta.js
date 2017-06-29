@@ -22,9 +22,13 @@ In that case format function should also be overwritten to suit the requirements
 */
 
 const metadata = {
+  defaultTz: 'Etc/UTC',
+  UTC: 'Etc/UTC',
+  epoch: '1970-01-01',
+  UTCTimePart: 'T00:00:00',
   time_ISO_8601: 'THH:mm:ssZ',
-  time_IANA_tz: /([0-9]{2}):([0-9]{2}):([0-9]{2})(?:@(.+))+/,
   date_ISO_8601: 'YYYY-MM-DD',
+  time_IANA_tz: /([0-9]{2}):([0-9]{2}):([0-9]{2})(?:@(.+))+/,
   date_time_IANA_tz: /([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(?:@(.+))+/,
   ymd_ISO_8601: /P([0-9]+Y)?([0-9]+M)?/,
   dtd_ISO_8601: /P([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+S)?)?/,

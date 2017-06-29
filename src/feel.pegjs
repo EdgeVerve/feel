@@ -1,4 +1,4 @@
-{ 
+{
 /*
  *
  *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
@@ -12,10 +12,6 @@ const ast = require('./feel-ast');
 
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
-
-// require all the built-in functions
-// used to parse date
-const utility = require('../utils/built-in-functions');
 
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;
@@ -52,9 +48,6 @@ function buildLogicalExpression(head, tail, loc) {
   }, head);
 }
 
-function parseDateTimeLiteral(head, tail) {
-  return utility[head](tail.value);
-}
 
  }
 Start
@@ -141,7 +134,6 @@ SimpleLiteral
     = NumericLiteral
     / StringLiteral
     / BooleanLiteral
-    / DateTimeLiteral
 
 NullLiteral
     = $NullToken
@@ -194,18 +186,6 @@ StringLiteral "string"
 StringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
   / LineContinuation
-
-DateTimeSymbol
-  = $DateToken
-  / $TimeToken
-  / $DateAndTimeToken
-  / $DurationToken
-
-DateTimeLiteral
-  = head:DateTimeSymbol "(" tail:StringLiteral ")"
-      {
-          return new ast.LiteralNode(parseDateTimeLiteral(head,tail),location());
-      }
 
 //Literal End
 
@@ -627,10 +607,6 @@ Keyword
     / BetweenToken
     / FunctionToken
     / ExternalToken
-    / DateToken
-    / TimeToken
-    / DateAndTimeToken
-    / DurationToken
 
 LineContinuation
   = "\\" LineTerminatorSequence { return ""; }
@@ -684,9 +660,5 @@ BetweenToken    =   "between"                           !NamePartChar
 InstanceOfToken =   "instanceof"                        !NamePartChar
 FunctionToken   =   "function"                          !NamePartChar
 ExternalToken   =   "external"                          !NamePartChar
-DateToken       =   "date"                              !NamePartChar
-TimeToken       =   "time"                              !NamePartChar
-DateAndTimeToken=   "dateandtime"                       !NamePartChar
-DurationToken   =   "duration"                          !NamePartChar
 
 //Tokens and Whitespace End

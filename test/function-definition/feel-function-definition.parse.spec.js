@@ -1,8 +1,8 @@
-/*  
-*  
-*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
-*  Bangalore, India. All Rights Reserved.  
-*   
+/*
+*
+*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+*  Bangalore, India. All Rights Reserved.
+*
 */
 var chalk = require('chalk');
 var chai = require('chai');
@@ -26,7 +26,7 @@ describe(chalk.blue('Function definition grammar test'), function () {
 
     it('Successfully creates user defined function definition', function (done) {
         var text = 'function(rate, term, amount) (amount*rate/12)/(1-(1+rate/12)**-term)';
-        
+
         try {
             var parsedGrammar = FEEL.parse(text);
             expect(parsedGrammar).not.to.be.undefined;
@@ -37,9 +37,9 @@ describe(chalk.blue('Function definition grammar test'), function () {
         done();
     });
 
-    it('Successfully creates external function definition', function (done) {
+    it('Successfully creates external function definition with string key', function (done) {
         var text = 'function(angle) external {java: {class : "java.lang.Math", "method signature": "cos(double)"}}';
-        
+
         try {
             var parsedGrammar = FEEL.parse(text);
             expect(parsedGrammar).not.to.be.undefined;
@@ -50,9 +50,9 @@ describe(chalk.blue('Function definition grammar test'), function () {
         done();
     });
 
-    it('Successfully creates external function definition', function (done) {
+    it('Successfully creates external function definition with name key', function (done) {
         var text = 'function(angle) external {java: {class : "java.lang.Math", method signature: "cos(double)"}}';
-        
+
         try {
             var parsedGrammar = FEEL.parse(text);
             expect(parsedGrammar).not.to.be.undefined;

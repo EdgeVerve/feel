@@ -12,6 +12,7 @@ const expect = chai.expect;
 
 describe(chalk.blue('dateandtime built-in function grammar test'), () => {
   it('should parse date_and_time with format "YYYY-MM-DDTHH:mm:ssZ"', (done) => {
+    debugger;
     const text = 'dateandtime("2012-12-24T23:59:00").isDateTime';
     try {
       const parsedGrammar = FEEL.parse(text);

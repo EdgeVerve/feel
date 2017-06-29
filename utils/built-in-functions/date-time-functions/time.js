@@ -30,7 +30,7 @@ e.g. : time(“T23:59:00z") = time(23, 59, 0, duration(“PT0H”))
 
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { time_ISO_8601, time_IANA_tz, types, properties } = require('./meta');
+const { defaultTz, time_ISO_8601, time_IANA_tz, types, properties } = require('../../helper/meta');
 
 const { hour, minute, second, time_offset, timezone } = properties;
 const props = Object.assign({}, { hour, minute, second, time_offset, timezone, type: types.time, isTime: true });
@@ -40,9 +40,12 @@ const isNumber = args => args.reduce((prev, next) => prev && typeof next === 'nu
 const parseTime = (str) => {
   try {
     const t = moment(str, time_ISO_8601);
-    return t.isValid() ? t : new Error('Invalid ISO_8601 format time. This is usually caused by an inappropriate format. Please check the input format.');
+    if (t.isValid()) {
+      return t;
+    }
+    throw new Error('Invalid ISO_8601 format time. This is usually caused by an inappropriate format. Please check the input format.');
   } catch (err) {
-    return err;
+    throw err;
   }
 };
 
@@ -53,12 +56,15 @@ const parseIANATz = (str) => {
     if (hour && minute && second && tz) {
       try {
         const t = moment.tz({ hour, minute, second }, tz);
-        return t.isValid() ? t : new Error('Invalid IANA format time. This is usually caused by an inappropriate format. Please check the input format.');
+        if (t.isValid()) {
+          return t;
+        }
+        throw new Error('Invalid IANA format time. This is usually caused by an inappropriate format. Please check the input format.');
       } catch (err) {
-        return err;
+        throw err;
       }
     }
-    return new Error(`Error parsing IANA format input. One or more parts are missing - hour : ${hour} minute : ${minute} second : ${second} timezone : ${tz}`);
+    throw new Error(`Error parsing IANA format input. One or more parts are missing - hour : ${hour} minute : ${minute} second : ${second} timezone : ${tz}`);
   }
   return match;
 };
@@ -68,12 +74,19 @@ const time = (...args) => {
   if (args.length === 1) {
     const arg = args[0];
     if (typeof arg === 'string') {
-      t = parseIANATz(arg) || parseTime(arg);
+      try {
+        t = parseIANATz(arg) || parseTime(arg);
+      } catch (err) {
+        throw err;
+      }
     } else if (typeof arg === 'object' && arg.isDateTime) {
       const hour = arg.hour;
       const minute = arg.minute;
       const second = arg.second;
-      t = moment({ hour, minute, second });
+      t = moment.tz({ hour, minute, second }, defaultTz);
+      if (!t.isValid()) {
+        throw new Error('Invalid time. Parsing error while attempting to extract time from dateandtime.');
+      }
     } else {
       throw new Error('Invalid format encountered. Please specify time in one of these formats :\n- "23:59:00z"\n- "00:01:00@Etc/UTC"\n- date_and_time object');
     }
@@ -82,19 +95,26 @@ const time = (...args) => {
     t = moment({ hour, minute, second });
     const offset = args[3];
     if (offset && offset.isDuration) {
+      // TODO : implement duration to offset conversion
       t.utcOffset(offset.value);
     } else {
       throw new Error('Type Mismatch - the fourth argument in "time" in-built function is expected to be of type "duration"');
     }
-    t = t.isValid() ? t : new Error('Invalid time');
+    if (!t.isValid()) {
+      throw new Error('Invalid time. Parsing error while attempting to create time from parts');
+    }
   } else {
     throw new Error('Invalid number of arguments specified with "time" in-built function');
   }
 
-  if (t instanceof Error) {
-    throw t;
-  } else {
-    return addProperties(t, props);
+  try {
+    t = t.tz(defaultTz);
+    if (t.isValid()) {
+      return addProperties(t, props);
+    }
+    throw new Error('Please check the defaultTz property in the metadata. Possible invalid timezone id encountered');
+  } catch (err) {
+    throw err;
   }
 };
 

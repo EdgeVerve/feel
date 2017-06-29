@@ -9,24 +9,35 @@ var chai = require('chai');
 var expect = chai.expect;
 var DTable = require('../../utils/helper/decision-table');
 var DTree = require('../../utils/helper/decision-tree');
-var xlArr = ['Adjustments.xlsx', 'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx', 'Discount.xlsx', 'ElectricityBill.xlsx', 'Holidays.xlsx', 'PostBureauRiskCategory.xlsx', 'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx'];
+var xlArr = ['ExamEligibility.xlsx','Adjustments.xlsx', 'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx', 'Discount.xlsx', 'ElectricityBill.xlsx', 'Holidays.xlsx', 'PostBureauRiskCategory.xlsx', 'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx'];
 var decision_table = {};
 var csv = {};
 var i = 0;
 
 describe(chalk.blue('Decision table evaluation'), function () {
-    
+
     before('setup test data, read excel file and get the decision table', function (done) {
         done();
     });
-    
+
     beforeEach('prepare decision table from excel and set the payload', function (done) {
         var path = './test/data/' + xlArr[i++];
         csv = DTable.xls_to_csv(path);
         decision_table = DTable.csv_to_decision_table(csv[0]);
         done();
     });
-    
+
+    it('ExamEligibility table evaluation', function (done) {
+        var payload = { "GPA" : 7, "d" : "1995-11-22" };
+        DTable.execute_decision_table("ExamEligibility", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
+            expect(results.Eligible).to.be.true;
+            done();
+        });
+    });
+
     it('Adjustments table evaluation', function (done) {
         var payload = { "Customer" : "Private", "Order size" : 12 };
         DTable.execute_decision_table("Adjustments", decision_table, payload, (err, results)=> {

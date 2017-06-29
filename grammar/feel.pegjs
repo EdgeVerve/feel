@@ -82,7 +82,6 @@ SimpleLiteral
     = NumericLiteral
     / StringLiteral
     / BooleanLiteral
-    / DateTimeLiteral
 
 NullLiteral
     = $NullToken
@@ -135,18 +134,6 @@ StringLiteral "string"
 StringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
   / LineContinuation
-
-DateTimeSymbol
-  = $DateToken
-  / $TimeToken
-  / $DateAndTimeToken
-  / $DurationToken
-
-DateTimeLiteral
-  = head:DateTimeSymbol "(" tail:StringLiteral ")"
-      {
-          return new ast.LiteralNode(parseDateTimeLiteral(head,tail),location());
-      }
 
 //Literal End
 
@@ -568,10 +555,6 @@ Keyword
     / BetweenToken
     / FunctionToken
     / ExternalToken
-    / DateToken
-    / TimeToken
-    / DateAndTimeToken
-    / DurationToken
 
 LineContinuation
   = "\\" LineTerminatorSequence { return ""; }
@@ -625,9 +608,5 @@ BetweenToken    =   "between"                           !NamePartChar
 InstanceOfToken =   "instanceof"                        !NamePartChar
 FunctionToken   =   "function"                          !NamePartChar
 ExternalToken   =   "external"                          !NamePartChar
-DateToken       =   "date"                              !NamePartChar
-TimeToken       =   "time"                              !NamePartChar
-DateAndTimeToken=   "dateandtime"                       !NamePartChar
-DurationToken   =   "duration"                          !NamePartChar
 
 //Tokens and Whitespace End

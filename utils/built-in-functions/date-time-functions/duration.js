@@ -25,22 +25,22 @@ e.g. : years and months duration(date("2011-12-22"), date("2013-08-24")) = durat
 
 const moment = require('moment');
 const addProperties = require('./add-properties');
-const { ymd_ISO_8601, dtd_ISO_8601, types, properties } = require('./meta');
+const { ymd_ISO_8601, dtd_ISO_8601, types, properties } = require('../../helper/meta');
 
 const { years, months, days, hours, minutes, seconds } = properties;
 const dtdProps = Object.assign({}, { days, hours, minutes, seconds, type: types.dtd, isDtd: () => true, isDuration: () => true });
 const ymdProps = Object.assign({}, { years, months, type: types.ymd, isYmd: () => true, isDuration: () => true });
 
-const isDateTime = (...args) => args.reduce((recur, next) => recur && (next.isDateTime || next.isDate), true);
+const isDateTime = args => args.reduce((recur, next) => recur && (next.isDateTime || next.isDate), true);
 
-const days_and_time_duration = (...args) => { // eslint-disable-line camelcase
+const daysandtimeduration = (...args) => { // eslint-disable-line camelcase
   let dtd;
   if (args.length === 1) {
     dtd = moment.duration(args[0]);
     dtd = dtd.isValid() ? dtd : new Error('Invalid Duration : "days_and_time_duration" in-built function');
   } else if (args.length === 2 && isDateTime(args)) {
-    const [end, start] = args;
-    dtd = moment.duration(end.diff(start));
+    const [start, end] = args;
+    dtd = moment.duration(Math.floor(end.diff(start)));
   } else {
     throw new Error('Invalid number of arguments specified with "days_and_time_duration" in-built function');
   }
@@ -52,14 +52,14 @@ const days_and_time_duration = (...args) => { // eslint-disable-line camelcase
   }
 };
 
-const years_and_months_duration = (...args) => { // eslint-disable-line camelcase
+const yearsandmonthsduration = (...args) => { // eslint-disable-line camelcase
   let ymd;
   if (args.length === 1) {
     ymd = moment.duration(args[0]);
     ymd = ymd.isValid() ? ymd : new Error('Invalid Duration : "years_and_months_duration" in-built function');
   } else if (args.length === 2 && isDateTime(args)) {
-    const [end, start] = args;
-    const months = moment.duration(end.diff(start)).asMonths();
+    const [start, end] = args;
+    const months = Math.floor(moment.duration(end.diff(start)).asMonths());
     ymd = moment.duration(months, 'months');
   } else {
     throw new Error('Invalid number of arguments specified with "years_and_months_duration" in-built function');
@@ -79,13 +79,13 @@ const duration = (arg) => {
   if (typeof arg === 'string') {
     if (patternMatch(arg, ymd_ISO_8601)) {
       try {
-        return years_and_months_duration(arg);
+        return yearsandmonthsduration(arg);
       } catch (err) {
         throw err;
       }
     } else if (patternMatch(arg, dtd_ISO_8601)) {
       try {
-        return days_and_time_duration(arg);
+        return daysandtimeduration(arg);
       } catch (err) {
         throw err;
       }
@@ -96,4 +96,4 @@ const duration = (arg) => {
 };
 
 
-module.exports = { duration, years_and_months_duration, days_and_time_duration };
+module.exports = { duration, yearsandmonthsduration, daysandtimeduration };

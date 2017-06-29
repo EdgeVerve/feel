@@ -15,6 +15,7 @@ These are used for performing calculations and conversions.
 
 const moment = require('moment');
 const { time, dateandtime, duration } = require('../built-in-functions');
+const { defaultTz, date_ISO_8601, epoch } = require('./meta');
 
 const prepareTime = (value) => {
   let remainingTime = value;
@@ -24,54 +25,37 @@ const prepareTime = (value) => {
   remainingTime = value % 60;
   const second = remainingTime;
 
-  return moment({ hour, minute, second }).format('THH:mm:ss');
+  return moment({ hour, minute, second }).format(date_ISO_8601);
 };
 
-const valueT = (obj) => {
-  if (obj.isTime) {
-    return moment.duration(`PT${obj.hour}H${obj.minute}M${obj.second}S`).asSeconds();
-  }
-  throw new Error('Type Error');
-};
+const valueT = obj => moment.duration(`PT${obj.hour}H${obj.minute}M${obj.second}S`).asSeconds();
 
 const valueInverseT = (value) => {
   if (value >= 0 && value <= 86400) {
     return time(prepareTime(value));
   }
   const secondsFromMidnight = value - (Math.floor(value / 86400) * 86400);
-  return time(prepareTime(secondsFromMidnight));
+  const timeStr = prepareTime(secondsFromMidnight);
+  return time(`${timeStr}@${defaultTz}`);
 };
 
 const valueDT = (obj) => {
-  const epoch = moment('1970-01-01', 'YYYY-MM-DD');
-  if (obj.isDateTime || obj.isDate) {
-    const duration = moment.duration(obj.diff(epoch));
-    return duration.asSeconds();
-  }
-  throw new Error('Type Error');
+  const e = moment(epoch, date_ISO_8601);
+  const duration = moment.duration(obj.diff(e));
+  return duration.asSeconds();
 };
 
 const valueInverseDT = (value) => {
-  const epoch = moment('1970-01-01', 'YYYY-MM-DD');
-  return dateandtime(epoch.add(value, 'seconds').format());
+  const e = moment(epoch, date_ISO_8601);
+  return dateandtime(e.add(value, 'seconds').format());
 };
 
-const valueDTD = (obj) => {
-  if (obj.isDtd) {
-    return obj.asSeconds();
-  }
-  throw new Error('Type Error');
-};
+const valueDTD = obj => obj.asSeconds();
 
-const valueInverseDTD = value => duration(`PT${value}S`);
+const valueInverseDTD = value => duration(`PT${Math.floor(value)}S`);
 
-const valueYMD = (obj) => {
-  if (obj.isYmd) {
-    return obj.asMonths();
-  }
-  throw new Error('Type Error');
-};
+const valueYMD = obj => obj.asMonths();
 
-const valueInverseYMD = value => duration(`P${value}M`);
+const valueInverseYMD = value => duration(`P${Math.floor(value)}M`);
 
 module.exports = { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD };
