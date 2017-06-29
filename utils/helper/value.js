@@ -13,9 +13,9 @@ These functions are not exposed as a part of in-built function suite.
 These are used for performing calculations and conversions.
 */
 
-const moment = require('moment');
+const moment = require('moment-timezone');
 const { time, dateandtime, duration } = require('../built-in-functions');
-const { defaultTz, date_ISO_8601, epoch } = require('./meta');
+const { defaultTz, date_ISO_8601, time_ISO_8601, epoch } = require('./meta');
 
 const prepareTime = (value) => {
   let remainingTime = value;
@@ -25,7 +25,7 @@ const prepareTime = (value) => {
   remainingTime = value % 60;
   const second = remainingTime;
 
-  return moment({ hour, minute, second }).format(date_ISO_8601);
+  return moment.tz({ hour, minute, second }, defaultTz).format(time_ISO_8601);
 };
 
 const valueT = obj => moment.duration(`PT${obj.hour}H${obj.minute}M${obj.second}S`).asSeconds();
@@ -36,7 +36,7 @@ const valueInverseT = (value) => {
   }
   const secondsFromMidnight = value - (Math.floor(value / 86400) * 86400);
   const timeStr = prepareTime(secondsFromMidnight);
-  return time(`${timeStr}@${defaultTz}`);
+  return time(`${timeStr}`);
 };
 
 const valueDT = (obj) => {
