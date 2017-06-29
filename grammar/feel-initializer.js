@@ -1,8 +1,8 @@
-/*  
- *  
- *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
- *  Bangalore, India. All Rights Reserved.  
- *   
+/*
+ *
+ *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ *  Bangalore, India. All Rights Reserved.
+ *
  */
 // initializer section start
 
@@ -51,6 +51,6 @@ function buildLogicalExpression(head, tail, loc) {
   }, head);
 }
 
-function parseDateTimeLiteral(head, tail, loc) {
-  return utility[head](tail);
+function parseDateTimeLiteral(head, tail) {
+  return utility[head](tail.value);
 }

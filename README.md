@@ -4,10 +4,10 @@
 
 # About
 
-[FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3. 
+[FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) is an expression language based on DMN specification conformance level 3.
 Written using [PEG.js](https://pegjs.org/) - JavaScript Parser Generator.
 FEEL is a very powerful language built with the purpose of defining rules in Business Rule Engines.
-FEEL also offers an API to implement and execute Decision Table defined in excel (.xlsx) 
+FEEL also offers an API to implement and execute Decision Table defined in excel (.xlsx)
 
 # Getting Started
 
@@ -26,7 +26,7 @@ npm install js-feel --save
 ### Contribution
 
 ```sh
-# clone repo 
+# clone repo
 git clone https://github.com/EdgeVerve/feel.git
 
 # or fork repo
@@ -55,7 +55,7 @@ npm run lintfix
 ## Using [Decision Table](https://github.com/EdgeVerve/feel/wiki/Decision-Table#what-is-decision-table)
 
 Decision tables are defined in excel (.xlsx). Please check [Sample Rules](README.md#sample-rules).
-Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic. 
+Each cell in the body of the decision table has to be a valid FEEL expression. The following make use of FEEL parser to parse and execute expressions and hence the decision logic.
 
 ### Excel to Decision Table
 
@@ -64,7 +64,7 @@ const { decisionTable } = require('feel');
 
 const csv = decisionTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
 const decision_table = decisionTable.csv_to_decision_table(csv[0]);
-``` 
+```
 
 ### Execute Decision Table
 
@@ -106,6 +106,9 @@ Some valid FEEL expressions (logically categorized):
 - ((a + b)/c - (d + e*2))**f
 - 1-(1+rate/12)**-term
 - (a + b)**-c
+- date("2012-12-25") + date("2012-12-24")
+- time("T13:10:06") - time("T13:10:05")
+- dateandtime("2012-12-24T23:59:00") + duration("P1Y")
 
 ### Comparision
 
@@ -116,6 +119,8 @@ Some valid FEEL expressions (logically categorized):
 - 5 in (<5,>5)
 - (a + 5) >= (7 + g)
 - (a+b) between (c + d) and (e - f)
+- date("2012-12-25") > date("2012-12-24")
+- dateandtime("2012-12-24T23:59:00") < dateandtime("2012-12-25T00:00:00")
 
 ### Conjunction
 
@@ -148,15 +153,38 @@ Some valid FEEL expressions (logically categorized):
 
 - some ch in credit history satisfies ch.event = "bankruptcy"
 
+### Date Time Semantics
+
+- time("13:10:05@Etc/UTC").hour
+- time("13:10:05@Etc/UTC").minute
+- time("13:01:05+05:30").second
+- dateandtime("2012-12-24T23:59:00").year
+- date("2017-06-10").month
+- date("2017-06-10").day
+- duration("P13M").years
+- duration("P1Y11M").months
+- duration("P5DT12H10M").days
+- duration("P5DT12H10M").hours
+- duration("P5DT12H10M").minutes
+- duration("P5DT12H10M25S").seconds
+
+### Date Time Conversion and Equality
+
+- date("2012-12-25") – date("2012-12-24") = duration("P1D")
+- dateandtime("2012-12-24T23:59:00") + duration("PT1M") = dateandtime("2012-12-25T00:00:00")
+- time("23:59:00z") + duration("PT2M") = time("00:01:00@Etc/UTC")
+- dateandtime("2012-12-24T23:59:00") - dateandtime("2012-12-22T03:45:00") = duration("P2DT20H14M")
+- duration("P2Y2M") = duration("P26M")
+
 ***Please note: This is not a complete list of FEEL Expressions. Please refer [DMN Specification Document](http://www.omg.org/spec/DMN/1.1/) for detailed documentation on FEEL grammar.***
 
 # Sample Rules
 
-[Validation.xlsx](/examples/validation.xlsx)
+[Validation.xlsx](/test/data/Validation.xlsx)
 
-[PostBureauRiskCategory.xlsx](/examples/PostBureauRiskCategory.xlsx)
+[PostBureauRiskCategory.xlsx](/test/data/PostBureauRiskCategory.xlsx)
 
-[ElectricityBill.xlsx](/examples/ElectricityBill.xlsx)
+[ElectricityBill.xlsx](/test/data/ElectricityBill.xlsx)
 
 # Reference
 
