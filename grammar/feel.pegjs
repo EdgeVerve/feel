@@ -65,11 +65,7 @@ NamePart
         }
 
 Name
-    = head:DateTimeKeyword
-        {
-            return new ast.NameNode(head[0], location());
-        }
-    / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+    = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
             return new ast.NameNode(buildName(head,tail,0),location());
         }
@@ -86,6 +82,7 @@ SimpleLiteral
     = NumericLiteral
     / StringLiteral
     / BooleanLiteral
+    / DateTimeLiteral
 
 NullLiteral
     = $NullToken
@@ -138,6 +135,13 @@ StringLiteral "string"
 StringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
   / LineContinuation
+
+DateTimeLiteral
+  = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
+    {
+        return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location());
+    }
+
 
 //Literal End
 
@@ -536,6 +540,7 @@ ContextEntries
 
 ReservedWord
   = Keyword
+  / DateTimeKeyword
   / NullLiteral
   / BooleanLiteral
 

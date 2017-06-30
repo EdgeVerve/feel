@@ -255,4 +255,13 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
+    it('Successfully parse and build equality expression using date and time in a "in" comparision expression', function(done) {
+        var text = 'date and time("2017-04-12T11:45:00Z") in [date and time("2017-04-12T11:30:00Z")..date and time("2017-04-12T12:45:00Z")]';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
 });

@@ -12,10 +12,6 @@ const ast = require('./feel-ast');
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
 
-// require all the built-in functions
-// used to parse date
-const utility = require('../utils/built-in-functions');
-
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;
 }

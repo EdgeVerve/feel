@@ -83,6 +83,12 @@ function LiteralNode(value, loc) {
   this.loc = loc;
 }
 
+function DateTimeLiteralNode(symbol, params, loc) {
+  this.symbol = symbol;
+  this.params = params;
+  this.loc = loc;
+}
+
 function DecimalNumberNode(integer, decimal, loc) {
   this.type = 'DecimalNumberNode';
   this.integer = integer;
@@ -230,6 +236,7 @@ ast.QualifiedNameNode = QualifiedNameNode;
 ast.ArithmeticExpressionNode = ArithmeticExpressionNode;
 ast.NameNode = NameNode;
 ast.LiteralNode = LiteralNode;
+ast.DateTimeLiteralNode = DateTimeLiteralNode;
 ast.DecimalNumberNode = DecimalNumberNode;
 ast.FunctionInvocationNode = FunctionInvocationNode;
 ast.NamedParameterNode = NamedParameterNode;

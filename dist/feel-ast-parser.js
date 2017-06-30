@@ -157,6 +157,18 @@ module.exports = function (ast) {
     return Promise.resolve(this.value);
   };
 
+  ast.DateTimeLiteralNode.prototype.build = function (args) {
+    const fn = args.context[this.symbol];
+    return new Promise((resolve, reject) => {
+      Promise.all(this.params.map(d => d.build(args))).then((params) => {
+        const result = fn(...params);
+        resolve(result);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  };
+
   // Invoking function defined as boxed expression in the context entry
   // See ast.FunctionDefinitionNode for details on declaring function
   // Function supports positional as well as named parameters
@@ -366,7 +378,7 @@ module.exports = function (ast) {
       } else if (operator === 'in') {
         const processExpr = (operand) => {
           this.expr_2 = Array.isArray(this.expr_2) ? this.expr_2 : [this.expr_2];
-          return Promise.all(this.expr_2.map(d => d.build()))
+          return Promise.all(this.expr_2.map(d => d.build(args)))
           .then(tests => tests.map(test => test(operand)).reduce((accu, next) => accu || next, false));
         };
         this.expr_1.build(args)
