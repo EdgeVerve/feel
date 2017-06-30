@@ -1,8 +1,8 @@
-/*  
-*  
-*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),  
-*  Bangalore, India. All Rights Reserved.  
-*   
+/*
+*
+*  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+*  Bangalore, India. All Rights Reserved.
+*
 */
 const chalk = require('chalk');
 const chai = require('chai');
@@ -26,7 +26,7 @@ describe(chalk.blue('Random list of rules'), function () {
             }).then((result) => {
                 expect(result).to.equal(1500);
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -44,7 +44,7 @@ describe(chalk.blue('Random list of rules'), function () {
             .then((result) => {
                 expect(result(500)).to.be.true;
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -62,7 +62,7 @@ describe(chalk.blue('Random list of rules'), function () {
             .then((result) => {
                 expect(result(20)).to.be.false;
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -84,7 +84,7 @@ describe(chalk.blue('Random list of rules'), function () {
             }).then((result) => {
                 expect(result).to.equal(400);
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -108,7 +108,7 @@ describe(chalk.blue('Random list of rules'), function () {
             }).then((result) => {
                 expect(result).to.equal("Gotham");
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -126,7 +126,7 @@ describe(chalk.blue('Random list of rules'), function () {
             .then((result) => {
                 expect(result).to.eql([10,15,20]);
                 done();
-            }).catch(err => { 
+            }).catch(err => {
                 done(err);
             });
         }
@@ -143,7 +143,33 @@ describe(chalk.blue('Random list of rules'), function () {
             .then((result) => {
                 expect(result).to.be.true;
                 done();
-            }).catch(err => { 
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+     it('Successfully parses and executes interval unary test with date and time', function (done) {
+        const text = '[date and time("2017-04-12T11:30:00Z")..date and time("2017-04-12T12:45:00Z")]';
+        const context = '{dt : date and time("2017-04-12T11:45:00Z")}';
+        try{
+            const parsedContext = FEEL.parse(context);
+            const parsedText = FEEL.parse(text);
+
+            const callPromise = (parsedTxt, ctx) => {
+              return parsedTxt.build(ctx)
+              .then(result => result(ctx.dt));
+            }
+
+            parsedContext.build().then(ctx => {
+              return callPromise(parsedText, ctx);
+            }).then((result) => {
+                expect(result).to.be.true;
+                done();
+            }).catch(err => {
                 done(err);
             });
         }
