@@ -20,6 +20,10 @@ function extractOptional(optional, index) {
   return optional ? optional[index] : null;
 }
 
+function flatten(list) {
+  return list.filter( d => d && d.length).reduce((recur, next) => [].concat.call(recur, next), []);
+}
+
 function extractList(list, index) {
   return list.map(element => element[index]);
 }
@@ -27,6 +31,11 @@ function extractList(list, index) {
 function buildList(head, tail, index) {
   return [head].concat(extractList(tail, index));
 }
+
+function buildName(head, tail, index) {
+  return tail && tail.length ? [...head, ...flatten(tail[index])].join("") : head.join("");
+}
+
 
 function buildBinaryExpression(head, tail, loc) {
   return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc), head);

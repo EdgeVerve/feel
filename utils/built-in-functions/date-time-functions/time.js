@@ -85,7 +85,7 @@ const time = (...args) => {
       const second = arg.second;
       t = moment.tz({ hour, minute, second }, defaultTz);
       if (!t.isValid()) {
-        throw new Error('Invalid time. Parsing error while attempting to extract time from dateandtime.');
+        throw new Error('Invalid time. Parsing error while attempting to extract time from date and time.');
       }
     } else {
       throw new Error('Invalid format encountered. Please specify time in one of these formats :\n- "23:59:00z"\n- "00:01:00@Etc/UTC"\n- date_and_time object');

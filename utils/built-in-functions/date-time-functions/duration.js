@@ -96,4 +96,4 @@ const duration = (arg) => {
 };
 
 
-module.exports = { duration, yearsandmonthsduration, daysandtimeduration };
+module.exports = { duration, 'years and months duration': yearsandmonthsduration, 'days and time duration': daysandtimeduration };

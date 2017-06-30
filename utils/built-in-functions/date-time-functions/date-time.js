@@ -40,7 +40,7 @@ const parseIANATz = (str) => {
         if (dt.isValid()) {
           return dt;
         }
-        throw new Error('Invalid dateandtime in IANA tz format. Please check the input format');
+        throw new Error('Invalid date and time in IANA tz format. Please check the input format');
       } catch (err) {
         throw err;
       }
@@ -89,4 +89,4 @@ const dateandtime = (...args) => {
   }
 };
 
-module.exports = { dateandtime };
+module.exports = { 'date and time': dateandtime };

@@ -1,4 +1,4 @@
-{
+{ 
 /*
  *
  *  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
@@ -13,8 +13,16 @@ const ast = require('./feel-ast');
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
 
+// require all the built-in functions
+// used to parse date
+const utility = require('../utils/built-in-functions');
+
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;
+}
+
+function flatten(list) {
+  return list.filter( d => d && d.length).reduce((recur, next) => [].concat.call(recur, next), []);
 }
 
 function extractList(list, index) {
@@ -24,6 +32,11 @@ function extractList(list, index) {
 function buildList(head, tail, index) {
   return [head].concat(extractList(tail, index));
 }
+
+function buildName(head, tail, index) {
+  return tail && tail.length ? [...head, ...flatten(tail[index])].join("") : head.join("");
+}
+
 
 function buildBinaryExpression(head, tail, loc) {
   return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc), head);
@@ -82,7 +95,7 @@ TxtExpi
 			return expr;
 		}
 	/ Name
-    / Literal
+  / Literal
 	/ SimplePositiveUnaryTest
 
 //Name Start
@@ -117,9 +130,13 @@ NamePart
         }
 
 Name
-    = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+    = head:DateTimeKeyword
         {
-            return new ast.NameNode(buildList(head,tail,0),location());
+            return new ast.NameNode(head[0], location());
+        }
+    / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+        {
+            return new ast.NameNode(buildName(head,tail,0),location());
         }
 
 //Name End
@@ -586,6 +603,14 @@ ReservedWord
   = Keyword
   / NullLiteral
   / BooleanLiteral
+
+DateTimeKeyword
+  = "date and time"               !NamePartChar
+  / "time"                        !NamePartChar
+  / "date"                        !NamePartChar
+  / "duration"                    !NamePartChar
+  / "years and months duration"   !NamePartChar
+  / "days and time duration"      !NamePartChar
 
 Keyword
     = TrueToken

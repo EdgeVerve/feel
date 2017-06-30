@@ -136,8 +136,8 @@ describe(chalk.blue('Arithmetic expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
-    it('should add years and months duration addition to dateandtime and return a dateandtime', function(done) {
-        var text = 'dateandtime("2012-12-24T23:59:00") + duration("P1Y")';
+    it('should add years and months duration addition to date and time and return a date and time', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") + duration("P1Y")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
             expect(result.isDateTime).to.be.true;

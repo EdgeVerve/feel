@@ -9,7 +9,7 @@
 const Big = require('big.js');
 const _ = require('lodash');
 const { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD } = require('./value');
-const { date, time, dateandtime } = require('../built-in-functions');
+const { date, time, 'date and time': dateandtime } = require('../built-in-functions');
 
 // property collection is in the order of priority of check
 // priority order is essential for inequality check

@@ -14,7 +14,7 @@ These are used for performing calculations and conversions.
 */
 
 const moment = require('moment-timezone');
-const { time, dateandtime, duration } = require('../built-in-functions');
+const { time, 'date and time': dateandtime, duration } = require('../built-in-functions');
 const { defaultTz, date_ISO_8601, time_ISO_8601, epoch } = require('./meta');
 
 const prepareTime = (value) => {

@@ -30,7 +30,7 @@ TxtExpi
 			return expr;
 		}
 	/ Name
-    / Literal
+  / Literal
 	/ SimplePositiveUnaryTest
 
 //Name Start
@@ -65,9 +65,13 @@ NamePart
         }
 
 Name
-    = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+    = head:DateTimeKeyword
         {
-            return new ast.NameNode(buildList(head,tail,0),location());
+            return new ast.NameNode(head[0], location());
+        }
+    / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+        {
+            return new ast.NameNode(buildName(head,tail,0),location());
         }
 
 //Name End
@@ -534,6 +538,14 @@ ReservedWord
   = Keyword
   / NullLiteral
   / BooleanLiteral
+
+DateTimeKeyword
+  = "date and time"               !NamePartChar
+  / "time"                        !NamePartChar
+  / "date"                        !NamePartChar
+  / "duration"                    !NamePartChar
+  / "years and months duration"   !NamePartChar
+  / "days and time duration"      !NamePartChar
 
 Keyword
     = TrueToken

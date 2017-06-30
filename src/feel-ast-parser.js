@@ -141,8 +141,7 @@ module.exports = function (ast) {
   // _fetch is used to return the name string or
   // the value extracted from context or kwargs using the name string
   ast.NameNode.prototype.build = function (args, _fetch = true) {
-    const nameCharConcat = this.nameChars.reduce((result, next) => Array.prototype.concat.call(result, next), []);
-    const name = String.prototype.concat.apply('', nameCharConcat);
+    const name = this.nameChars;
     if (!_fetch) {
       return Promise.resolve(name);
     }

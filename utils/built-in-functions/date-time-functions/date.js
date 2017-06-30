@@ -63,7 +63,7 @@ const date = (...args) => {
       const { year, month, day } = arg;
       d = moment.tz({ year, month, day, hour: 0, minute: 0, second: 0 }, UTC);
       if (!d.isValid()) {
-        throw new Error('Invalid date. Parsing error while attempting to create date from dateandtime');
+        throw new Error('Invalid date. Parsing error while attempting to create date from date and time');
       }
     } else {
       throw new Error('Invalid format encountered. Please specify date in one of these formats :\n- "date("2012-12-25")"\n- date_and_time object');
