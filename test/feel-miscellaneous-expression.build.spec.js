@@ -177,4 +177,25 @@ describe(chalk.blue('Random list of rules'), function () {
             done(e);
         }
     })
+
+    it('Successfully parses and executes if expression using date and time with format and setTimezone functions', function (done) {
+        const text = 'if dt in [date and time("2017-04-12T11:30:00Z")..date and time("2017-04-12T12:45:00Z")] then formatDateTime(setTimezone(dt, "America/Toronto")) else null';
+        const context = '{dt : date and time("2017-04-12T11:45:00Z")}';
+        try{
+            const parsedContext = FEEL.parse(context);
+            const parsedText = FEEL.parse(text);
+
+            parsedContext.build().then(ctx => {
+              return parsedText.build(ctx);
+            }).then((result) => {
+                expect(result).to.equal('2017-04-12T07:45:00-04:00');
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
 });
