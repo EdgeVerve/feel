@@ -9,7 +9,7 @@
 const Big = require('big.js');
 const _ = require('lodash');
 const { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD } = require('./value');
-const { date, time, dateandtime } = require('../built-in-functions');
+const { date, time, 'date and time': dateandtime } = require('../built-in-functions');
 
 // property collection is in the order of priority of check
 // priority order is essential for inequality check
@@ -27,10 +27,10 @@ const operatorMap = {
   '<': _.curry((x, y) => {
     try {
       if (typeof x === typeof y || (x && x.type === y && y.type)) {
-        const checkLt = checkInequality('<'); // eslint-disable-line no-use-before-define
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lt(y);
         } else if (x.isDate && y.isDate) {
+          const checkLt = checkInequality('<'); // eslint-disable-line no-use-before-define
           return checkLt(x, y, dateTimeComponent.date);
         } else if (x.isDateTime && y.isDateTime) {
           return valueDT(x) < valueDT(y);
@@ -38,7 +38,7 @@ const operatorMap = {
           return valueT(x) < valueT(y);
         } else if (x.isDtd && y.isDtd) {
           return valueDTD(x) < valueDTD(y);
-        } else if (x.isDtd && y.isYmd) {
+        } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) < valueYMD(y);
         }
         return x < y;
@@ -51,10 +51,10 @@ const operatorMap = {
   '<=': _.curry((x, y) => {
     try {
       if (typeof x === typeof y || (x && x.type === y && y.type)) {
-        const checkLtEq = checkInequality('<='); // eslint-disable-line no-use-before-define
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lte(y);
         } else if (x.isDate && y.isDate) {
+          const checkLtEq = checkInequality('<='); // eslint-disable-line no-use-before-define
           return checkLtEq(x, y, dateTimeComponent.date);
         } else if (x.isDateTime && y.isDateTime) {
           return valueDT(x) <= valueDT(y);
@@ -62,7 +62,7 @@ const operatorMap = {
           return valueT(x) <= valueT(y);
         } else if (x.isDtd && y.isDtd) {
           return valueDTD(x) <= valueDTD(y);
-        } else if (x.isDtd && y.isYmd) {
+        } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) <= valueYMD(y);
         }
         throw new Error(`${typeof x} <= ${typeof y} : operation unsupported for one or more operands types`);
@@ -75,10 +75,10 @@ const operatorMap = {
   '>': _.curry((x, y) => {
     try {
       if (typeof x === typeof y || (x && x.type === y && y.type)) {
-        const checkGt = checkInequality('>'); // eslint-disable-line no-use-before-define
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gt(y);
         } else if (x.isDate && y.isDate) {
+          const checkGt = checkInequality('>'); // eslint-disable-line no-use-before-define
           return checkGt(x, y, dateTimeComponent.date);
         } else if (x.isDateTime && y.isDateTime) {
           return valueDT(x) > valueDT(y);
@@ -86,7 +86,7 @@ const operatorMap = {
           return valueT(x) > valueT(y);
         } else if (x.isDtd && y.isDtd) {
           return valueDTD(x) > valueDTD(y);
-        } else if (x.isDtd && y.isYmd) {
+        } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) > valueYMD(y);
         }
         return x > y;
@@ -99,10 +99,10 @@ const operatorMap = {
   '>=': _.curry((x, y) => {
     try {
       if (typeof x === typeof y || (x && x.type === y && y.type)) {
-        const checkGtEq = checkInequality('>='); // eslint-disable-line no-use-before-define
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gte(y);
         } else if (x.isDate && y.isDate) {
+          const checkGtEq = checkInequality('>='); // eslint-disable-line no-use-before-define
           return checkGtEq(x, y, dateTimeComponent.date);
         } else if (x.isDateTime && y.isDateTime) {
           return valueDT(x) >= valueDT(y);
@@ -110,7 +110,7 @@ const operatorMap = {
           return valueT(x) >= valueT(y);
         } else if (x.isDtd && y.isDtd) {
           return valueDTD(x) >= valueDTD(y);
-        } else if (x.isDtd && y.isYmd) {
+        } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) >= valueYMD(y);
         }
         return x >= y;
@@ -133,7 +133,7 @@ const operatorMap = {
           return checkEquality(x, y, dateTimeComponent.time); // eslint-disable-line no-use-before-define
         } else if (x.isDtd && y.isDtd) {
           return valueDTD(x) === valueDTD(y);
-        } else if (x.isDtd && y.isYmd) {
+        } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) === valueYMD(y);
         }
         // "===" cannot be used as FEEL grammar suggests use of "=="
@@ -146,10 +146,7 @@ const operatorMap = {
   }),
   '!=': _.curry((x, y) => {
     try {
-      if (typeof x === 'number' && typeof y === 'number') {
-        return !(Big(x).eq(y));
-      }
-      return x != y; // eslint-disable-line eqeqeq
+      return !(operatorMap['=='](x, y));
     } catch (err) {
       throw err;
     }

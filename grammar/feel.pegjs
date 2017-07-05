@@ -30,7 +30,7 @@ TxtExpi
 			return expr;
 		}
 	/ Name
-    / Literal
+  / Literal
 	/ SimplePositiveUnaryTest
 
 //Name Start
@@ -67,7 +67,7 @@ NamePart
 Name
     = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
-            return new ast.NameNode(buildList(head,tail,0),location());
+            return new ast.NameNode(buildName(head,tail,0),location());
         }
 
 //Name End
@@ -136,17 +136,12 @@ StringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
   / LineContinuation
 
-DateTimeSymbol
-  = $DateToken
-  / $TimeToken
-  / $DateAndTimeToken
-  / $DurationToken
-
 DateTimeLiteral
-  = head:DateTimeSymbol "(" tail:StringLiteral ")"
-      {
-          return new ast.LiteralNode(parseDateTimeLiteral(head,tail),location());
-      }
+  = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
+    {
+        return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location());
+    }
+
 
 //Literal End
 
@@ -545,8 +540,17 @@ ContextEntries
 
 ReservedWord
   = Keyword
+  / DateTimeKeyword
   / NullLiteral
   / BooleanLiteral
+
+DateTimeKeyword
+  = "date and time"               !NamePartChar
+  / "time"                        !NamePartChar
+  / "date"                        !NamePartChar
+  / "duration"                    !NamePartChar
+  / "years and months duration"   !NamePartChar
+  / "days and time duration"      !NamePartChar
 
 Keyword
     = TrueToken
@@ -568,10 +572,6 @@ Keyword
     / BetweenToken
     / FunctionToken
     / ExternalToken
-    / DateToken
-    / TimeToken
-    / DateAndTimeToken
-    / DurationToken
 
 LineContinuation
   = "\\" LineTerminatorSequence { return ""; }
@@ -625,9 +625,5 @@ BetweenToken    =   "between"                           !NamePartChar
 InstanceOfToken =   "instanceof"                        !NamePartChar
 FunctionToken   =   "function"                          !NamePartChar
 ExternalToken   =   "external"                          !NamePartChar
-DateToken       =   "date"                              !NamePartChar
-TimeToken       =   "time"                              !NamePartChar
-DateAndTimeToken=   "dateandtime"                       !NamePartChar
-DurationToken   =   "duration"                          !NamePartChar
 
 //Tokens and Whitespace End

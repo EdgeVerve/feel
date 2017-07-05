@@ -92,7 +92,7 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
-    it('Successfully compare dates successfully', function(done) {
+    it('Successfully compare dates with ">"', function(done) {
         var text = 'date("2012-12-25") > date("2012-12-24")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
@@ -101,12 +101,167 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
-    it('Successfully compare dateandtime successfully', function(done) {
-        var text = 'dateandtime("2012-12-24T23:59:00") < dateandtime("2012-12-25T00:00:00")';
+    it('Successfully compare dates with ">="', function(done) {
+        var text = 'date("2012-12-25") >= date("2012-12-24")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
             expect(result).to.be.true;
             done();
         }).catch(err => done(err));
     });
+
+
+    it('Successfully compare date and time with "<"', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") < date and time("2012-12-25T00:00:00")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare date and time with "<="', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") <= date and time("2012-12-25T00:00:00")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare time successfully with ">" accross time zones', function(done) {
+        var text = 'time("T23:59:00+05:30") > time("T23:59:00+06:30")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+     it('Successfully compare time successfully with ">=" accross time zones', function(done) {
+        var text = 'time("T23:59:00+05:30") >= time("T23:59:00+06:30")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare date successfully with ">"', function(done) {
+        var text = 'date("2012-11-10") > date("2011-10-09")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare date successfully with ">="', function(done) {
+        var text = 'date("2012-11-10") >= date("2011-10-09")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression', function(done) {
+        var text = 'date("2012-12-25") - date("2012-12-24") = duration("P1D")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression with date and time as argument to date function', function(done) {
+        var text = 'date(date and time("2012-12-25T11:00:00Z")) = date("2012-12-25")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using date with multiple args and date with string arg', function(done) {
+        var text = 'date(2012, 12, 25) = date("2012-12-25")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using date and time with string arg and date and time with date and time parts', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") = date and time(date("2012-12-24"),time("T23:59:00"))';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using addition of date and time and duration', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") + duration("PT1M") = date and time("2012-12-25T00:00:00")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using addition of time and duration with time defined in IANA tz format', function(done) {
+        var text = 'time("23:59:00z") + duration("PT2M") = time("00:01:00@Etc/UTC")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using time from date and time and time', function(done) {
+        var text = 'time(date and time("2012-12-25T11:00:00Z")) = time("11:00:00Z")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using difference of date and time and duration', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") - date and time("2012-12-22T03:45:00") = duration("P2DT20H14M")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using durations', function(done) {
+        var text = 'duration("P2Y2M") = duration("P26M")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using ymd duration between two dates and duration', function(done) {
+        var text = 'years and months duration(date("2011-12-22"), date("2013-08-24")) = duration("P1Y8M")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully parse and build equality expression using date and time in a "in" comparision expression', function(done) {
+        var text = 'date and time("2017-04-12T11:45:00Z") in [date and time("2017-04-12T11:30:00Z")..date and time("2017-04-12T12:45:00Z")]';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
 });

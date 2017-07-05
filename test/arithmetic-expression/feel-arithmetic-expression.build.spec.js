@@ -136,13 +136,95 @@ describe(chalk.blue('Arithmetic expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
-    it('should add years and months duration addition to dateandtime and return a dateandtime', function(done) {
-        var text = 'dateandtime("2012-12-24T23:59:00") + duration("P1Y")';
+    it('should add years and months duration addition to date and time and return a date and time', function(done) {
+        var text = 'date and time("2012-12-24T23:59:00") + duration("P1Y")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
             expect(result.isDateTime).to.be.true;
             expect(result.year).to.equal(2013);
             done();
         }).catch(err => done(err));
+    });
+
+    it('should multiply years and months duration with number and return a years and months duration', function(done) {
+      var text = 'duration("P1Y5M") * 5';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.years).to.equal(7);
+          expect(result.months).to.equal(1);
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should multiply days and time duration with number and return a days and time duration', function(done) {
+      var text = 'duration("P5DT12H20M40S") * 5';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.days).to.equal(27);
+          expect(result.hours).to.equal(13);
+          expect(result.minutes).to.equal(43);
+          expect(result.seconds).to.equal(20);
+          done();
+      }).catch(err => done(err));
+    });
+
+     it('should multiply years and months duration with number and return a years and months duration', function(done) {
+      var text = 'duration("P1Y5M") * 5';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.years).to.equal(7);
+          expect(result.months).to.equal(1);
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should divide days and time duration with number and return a null when the number is 0', function(done) {
+      var text = 'duration("P5DT12H20M40S") / 0';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result).to.be.null;
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should divide days and time duration with number and return a days and time duration', function(done) {
+      var text = 'duration("P5DT12H20M40S") / 5';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.days).to.equal(1);
+          expect(result.hours).to.equal(2);
+          expect(result.minutes).to.equal(28);
+          expect(result.seconds).to.equal(8);
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should divide years and months duration with number and return a null when the number is 0', function(done) {
+      var text = 'duration("P1Y5M") / 0';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result).to.be.null;
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should divide years and months duration with number and return a years and months duration', function(done) {
+      var text = 'duration("P5Y5M") / 5';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.years).to.equal(1);
+          expect(result.months).to.equal(1);
+          done();
+      }).catch(err => done(err));
+    });
+
+    it('should divide number with years and months duration and return a years and months duration', function(done) {
+      var text = '5 / duration("P5Y5M")';
+      var parsedGrammar = FEEL.parse(text);
+      parsedGrammar.build().then(result => {
+          expect(result.years).to.equal(1);
+          expect(result.months).to.equal(1);
+          done();
+      }).catch(err => done(err));
     });
 });

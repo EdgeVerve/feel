@@ -25,7 +25,7 @@ e.g. : date and time("2012-12-24T23:59:00") + duration("PT1M") = date and time("
 
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { date_time_IANA_tz, types, properties } = require('./meta');
+const { defaultTz, date_time_IANA_tz, types, properties } = require('../../helper/meta');
 
 const { year, month, day, hour, minute, second, time_offset, timezone } = properties;
 const props = Object.assign({}, { year, month, day, hour, minute, second, time_offset, timezone, type: types.date_and_time, isDateTime: true });
@@ -37,33 +37,40 @@ const parseIANATz = (str) => {
     if (dateTime && timeZone) {
       try {
         const dt = moment(dateTime).tz(timeZone);
-        return dt;
+        if (dt.isValid()) {
+          return dt;
+        }
+        throw new Error('Invalid date and time in IANA tz format. Please check the input format');
       } catch (err) {
-        return err;
+        throw err;
       }
     }
-    return new Error(`Error parsing IANA format input. One or more parts are missing. DateTimePart : ${dateTime} TimeZonePart : ${timeZone}`);
+    throw new Error(`Error parsing IANA format input. One or more parts are missing. DateTimePart : ${dateTime} TimeZonePart : ${timeZone}`);
   }
   return match;
 };
 
-const dateandtime = (...args) => { // eslint-disable-line camelcase
+const dateandtime = (...args) => {
   let dt;
   if (args.length === 1) {
     const arg = args[0];
-    dt = parseIANATz(arg) || moment(arg);
-    dt = dt.isValid() ? dt : new Error('Invalid date_and_time. This is usually caused by an invalid format. Please check the input format');
+    try {
+      dt = parseIANATz(arg) || moment(arg);
+      if (!dt.isValid()) {
+        throw new Error('Invalid date_and_time. This is usually caused by an invalid format. Please check the input format');
+      }
+    } catch (err) {
+      throw err;
+    }
   } else if (args.length === 2) {
     const [date, time] = args;
     if (date && date.isDate && time && time.isTime) {
-      const year = date.year;
-      const month = date.month;
-      const day = date.day;
-      const hour = time.hour;
-      const minute = time.minute;
-      const second = time.second;
-      dt = moment({ year, month, day, hour, minute, second });
-      dt = dt.isValid() ? dt : new Error('Invalid date_and_time');
+      const { year, month, day } = date;
+      const { hour, minute, second } = time;
+      dt = moment.tz({ year, month, day, hour, minute, second }, defaultTz);
+      if (!dt.isValid()) {
+        throw new Error('Invalid date_and_time');
+      }
     } else {
       throw new Error('Type Mismatch - args specified with date_and_time are expected to be of type date and time respectively. Please check the arguments order or type');
     }
@@ -71,11 +78,15 @@ const dateandtime = (...args) => { // eslint-disable-line camelcase
     throw new Error('Invalid number of arguments specified with "date_and_time" in-built function');
   }
 
-  if (dt instanceof Error) {
-    throw dt;
-  } else {
-    return addProperties(dt, props);
+  try {
+    dt = dt.tz(defaultTz);
+    if (dt.isValid()) {
+      return addProperties(dt, props);
+    }
+    throw new Error('Please check the defaultTz property in the metadata. Possible invalid timezone id encountered');
+  } catch (err) {
+    throw err;
   }
 };
 
-module.exports = { dateandtime }; // eslint-disable-line camelcase
+module.exports = { 'date and time': dateandtime };

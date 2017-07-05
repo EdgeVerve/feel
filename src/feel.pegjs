@@ -13,12 +13,12 @@ const ast = require('./feel-ast');
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
 
-// require all the built-in functions
-// used to parse date
-const utility = require('../utils/built-in-functions');
-
 function extractOptional(optional, index) {
   return optional ? optional[index] : null;
+}
+
+function flatten(list) {
+  return list.filter( d => d && d.length).reduce((recur, next) => [].concat.call(recur, next), []);
 }
 
 function extractList(list, index) {
@@ -28,6 +28,11 @@ function extractList(list, index) {
 function buildList(head, tail, index) {
   return [head].concat(extractList(tail, index));
 }
+
+function buildName(head, tail, index) {
+  return tail && tail.length ? [...head, ...flatten(tail[index])].join("") : head.join("");
+}
+
 
 function buildBinaryExpression(head, tail, loc) {
   return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc), head);
@@ -52,9 +57,6 @@ function buildLogicalExpression(head, tail, loc) {
   }, head);
 }
 
-function parseDateTimeLiteral(head, tail) {
-  return utility[head](tail.value);
-}
 
  }
 Start
@@ -89,7 +91,7 @@ TxtExpi
 			return expr;
 		}
 	/ Name
-    / Literal
+  / Literal
 	/ SimplePositiveUnaryTest
 
 //Name Start
@@ -126,7 +128,7 @@ NamePart
 Name
     = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
-            return new ast.NameNode(buildList(head,tail,0),location());
+            return new ast.NameNode(buildName(head,tail,0),location());
         }
 
 //Name End
@@ -195,17 +197,12 @@ StringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
   / LineContinuation
 
-DateTimeSymbol
-  = $DateToken
-  / $TimeToken
-  / $DateAndTimeToken
-  / $DurationToken
-
 DateTimeLiteral
-  = head:DateTimeSymbol "(" tail:StringLiteral ")"
-      {
-          return new ast.LiteralNode(parseDateTimeLiteral(head,tail),location());
-      }
+  = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
+    {
+        return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location());
+    }
+
 
 //Literal End
 
@@ -604,8 +601,17 @@ ContextEntries
 
 ReservedWord
   = Keyword
+  / DateTimeKeyword
   / NullLiteral
   / BooleanLiteral
+
+DateTimeKeyword
+  = "date and time"               !NamePartChar
+  / "time"                        !NamePartChar
+  / "date"                        !NamePartChar
+  / "duration"                    !NamePartChar
+  / "years and months duration"   !NamePartChar
+  / "days and time duration"      !NamePartChar
 
 Keyword
     = TrueToken
@@ -627,10 +633,6 @@ Keyword
     / BetweenToken
     / FunctionToken
     / ExternalToken
-    / DateToken
-    / TimeToken
-    / DateAndTimeToken
-    / DurationToken
 
 LineContinuation
   = "\\" LineTerminatorSequence { return ""; }
@@ -684,9 +686,5 @@ BetweenToken    =   "between"                           !NamePartChar
 InstanceOfToken =   "instanceof"                        !NamePartChar
 FunctionToken   =   "function"                          !NamePartChar
 ExternalToken   =   "external"                          !NamePartChar
-DateToken       =   "date"                              !NamePartChar
-TimeToken       =   "time"                              !NamePartChar
-DateAndTimeToken=   "dateandtime"                       !NamePartChar
-DurationToken   =   "duration"                          !NamePartChar
 
 //Tokens and Whitespace End
