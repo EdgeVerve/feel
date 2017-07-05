@@ -3,6 +3,5 @@
 /dist/*
 gulpfile.js
 /_archive/*
-/utils/gulp-utils/*
+/utils/dev/*
 dummy.js
-

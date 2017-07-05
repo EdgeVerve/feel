@@ -7,9 +7,8 @@
 
 
 const _ = require('lodash');
-const fnGen = require('../utils/fn-generator');
-const addKwargs = require('../utils/add-kwargs');
-const fnNot = require('../utils/fn-negation');
+const fnGen = require('../utils/helper/fn-generator');
+const addKwargs = require('../utils/helper/add-kwargs');
 const builtInFns = require('../utils/built-in-functions');
 
 module.exports = function (ast) {
@@ -74,7 +73,7 @@ module.exports = function (ast) {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
           if (this.not) {
-            const negResults = results.map(result => fnNot(result));
+            const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
           } else {
             resolve(x => results.reduce((result, next) => result || next(x), false));
@@ -91,7 +90,7 @@ module.exports = function (ast) {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
           if (this.not) {
-            const negResults = results.map(result => fnNot(result));
+            const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
           } else {
             resolve(x => results.reduce((result, next) => result || next(x), false));
@@ -142,8 +141,7 @@ module.exports = function (ast) {
   // _fetch is used to return the name string or
   // the value extracted from context or kwargs using the name string
   ast.NameNode.prototype.build = function (args, _fetch = true) {
-    const nameCharConcat = this.nameChars.reduce((result, next) => Array.prototype.concat.call(result, next), []);
-    const name = String.prototype.concat.apply('', nameCharConcat);
+    const name = this.nameChars;
     if (!_fetch) {
       return Promise.resolve(name);
     }
@@ -157,6 +155,18 @@ module.exports = function (ast) {
 
   ast.LiteralNode.prototype.build = function () {
     return Promise.resolve(this.value);
+  };
+
+  ast.DateTimeLiteralNode.prototype.build = function (args) {
+    const fn = args.context[this.symbol];
+    return new Promise((resolve, reject) => {
+      Promise.all(this.params.map(d => d.build(args))).then((params) => {
+        const result = fn(...params);
+        resolve(result);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
   };
 
   // Invoking function defined as boxed expression in the context entry
@@ -368,7 +378,7 @@ module.exports = function (ast) {
       } else if (operator === 'in') {
         const processExpr = (operand) => {
           this.expr_2 = Array.isArray(this.expr_2) ? this.expr_2 : [this.expr_2];
-          return Promise.all(this.expr_2.map(d => d.build()))
+          return Promise.all(this.expr_2.map(d => d.build(args)))
           .then(tests => tests.map(test => test(operand)).reduce((accu, next) => accu || next, false));
         };
         this.expr_1.build(args)
