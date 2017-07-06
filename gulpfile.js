@@ -120,7 +120,7 @@ gulp.task('test-ci', ['pre-test-ci'], function () {
 });
 
 gulp.task('test-ci-html', ['pre-test-ci'], function () {
-  return gulp.src(['test/*.js'])
+  return gulp.src(['test/**/*.spec.js'])
     .pipe(mocha())
     .pipe(istanbul.writeReports({
       dir: './coverage',
