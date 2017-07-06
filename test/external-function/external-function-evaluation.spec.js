@@ -8,12 +8,6 @@ const chalk = require('chalk');
 const chai = require('chai');
 const expect = chai.expect;
 const FEEL = require('../../dist/feel');
-const DTable = require('../../utils/helper/decision-table');
-const DTree = require('../../utils/helper/decision-tree');
-const xlArr = ['RiskCategoryEvaluation.xlsx','LoanApplicationValidity.xlsx', 'BillCalculation.xlsx'];
-let decision_table = {};
-let csv = {};
-let i = 0;
 
 describe(chalk.blue('External function definition and evaluation'), () => {
 
@@ -40,4 +34,22 @@ describe(chalk.blue('External function definition and evaluation'), () => {
             done(err);
         });
     });
+
+    it('External Function - Evaluation', (done) => {
+        const context = '{ foo : function(a, b) external { js : {signature : "setTimeout(done, b, null, a)"}}}';
+        const text = 'foo(a,b)'
+        const parsedContext = FEEL.parse(context);
+        const parsedText = FEEL.parse(text);
+        const payload = {a: 5, b: 1000};
+
+        parsedContext.build(payload).then((ctx) => {
+            return parsedText.build(Object.assign({}, ctx, payload));
+        }).then((result) => {
+            expect(result).to.equal(payload.a);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+
 });
