@@ -122,7 +122,7 @@ const operatorMap = {
   }),
   '==': _.curry((x, y) => {
     try {
-      if (typeof x === typeof y || (x && x.type === y && y.type)) {
+      if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).eq(y);
         } else if (x.isDate && y.isDate) {
@@ -139,7 +139,7 @@ const operatorMap = {
         // "===" cannot be used as FEEL grammar suggests use of "=="
         return x == y; // eslint-disable-line eqeqeq
       }
-      throw new Error(`${typeof x} = ${typeof y} : operation unsupported for one or more operands types`);
+      return false;
     } catch (err) {
       throw err;
     }
