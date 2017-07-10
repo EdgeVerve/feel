@@ -110,9 +110,99 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
         }).catch(err => done(err));
     });
 
+    it('Successfully compare string "<"', function(done) {
+        var text = '"XYZ" < "ABC"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.false;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare string "<="', function(done) {
+        var text = '"XYZ" <= "ABC"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.false;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare string ">"', function(done) {
+        var text = '"XYZ" > "ABC"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare string ">="', function(done) {
+        var text = '"XYZ" >= "ABC"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare string "="', function(done) {
+        var text = '"XYZ" = "XYZ"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+
+    it('Successfully compare string "!="', function(done) {
+        var text = '"XYZ" != "XYZ"';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.false;
+            done();
+        }).catch(err => done(err));
+    });
 
     it('Successfully compare date and time with "<"', function(done) {
         var text = 'date and time("2012-12-24T23:59:00") < date and time("2012-12-25T00:00:00")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare date with "<"', function(done) {
+        var text = 'date("2012-12-24") < date("2012-12-25")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare time with "<"', function(done) {
+        var text = 'time("T00:00:00Z") < time("T23:59:00Z")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare days and time duration with "<"', function(done) {
+        var text = 'duration("P1D") < duration("P2D")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare years and months duration with "<"', function(done) {
+        var text = 'duration("P2Y") < duration("P26M")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
             expect(result).to.be.true;
