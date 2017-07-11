@@ -26,14 +26,19 @@ const relationCb = (resolve, reject) => (err, res) => {
 
 const lbRelation = (fnStr, data) => {
   const fnSeries = fnStr.split('.');
-  const fnArray = fnSeries.slice(1, fnSeries.length - 1).map(str => str.substring(0, str.length - 2));
+  const fnArray = fnSeries.map((str) => {
+    if (str.includes(')')) {
+      return str.substring(0, str.length - 2);
+    }
+    return null;
+  }).filter(d => Boolean(d));
   const prop = fnSeries[fnSeries.length - 1].includes(')') ? '' : fnSeries[fnSeries.length - 1];
   const options = data.options;
 
   return new Promise((resolve, reject) => {
     // eslint-disable-next-line no-underscore-dangle
     preparePayload(options.modelName, data).then(payload => fnArray.reduce((promise, fn) => promise.then(parent => new Promise((resolve, reject) => {
-      parent[fn](options, relationCb(resolve, reject));
+      parent[fn]({}, options, relationCb(resolve, reject));
     })), Promise.resolve(payload))).then((res) => {
       let result = res || {};
       result = prop ? result[prop] : result;
