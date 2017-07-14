@@ -55,13 +55,17 @@ const date = (...args) => {
     const arg = args[0];
     if (typeof arg === 'string') {
       try {
-        d = parseDate(arg);
+        d = arg === '' ? moment.tz(UTC) : parseDate(arg);
       } catch (err) {
         throw err;
       }
-    } else if (typeof arg === 'object' && arg.isDateTime) {
-      const { year, month, day } = arg;
-      d = moment.tz({ year, month, day, hour: 0, minute: 0, second: 0 }, UTC);
+    } else if (typeof arg === 'object') {
+      if (arg instanceof Date) {
+        d = moment(arg);
+      } else if (arg.isDateTime) {
+        const { year, month, day } = arg;
+        d = moment.tz({ year, month, day, hour: 0, minute: 0, second: 0 }, UTC);
+      }
       if (!d.isValid()) {
         throw new Error('Invalid date. Parsing error while attempting to create date from date and time');
       }

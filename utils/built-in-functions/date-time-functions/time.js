@@ -75,15 +75,19 @@ const time = (...args) => {
     const arg = args[0];
     if (typeof arg === 'string') {
       try {
-        t = parseIANATz(arg) || parseTime(arg);
+        t = arg === '' ? moment() : parseIANATz(arg) || parseTime(arg);
       } catch (err) {
         throw err;
       }
     } else if (typeof arg === 'object' && arg.isDateTime) {
-      const hour = arg.hour;
-      const minute = arg.minute;
-      const second = arg.second;
-      t = moment.tz({ hour, minute, second }, defaultTz);
+      if (arg instanceof Date) {
+        t = moment(arg);
+      } else if (arg.isDateTime) {
+        const hour = arg.hour;
+        const minute = arg.minute;
+        const second = arg.second;
+        t = moment.tz({ hour, minute, second }, defaultTz);
+      }
       if (!t.isValid()) {
         throw new Error('Invalid time. Parsing error while attempting to extract time from date and time.');
       }
