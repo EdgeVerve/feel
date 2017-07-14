@@ -401,22 +401,26 @@ module.exports = function (ast) {
   ast.FilterExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       this.expr.build(args).then((result) => {
-        let kwargsNew = {};
-        if (Array.isArray(result)) {
-          Promise.all(result.map((d) => {
-            if (typeof d === 'object') {
-              kwargsNew = addKwargs(args, d);
-            } else {
-              kwargsNew = addKwargs(args, {
-                item: d,
-              });
-            }
-            return this.filterExpr.build(kwargsNew);
-          })).then((booleanValues) => {
-            resolve(result.filter((d, i) => booleanValues[i]));
-          }).catch(err => reject(err));
+        if (this.filterExpr instanceof ast.LiteralNode) {
+          this.filterExpr.build(args).then(value => resolve(result[value]));
         } else {
-          reject('filter can be applied only on a collection');
+          let kwargsNew = {};
+          if (Array.isArray(result)) {
+            Promise.all(result.map((d) => {
+              if (typeof d === 'object') {
+                kwargsNew = addKwargs(args, d);
+              } else {
+                kwargsNew = addKwargs(args, {
+                  item: d,
+                });
+              }
+              return this.filterExpr.build(kwargsNew);
+            })).then((booleanValues) => {
+              resolve(result.filter((d, i) => booleanValues[i]));
+            }).catch(err => reject(err));
+          } else {
+            reject('filter can be applied only on a collection');
+          }
         }
       }).catch(err => reject(err));
     });
@@ -433,6 +437,7 @@ module.exports = function (ast) {
   ast.ListNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
+        result.isList = true; // eslint-disable-line no-param-reassign
         resolve(result);
       }).catch(err => reject(err));
     });
@@ -440,18 +445,17 @@ module.exports = function (ast) {
 
   ast.FunctionDefinitionNode.prototype.build = function () {
     return new Promise((resolve, reject) => {
+      const fnDfn = { isFunction: true };
       if (this.formalParams && this.formalParams.length) {
         Promise.all(this.formalParams.map(d => d.build(null, false))).then((results) => {
-          resolve({
-            fn: this.body,
-            params: results,
-          });
+          fnDfn.fn = this.body;
+          fnDfn.params = results;
+          resolve(fnDfn);
         }).catch(err => reject(err));
       } else {
-        resolve({
-          fn: this.body,
-          params: null,
-        });
+        fnDfn.fn = this.body;
+        fnDfn.params = null;
+        resolve(fnDfn);
       }
     });
   };

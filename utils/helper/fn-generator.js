@@ -26,9 +26,11 @@ const dateTimeComponent = {
 const operatorMap = {
   '<': _.curry((x, y) => {
     try {
-      if (typeof x === typeof y || (x && x.type === y && y.type)) {
+      if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lt(y);
+        } else if (typeof x === 'string' && typeof y === 'string') {
+          return x < y;
         } else if (x.isDate && y.isDate) {
           const checkLt = checkInequality('<'); // eslint-disable-line no-use-before-define
           return checkLt(x, y, dateTimeComponent.date);
@@ -41,18 +43,20 @@ const operatorMap = {
         } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) < valueYMD(y);
         }
-        return x < y;
+        throw new Error(`${typeof x} < ${typeof y} : operation unsupported for one or more operands types`);
       }
-      throw new Error(`${typeof x} < ${typeof y} : operation unsupported for one or more operands types`);
+      return false;
     } catch (err) {
       throw err;
     }
   }),
   '<=': _.curry((x, y) => {
     try {
-      if (typeof x === typeof y || (x && x.type === y && y.type)) {
+      if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lte(y);
+        } else if (typeof x === 'string' && typeof y === 'string') {
+          return x <= y;
         } else if (x.isDate && y.isDate) {
           const checkLtEq = checkInequality('<='); // eslint-disable-line no-use-before-define
           return checkLtEq(x, y, dateTimeComponent.date);
@@ -74,9 +78,11 @@ const operatorMap = {
   }),
   '>': _.curry((x, y) => {
     try {
-      if (typeof x === typeof y || (x && x.type === y && y.type)) {
+      if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gt(y);
+        } else if (typeof x === 'string' && typeof y === 'string') {
+          return x > y;
         } else if (x.isDate && y.isDate) {
           const checkGt = checkInequality('>'); // eslint-disable-line no-use-before-define
           return checkGt(x, y, dateTimeComponent.date);
@@ -89,18 +95,20 @@ const operatorMap = {
         } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) > valueYMD(y);
         }
-        return x > y;
+        throw new Error(`${typeof x} > ${typeof y} : operation unsupported for one or more operands types`);
       }
-      throw new Error(`${typeof x} > ${typeof y} : operation unsupported for one or more operands types`);
+      return false;
     } catch (err) {
       throw err;
     }
   }),
   '>=': _.curry((x, y) => {
     try {
-      if (typeof x === typeof y || (x && x.type === y && y.type)) {
+      if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gte(y);
+        } else if (typeof x === 'string' && typeof y === 'string') {
+          return x >= y;
         } else if (x.isDate && y.isDate) {
           const checkGtEq = checkInequality('>='); // eslint-disable-line no-use-before-define
           return checkGtEq(x, y, dateTimeComponent.date);
@@ -113,9 +121,9 @@ const operatorMap = {
         } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) >= valueYMD(y);
         }
-        return x >= y;
+        throw new Error(`${typeof x} >= ${typeof y} : operation unsupported for one or more operands types`);
       }
-      throw new Error(`${typeof x} >= ${typeof y} : operation unsupported for one or more operands types`);
+      return false;
     } catch (err) {
       throw err;
     }
@@ -125,6 +133,10 @@ const operatorMap = {
       if (typeof x === typeof y) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).eq(y);
+        } else if (typeof x === 'string' && typeof y === 'string') {
+          return x === y;
+        } else if (typeof x === 'boolean' && typeof y === 'boolean') {
+          return x === y;
         } else if (x.isDate && y.isDate) {
           return checkEquality(x, y, dateTimeComponent.date); // eslint-disable-line no-use-before-define
         } else if (x.isDateTime && y.isDateTime) {
@@ -135,9 +147,10 @@ const operatorMap = {
           return valueDTD(x) === valueDTD(y);
         } else if (x.isYmd && y.isYmd) {
           return valueYMD(x) === valueYMD(y);
+        } else if (x.isList && y.isList) {
+          return _.isEqual(x, y);
         }
-        // "===" cannot be used as FEEL grammar suggests use of "=="
-        return x == y; // eslint-disable-line eqeqeq
+        throw new Error(`${typeof x} = ${typeof y} : operation unsupported for one or more operands types`);
       }
       return false;
     } catch (err) {
@@ -243,12 +256,6 @@ const operatorMap = {
   '**': _.curry((x, y) => { // eslint-disable-line consistent-return
     if (typeof x === 'number' && typeof y === 'number') {
       return Number(Big(x).pow(y));
-    } else if (x instanceof Date && y instanceof Date) {
-      // TO-DO - Date not implemented
-    } else if (x instanceof Date && typeof y === 'number') {
-      // TO-DO - Date not implemented
-    } else if (typeof x === 'number' && y instanceof Date) {
-      // TO-DO - Date not implemented
     }
     throw new Error(`${typeof x} ** ${typeof y} : operation unsupported for one or more operands types`);
   }),

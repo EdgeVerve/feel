@@ -54,13 +54,17 @@ const dateandtime = (...args) => {
   let dt;
   if (args.length === 1) {
     const arg = args[0];
-    try {
-      dt = parseIANATz(arg) || moment(arg);
-      if (!dt.isValid()) {
-        throw new Error('Invalid date_and_time. This is usually caused by an invalid format. Please check the input format');
+    if (typeof arg === 'string') {
+      try {
+        dt = arg === '' ? moment() : parseIANATz(arg) || moment(arg);
+      } catch (err) {
+        throw err;
       }
-    } catch (err) {
-      throw err;
+    } else if (arg instanceof Date) {
+      dt = moment(arg);
+    }
+    if (!dt.isValid()) {
+      throw new Error('Invalid date_and_time. This is usually caused by an invalid format. Please check the input format');
     }
   } else if (args.length === 2) {
     const [date, time] = args;

@@ -198,4 +198,69 @@ describe(chalk.blue('Random list of rules'), function () {
             done(e);
         }
     })
+
+    it('Successfully parses and executes if expression using now, date string', function (done) {
+        const payload = {dob : '1988-06-10'}
+        const context = '{now: date(""), y: date(dob), age: (years and months duration(y, now)).years}'
+        const text = 'if age > 25 then "Legal" else "Illegal"';
+        try{
+            const parsedContext = FEEL.parse(context);
+            const parsedText = FEEL.parse(text);
+
+            parsedContext.build(payload).then(ctx => {
+              const c = Object.assign({}, payload, ctx);
+              return parsedText.build(c);
+            }).then((result) => {
+                expect(result).to.equal('Legal');
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it('Successfully parses and executes filter expression on a list', function (done) {
+        const context = '{ list : [1,2,3,4,5]}'
+        const text = 'list[item > 3]';
+        try{
+            const parsedContext = FEEL.parse(context);
+            const parsedText = FEEL.parse(text);
+
+            parsedContext.build().then(ctx => {
+              return parsedText.build(ctx);
+            }).then((result) => {
+                expect(result).to.eql([4,5]);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it('Successfully parses and executes filter expression with list semantics to find an item at a particular index', function (done) {
+        const context = '{ list : [1,2,3,4,5]}'
+        const text = 'list[3]';
+        try{
+            const parsedContext = FEEL.parse(context);
+            const parsedText = FEEL.parse(text);
+
+            parsedContext.build().then(ctx => {
+              return parsedText.build(ctx);
+            }).then((result) => {
+                expect(result).to.equal(4);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
 });
