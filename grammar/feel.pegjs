@@ -65,7 +65,8 @@ NamePart
         }
 
 Name
-    = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+    = "time zone"
+    / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
             return new ast.NameNode(buildName(head,tail,0),location());
         }

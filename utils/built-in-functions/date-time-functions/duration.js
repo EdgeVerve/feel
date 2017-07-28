@@ -28,12 +28,12 @@ const addProperties = require('./add-properties');
 const { ymd_ISO_8601, dtd_ISO_8601, types, properties } = require('../../helper/meta');
 
 const { years, months, days, hours, minutes, seconds } = properties;
-const dtdProps = Object.assign({}, { days, hours, minutes, seconds, type: types.dtd, isDtd: () => true, isDuration: () => true });
-const ymdProps = Object.assign({}, { years, months, type: types.ymd, isYmd: () => true, isDuration: () => true });
+const dtdProps = Object.assign({}, { days, hours, minutes, seconds, type: types.dtd, isDtd: true, isDuration: true });
+const ymdProps = Object.assign({}, { years, months, type: types.ymd, isYmd: true, isDuration: true });
 
 const isDateTime = args => args.reduce((recur, next) => recur && (next.isDateTime || next.isDate), true);
 
-const daysandtimeduration = (...args) => { // eslint-disable-line camelcase
+const daysAndTimeDuration = (...args) => {
   let dtd;
   if (args.length === 1) {
     dtd = moment.duration(args[0]);
@@ -52,7 +52,7 @@ const daysandtimeduration = (...args) => { // eslint-disable-line camelcase
   }
 };
 
-const yearsandmonthsduration = (...args) => { // eslint-disable-line camelcase
+const yearsAndMonthsDuration = (...args) => {
   let ymd;
   if (args.length === 1) {
     ymd = moment.duration(args[0]);
@@ -79,13 +79,13 @@ const duration = (arg) => {
   if (typeof arg === 'string') {
     if (patternMatch(arg, ymd_ISO_8601)) {
       try {
-        return yearsandmonthsduration(arg);
+        return yearsAndMonthsDuration(arg);
       } catch (err) {
         throw err;
       }
     } else if (patternMatch(arg, dtd_ISO_8601)) {
       try {
-        return daysandtimeduration(arg);
+        return daysAndTimeDuration(arg);
       } catch (err) {
         throw err;
       }
@@ -96,4 +96,4 @@ const duration = (arg) => {
 };
 
 
-module.exports = { duration, 'years and months duration': yearsandmonthsduration, 'days and time duration': daysandtimeduration };
+module.exports = { duration, 'years and months duration': yearsAndMonthsDuration, 'days and time duration': daysAndTimeDuration };

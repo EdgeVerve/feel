@@ -22,13 +22,12 @@ Description : date time string convert "from" to a date and time
 e.g. : date and time("2012-12-24T23:59:00") + duration("PT1M") = date and time("2012-12-25T00:00:00")
 */
 
-
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { defaultTz, date_time_IANA_tz, types, properties } = require('../../helper/meta');
+const { time_ISO_8601, date_ISO_8601, date_time_IANA_tz, types, properties } = require('../../helper/meta');
 
-const { year, month, day, hour, minute, second, time_offset, timezone } = properties;
-const props = Object.assign({}, { year, month, day, hour, minute, second, time_offset, timezone, type: types.date_and_time, isDateTime: true });
+const { year, month, day, hour, minute, second, 'time offset': time_offset, timezone } = properties;
+const props = Object.assign({}, { year, month, day, hour, minute, second, 'time offset': time_offset, timezone, type: types.date_and_time, isDateTime: true });
 
 const parseIANATz = (str) => {
   const match = str.match(date_time_IANA_tz);
@@ -50,18 +49,17 @@ const parseIANATz = (str) => {
   return match;
 };
 
-const dateandtime = (...args) => {
+const dateAndTime = (...args) => {
   let dt;
   if (args.length === 1) {
     const arg = args[0];
-    if (typeof arg === 'string') {
+    const str = arg instanceof Date ? arg.toISOString() : arg;
+    if (typeof str === 'string') {
       try {
-        dt = arg === '' ? moment() : parseIANATz(arg) || moment(arg);
+        dt = str === '' ? moment() : parseIANATz(str) || moment.parseZone(str);
       } catch (err) {
         throw err;
       }
-    } else if (arg instanceof Date) {
-      dt = moment(arg);
     }
     if (!dt.isValid()) {
       throw new Error('Invalid date_and_time. This is usually caused by an invalid format. Please check the input format');
@@ -69,11 +67,11 @@ const dateandtime = (...args) => {
   } else if (args.length === 2) {
     const [date, time] = args;
     if (date && date.isDate && time && time.isTime) {
-      const { year, month, day } = date;
-      const { hour, minute, second } = time;
-      dt = moment.tz({ year, month, day, hour, minute, second }, defaultTz);
+      const datePart = date.format(date_ISO_8601);
+      const timePart = time.format(time_ISO_8601);
+      dt = moment.parseZone(`${datePart}${timePart}`);
       if (!dt.isValid()) {
-        throw new Error('Invalid date_and_time');
+        throw new Error('Invalid date and time. This is usually caused by input type mismatch.');
       }
     } else {
       throw new Error('Type Mismatch - args specified with date_and_time are expected to be of type date and time respectively. Please check the arguments order or type');
@@ -82,15 +80,7 @@ const dateandtime = (...args) => {
     throw new Error('Invalid number of arguments specified with "date_and_time" in-built function');
   }
 
-  try {
-    dt = dt.tz(defaultTz);
-    if (dt.isValid()) {
-      return addProperties(dt, props);
-    }
-    throw new Error('Please check the defaultTz property in the metadata. Possible invalid timezone id encountered');
-  } catch (err) {
-    throw err;
-  }
+  return addProperties(dt, props);
 };
 
-module.exports = { 'date and time': dateandtime };
+module.exports = { 'date and time': dateAndTime };

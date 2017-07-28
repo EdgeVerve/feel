@@ -274,7 +274,7 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
     });
 
     it('Successfully parse and build equality expression using date with multiple args and date with string arg', function(done) {
-        var text = 'date(2012, 12, 25) = date("2012-12-25")';
+        var text = 'date(2012, 11, 25) = date("2012-12-25")';
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
             expect(result).to.be.true;
