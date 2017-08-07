@@ -19,7 +19,9 @@ const parseXLS = (path) => {
   workbook.SheetNames.forEach((sheetName) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
-    csv.push(XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter }));
+    csv.push({
+      [sheetName] : XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter })
+    });
   });
 
   return csv;
@@ -251,8 +253,22 @@ const executeDecisionTable = (id, table, payload, cb) => {
   tree.traverseTree(rootMap[id], payload, cb);
 };
 
+
+var parseCsvToJson = function(csvArr) {
+  return csvArr.reduce( (hash, item) => {
+    var keys = Object.keys(item)
+    hash[keys[0]] = item[keys[0]];
+    return hash;
+  }, {});
+}
+
 module.exports = {
   csv_to_decision_table: createDecisionTable,
   xls_to_csv: parseXLS,
   execute_decision_table: executeDecisionTable,
+  //these are private
+  _ : {
+    parseXLS: parseXLS,
+    parseCsv: parseCsvToJson
+  }
 };
