@@ -65,6 +65,10 @@ const makeContextObject = (csv, modelObject) => {
     context.result = str
 
   }
+  else {
+    //! business model
+
+  }
   context = Object.keys(context).length > 0 ? JSON.stringify(context).replace(/"/g, '').replace(/\\/g, '"') : '';
   return context.length > 0 ? context : null;
 };

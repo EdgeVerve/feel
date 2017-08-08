@@ -39,7 +39,8 @@ describe("Excel reading...(internal stuff)...", function() {
     // boxedExpression = boxedExpression.replace(/(\r\n|\n|\t)/g, '')
     var dto = DTable.csv_to_decision_table(values[0]);
     // debugger;
-    var result = DTable._.makeContext(values[0], dto) + '\n';
+    var result = DTable._.makeContext(values[0], dto)
+      + '\n'; //adding this to avoid problem with editor
     // console.log({a: boxedExpression, b: result})
     fs.writeFileSync('file1.txt', boxedExpression, { encoding: 'utf8'})
     fs.writeFileSync('file2.txt', result, { encoding: 'utf8'})
@@ -55,13 +56,13 @@ describe("Excel reading...(internal stuff)...", function() {
 
     expect(result).to.equal(false)
 
+    result = DTable._.isDecisionTableModel(values[0])
+
+    expect(result).to.equal(true)
   })
 });
 
 describe('Excel workbook parsing...', function() {
-  it('should correctly parse a csv decision table', function(){
-    var json = DTable._.parseXLS(excelWorkbookPath);
-    DTable._.parseCsv(Object.values(json)[0])
-  })
+
 })
 
