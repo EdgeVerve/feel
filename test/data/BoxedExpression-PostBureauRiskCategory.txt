@@ -1,0 +1,6 @@
+{
+  Post Bureau Risk Category,
+  Existing Customer: Applicant,
+  Credit Score: Report. Credit,
+  Application Risk Score: Affordability Model(Applicant, Product). Application Risk Score
+}

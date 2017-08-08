@@ -20,7 +20,7 @@ const parseXLS = (path) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
     csv.push({
-      [sheetName] : XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter })
+      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter }),
     });
   });
 
@@ -31,12 +31,12 @@ const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g
 
 const makeContextObject = (csv, modelObject) => {
   let context = {};
-  csv = csv.split('\n')
-  let outputName = csv[0].substring(0, csv[0].indexOf(delimiter))
+  csv = csv.split('\n');
+  const outputName = csv[0].substring(0, csv[0].indexOf(delimiter));
 
   let i = 1;
 
-  let hasKeys = keys => keys.every(k => k in modelObject)
+  const hasKeys = keys => keys.every(k => k in modelObject);
 
   for (; i < csv.length; i += 1) {
     const arr = csv[i].split(delimiter).filter(String);
@@ -51,26 +51,28 @@ const makeContextObject = (csv, modelObject) => {
     }
   }
 
-  var hitPolicy = csv[i+1].substring(0, csv[i+1].indexOf(delimiter))
+  // var hitPolicy = csv[i+1].substring(0, csv[i+1].indexOf(delimiter))
+
 
   if (hasKeys(['ruleList', 'inputExpressionList'])) {
-    //!decision object
-    var ruleList = modelObject.ruleList.map( r => {
-      return '[' + r.map(m => "'" + m + "'").join(',') + ']'
-    }).join(',')
+    //! decision object
+    const ruleList = modelObject.ruleList.map(r => `[${r.map(m => `'${m}'`).join(',')}]`).join(',');
 
-    var str = `decision table (outputs: \"${outputName}\",input expression list: [${modelObject.inputExpressionList.join(',')}],rule list: [${ruleList}],hit policy: \"${hitPolicy}\")`;
-    str = str.replace(/(\r\n|\n)/g, '')
+    const hitPolicy = modelObject.hitPolicy;
 
-    context.result = str
+    let str = `decision table (outputs: \"${outputName}\",input expression list: [${modelObject.inputExpressionList.join(',')}],rule list: [${ruleList}],hit policy: \"${hitPolicy}\")`;
+    str = str.replace(/(\r\n|\n)/g, '');
 
-  }
-  else {
+    context.result = str;
+  } else {
     //! business model
 
   }
   context = Object.keys(context).length > 0 ? JSON.stringify(context).replace(/"/g, '').replace(/\\/g, '"') : '';
-  return context.length > 0 ? context : null;
+  return {
+    qn: outputName, // fully qualified name
+    contextString: context.length > 0 ? context : '',
+  };
 };
 
 const preparePriorityList = (priorityClass, priorityValues) => {
@@ -278,29 +280,82 @@ const executeDecisionTable = (id, table, payload, cb) => {
 };
 
 
-var parseCsvToJson = function(csvArr) {
-  return csvArr.reduce( (hash, item) => {
-    var keys = Object.keys(item)
+const parseCsvToJson = function (csvArr) {
+  return csvArr.reduce((hash, item) => {
+    const keys = Object.keys(item);
     hash[keys[0]] = item[keys[0]];
     return hash;
   }, {});
-}
+};
 
-var isDecisionTableModel = function(csvString) {
+const isDecisionTableModel = function (csvString) {
   return csvString.indexOf('RuleTable') > -1;
-}
+};
 
-var api;
+const parseWorkbook = function (path) {
+  const { parseXLS, parseCsv, makeContext } = api._;
+
+  jsonCsv = parseCsv(parseXLS(path));
+
+  return generateJsonFEEL(jsonCsv);
+};
+
+var generateJsonFEEL = function (jsonCsvObject) {
+  const jsonFeel = {};
+  const { _: { isDecisionTableModel, makeContext, createBusinessModel } } = api;
+
+  Object.values(jsonCsvObject).reduce((hash, csvString) => {
+    if (isDecisionTableModel(csvString)) {
+      const dto = createDecisionTable(csvString);
+      const ctxObj = makeContext(csvString, dto);
+      hash[ctxObj.qn] = ctxObj.contextString;
+    } else {
+      let mo = createBusinessModel(csvString)
+    }
+    return hash;
+  }, {});
+};
+
+var generateContextStringFromArray = function(contextEntries, parenthesis = true) {
+  var stringArray = []
+  contextEntries.forEach(entry => {
+    if (typeof entry === "object") {
+      //! process the object
+      stringArray.push(
+        generateContextStringFromArray(Object.keys(entry).map(e => `${e}: ${entry[e]}`), false)
+      );
+    }
+    else if(typeof entry === "string") {
+      stringArray.push(entry);
+    }
+  });
+
+  if (parenthesis) {
+    return '{' + stringArray.join(',') + '}';
+  }
+  else {
+    return stringArray.join(',')
+  }
+};
+
+var createBusinessModel = function(csvString) {
+
+};
+
+let api;
 api = module.exports = {
   csv_to_decision_table: createDecisionTable,
   xls_to_csv: parseXLS,
   execute_decision_table: executeDecisionTable,
-
-  //private methods
-  _ : {
-    parseXLS: parseXLS,
+  parseWorkbook,
+  // private methods
+  _: {
+    parseXLS,
     parseCsv: parseCsvToJson,
     makeContext: makeContextObject,
-    isDecisionTableModel: isDecisionTableModel
-  }
+    isDecisionTableModel,
+    generateJsonFEEL,
+    createBusinessModel,
+    generateContextStringFromArray
+  },
 };

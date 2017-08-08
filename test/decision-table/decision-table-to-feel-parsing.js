@@ -31,7 +31,7 @@ describe("Excel reading...(internal stuff)...", function() {
     expect(dto.context).to.be.undefined;
   });
 
-  it('should create feel context object for decision table correctly', function() {
+  it('should be that makeContext() returns an object', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
@@ -40,6 +40,21 @@ describe("Excel reading...(internal stuff)...", function() {
     var dto = DTable.csv_to_decision_table(values[0]);
     // debugger;
     var result = DTable._.makeContext(values[0], dto)
+
+    expect(result).to.be.object
+
+    expect(Object.keys(result)).to.eql(['qn', 'contextString'])
+  })
+
+  it('should create feel context object for decision table correctly', function() {
+    var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
+    var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
+    var values = Object.values(excelSheetsJsonCsv);
+    var boxedExpression = fs.readFileSync('test\\data\\BoxedExpression-PostBureauRiskCategoryTable-Compressed.txt', { encoding: 'utf8' });
+    // boxedExpression = boxedExpression.replace(/(\r\n|\n|\t)/g, '')
+    var dto = DTable.csv_to_decision_table(values[0]);
+    // debugger;
+    var result = DTable._.makeContext(values[0], dto).contextString
       + '\n'; //adding this to avoid problem with editor
     // console.log({a: boxedExpression, b: result})
     fs.writeFileSync('file1.txt', boxedExpression, { encoding: 'utf8'})
