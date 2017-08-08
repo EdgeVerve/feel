@@ -63,6 +63,19 @@ describe("Excel reading...(internal stuff)...", function() {
 });
 
 describe('Excel workbook parsing...', function() {
+  it('should parse a workbook to a json-feel boxed expression', function(){
+    var jsonFeel = DTable.parseWorkbook(excelWorkbookPath);
 
-})
+    //this jsonFeel should have two keys
+    var keys = Object.keys(jsonFeel)
+    expect(keys.length).to.equal(2)
+
+    //their values should be a FEEL string
+    keys.map(key => {
+      var val = jsonFeel[key]
+      expect(val).to.be.defined
+      expect(val).to.be.string
+    })
+  });
+});
 
