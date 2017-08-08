@@ -31,6 +31,7 @@ e.g. : time(“T23:59:00z") = time(23, 59, 0, duration(“PT0H”))
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
 const { time_ISO_8601, time_IANA_tz, types, properties } = require('../../helper/meta');
+const { duration } = require('./duration');
 
 const { hour, minute, second, 'time offset': time_offset, timezone } = properties;
 const props = Object.assign({}, { hour, minute, second, 'time offset': time_offset, timezone, type: types.time, isTime: true });
@@ -50,8 +51,20 @@ const parseTime = (str) => {
 };
 
 const dtdToOffset = (dtd) => {
-  if (dtd.isDtd) {
-    let { hours, minutes } = dtd;
+  const msPerDay = 86400000;
+  const msPerHour = 3600000;
+  const msPerMinute = 60000;
+  let d = dtd;
+  if (typeof dtd === 'number') {
+    const ms = Math.abs(dtd);
+    let remaining = ms % msPerDay;
+    const hours = remaining / msPerHour;
+    remaining %= msPerHour;
+    const minutes = remaining / msPerMinute;
+    d = duration(`PT${hours}H${minutes}M`);
+  }
+  if (d.isDtd) {
+    let { hours, minutes } = d;
     hours = hours < 10 ? `0${hours}` : `${hours}`;
     minutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
     return `${hours}:${minutes}`;
@@ -108,7 +121,7 @@ const time = (...args) => {
     const dtd = args[3];
     if (dtd) {
       try {
-        const sign = Math.sign < 0 ? '-' : '+';
+        const sign = Math.sign(dtd) < 0 ? '-' : '+';
         const offset = `${sign}${dtdToOffset(dtd)}`;
         t = moment.parseZone(`${moment({ hour, minute, second }).format('THH:mm:ss')}${offset}`, time_ISO_8601);
       } catch (err) {

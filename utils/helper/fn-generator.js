@@ -231,6 +231,9 @@ const operatorMap = {
   }),
 
   '-': _.curry((x, y) => {
+    if (!x && y) {
+      return -y;
+    }
     if (presence(x, y)) {
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).minus(y));

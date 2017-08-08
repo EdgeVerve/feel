@@ -263,4 +263,36 @@ describe(chalk.blue('Random list of rules'), function () {
             done(e);
         }
     })
+
+    it('Successfully parses and executes time with offset specified as duration', function (done) {
+        const text = 'time("T23:59:00z") = time(23, 59, 0, duration("PT0H"))';
+        try{
+            const parsedText = FEEL.parse(text);
+            parsedText.build().then((result) => {
+                expect(result).to.equal(true);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it('Successfully parses and executes time with offset specified as negative duration', function (done) {
+        const text = 'time("T10:15:00-07:00") = time(10, 15, 0, -duration("PT7H"))';
+        try{
+            const parsedText = FEEL.parse(text);
+            parsedText.build().then((result) => {
+                expect(result).to.equal(true);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
 });

@@ -22,7 +22,7 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
     });
 
     it('Successfully builds ast from comparision expression', function(done) {
-        var text = '5 in ((5..10])';
+        var text = '5 in (5..10]';
 
         var parsedGrammar = FEEL.parse(text);
         parsedGrammar.build().then(result => {
