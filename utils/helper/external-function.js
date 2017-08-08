@@ -25,8 +25,7 @@ const prepareDependencies = (dependencies) => {
   const requireObj = {};
   dependencies.forEach((dependency) => {
     Object.keys(dependency).forEach((key) => {
-      // eslint-disable-next-line
-      requireObj[key] = require(dependency[key]);
+      requireObj[key] = require(dependency[key]); // eslint-disable-line
     });
   });
   return requireObj;
