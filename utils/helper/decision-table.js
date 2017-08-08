@@ -29,9 +29,14 @@ const parseXLS = (path) => {
 
 const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 
-const parseContext = (csv) => {
+const makeContextObject = (csv, modelObject) => {
   let context = {};
+  csv = csv.split('\n')
+  let outputName = csv[0].substring(0, csv[0].indexOf(delimiter))
+
   let i = 1;
+
+  let hasKeys = keys => keys.every(k => k in modelObject)
 
   for (; i < csv.length; i += 1) {
     const arr = csv[i].split(delimiter).filter(String);
@@ -44,6 +49,21 @@ const parseContext = (csv) => {
       }
       context[arr[0]] = arr[1];
     }
+  }
+
+  var hitPolicy = csv[i+1].substring(0, csv[i+1].indexOf(delimiter))
+
+  if (hasKeys(['ruleList', 'inputExpressionList'])) {
+    //!decision object
+    var ruleList = modelObject.ruleList.map( r => {
+      return '[' + r.map(m => "'" + m + "'").join(',') + ']'
+    }).join(',')
+
+    var str = `decision table (outputs: \"${outputName}\",input expression list: [${modelObject.inputExpressionList.join(',')}],rule list: [${ruleList}],hit policy: \"${hitPolicy}\")`;
+    str = str.replace(/(\r\n|\n)/g, '')
+
+    context.result = str
+
   }
   context = Object.keys(context).length > 0 ? JSON.stringify(context).replace(/"/g, '').replace(/\\/g, '"') : '';
   return context.length > 0 ? context : null;
@@ -232,7 +252,7 @@ const createDecisionTable = (commaSeparatedValue) => {
   decisionTable.inputExpressionList = inputExpressionList;
   decisionTable.outputs = outputs;
   decisionTable.outputValues = outputValuesList;
-  decisionTable.context = parseContext(csv);
+  // decisionTable.context = parseContext(csv);
 
   return decisionTable;
 };
@@ -262,13 +282,20 @@ var parseCsvToJson = function(csvArr) {
   }, {});
 }
 
+var isDecisionTableModel = function(csvString) {
+  return csvString.indexOf('RuleTable') > -1;
+}
+
 module.exports = {
   csv_to_decision_table: createDecisionTable,
   xls_to_csv: parseXLS,
   execute_decision_table: executeDecisionTable,
-  //these are private
+
+  //private methods
   _ : {
     parseXLS: parseXLS,
-    parseCsv: parseCsvToJson
+    parseCsv: parseCsvToJson,
+    makeContext: makeContextObject,
+    isDecisionTableModel: isDecisionTableModel
   }
 };

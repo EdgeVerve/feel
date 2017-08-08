@@ -1,18 +1,18 @@
 {
 	Existing Customer: Applicant. ExistingCustomer,
 	Credit Score: Report . CreditScore,
-	Application Risk Score: AffordabilityModel(Applicant, Product) . Application Risk Score
+	Application Risk Score: Affordability Model(Applicant, Product) . Application Risk Score
 	result: decision table (
-		outputs: "Post-Bureau Risk Category",
+		outputs: "Post-Bureau Risk Category Table",
 		input expression list: [Existing Customer, Application Risk Score, Credit Score]
 		rule list: [
-			['true', '<=120', '<590', '"HIGH"'],
-			['true', '<=120', '[590..610]]', '"MEDIUM"'],
-			['true', '<=120', '<590', '"LOW"'],
-			['false', '<=100', '<580', '"HIGH"'],
-			['false', '<=100', '[580..600]', '"MEDIUM"'],
-			['false', '<=100', '>600', '"LOW"'],
+			['TRUE', '<=120', '<590', '"HIGH"'],
+			['TRUE', '<=120', '[590..610]', '"MEDIUM"'],
+			['TRUE', '<=120', '>610', '"LOW"'],
+			['FALSE', '<=100', '<580', '"HIGH"'],
+			['FALSE', '<=100', '[580..600]', '"MEDIUM"'],
+			['FALSE', '<=100', '>600', '"LOW"']
 		],
-	hit policy: "Unique")
+	hit policy: "U")
 }
-		
+
