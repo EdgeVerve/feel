@@ -23,23 +23,16 @@ const dateTimeComponent = {
   dateandtime: ['year', 'month', 'day', 'hour', 'minute', 'second', 'time offset'],
 };
 
-const presence = (...args) => {
-  return args.reduce((acc, arg) => {
-    return acc && (arg || arg === 0);
-  }, true);
-};
+const presence = (...args) => args.reduce((acc, arg) => acc && (arg || arg === 0), true);
 
-const typeEq = (...args) => {
-  return presence(args) && args.reduce((acc, arg) => {
-    return acc && typeof arg === acc ? typeof arg : false; // eslint-disable-line valid-typeof
-  }, typeof args[0]) && true;
-};
+const typeEq = (...args) => args.reduce((acc, arg) => acc && typeof arg === acc ? typeof arg : false, typeof args[0]); // eslint-disable-line
 
+const presencetypeEq = (...args) => presence(args) && typeEq(args) && true;
 
 const operatorMap = {
   '<': _.curry((x, y) => {
     try {
-      if (typeEq(x, y)) {
+      if (presencetypeEq(x, y)) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lt(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -68,7 +61,7 @@ const operatorMap = {
   }),
   '<=': _.curry((x, y) => {
     try {
-      if (typeEq(x, y)) {
+      if (presencetypeEq(x, y)) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lte(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -97,7 +90,7 @@ const operatorMap = {
   }),
   '>': _.curry((x, y) => {
     try {
-      if (typeEq(x, y)) {
+      if (presencetypeEq(x, y)) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gt(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -126,7 +119,7 @@ const operatorMap = {
   }),
   '>=': _.curry((x, y) => {
     try {
-      if (typeEq(x, y)) {
+      if (presencetypeEq(x, y)) {
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gte(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
