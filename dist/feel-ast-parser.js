@@ -10,6 +10,7 @@ const _ = require('lodash');
 const fnGen = require('../utils/helper/fn-generator');
 const addKwargs = require('../utils/helper/add-kwargs');
 const builtInFns = require('../utils/built-in-functions');
+const externalFn = require('../utils/helper/external-function');
 
 module.exports = function (ast) {
   ast.ProgramNode.prototype.build = function (context, type = 'output') {
@@ -198,7 +199,7 @@ module.exports = function (ast) {
         return fn.build(args);
       };
 
-      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(...values));
+      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(...[...values, args.context]));
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {
@@ -463,7 +464,13 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       if (this.extern) {
         try {
-          resolve(this.expr(args));
+          this.expr.build({}).then((bodyMeta) => {
+            externalFn(Object.assign({}, args.context, args.kwargs), bodyMeta).then((res) => {
+              resolve(res);
+            }).catch((err) => {
+              reject(err);
+            });
+          }).catch(err => reject(err));
         } catch (err) {
           reject(err);
         }
