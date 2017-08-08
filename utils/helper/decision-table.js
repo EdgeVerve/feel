@@ -286,7 +286,8 @@ var isDecisionTableModel = function(csvString) {
   return csvString.indexOf('RuleTable') > -1;
 }
 
-module.exports = {
+var api;
+api = module.exports = {
   csv_to_decision_table: createDecisionTable,
   xls_to_csv: parseXLS,
   execute_decision_table: executeDecisionTable,
