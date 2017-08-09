@@ -411,11 +411,6 @@ var generateContextString = function(contextEntries, isRoot = true) {
   var feelType = 'string' //we'll assume default as string entry
   var override = false;
 
-  if(typeof isRoot === 'string') {
-    override = (isRoot === 'csv')
-    isRoot = !!isRoot
-  }
-
   if (typeof contextEntries === "object" && Array.isArray(contextEntries)) {
     //! process array entries
     feelType = 'array'
@@ -449,20 +444,28 @@ var generateContextString = function(contextEntries, isRoot = true) {
     // stringArray.push(contextEntries)
   }
 
-  if(override) {
-    return stringArray.join(',');
+  if (feelType === 'object') {
+    if (typeof isRoot === 'string' && isRoot === 'csv') {
+      return stringArray.join(',')
+    }
+    else if (typeof isRoot === 'boolean' && isRoot) {
+      return stringArray.join(',')
+    }
+    else {
+      return "{" + stringArray.join(',') + "}";
+    }
+
   }
-  else if (feelType === 'object' && isRoot) {
-    return stringArray.join(',')
-  }
-  else if(feelType === 'array' && isRoot) {
-    return "{" + stringArray.join(",") + "}"
-  }
-  else if (feelType === "object") {
-    return "{" + stringArray.join(',') + "}"
-  }
-  else if (feelType === "array") {
-    return "[" + stringArray.map(s => "'" + s + "'").join(',') + "]"
+  else if(feelType === 'array') {
+    if (typeof isRoot === 'string' && isRoot === 'csv') {
+      return "[" + stringArray.join(',') + "]"
+    }
+    else if (typeof isRoot === 'boolean' && isRoot) {
+      return "{" + stringArray.join(",") + "}"
+    }
+    else {
+      return "[" + stringArray.map(x => "'" + x + "'").join(",") + "]";
+    }
   }
   else if (feelType === "string") {
     return contextEntries
