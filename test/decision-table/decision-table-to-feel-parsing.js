@@ -46,21 +46,55 @@ describe("Internal tests...", function() {
     expect(Object.keys(result)).to.eql(['qn', 'expression'])
   })
 
-  it.skip('should parse decision table worksheet correctly', function() {
+  it('should parse decision table worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
-    var boxedExpression = fs.readFileSync('test\\data\\BoxedExpression-PostBureauRiskCategoryTable-Compressed.txt', { encoding: 'utf8' });
-    // boxedExpression = boxedExpression.replace(/(\r\n|\n|\t)/g, '')
-    var dto = DTable.csv_to_decision_table(values[0]);
-    // debugger;
-    var result = DTable._.makeContext(values[0], dto).contextString
-      + '\n'; //adding this to avoid problem with editor
-    // console.log({a: boxedExpression, b: result})
-    fs.writeFileSync('file1.txt', boxedExpression, { encoding: 'utf8'})
-    fs.writeFileSync('file2.txt', result, { encoding: 'utf8'})
-    // expect(boxedExpression).to.equal(result)
-    expect(boxedExpression.localeCompare(result)).to.equal(0)
+    var decisionModelCsv = values[0];
+    var ctxObj = DTable._.makeContext(decisionModelCsv);
+    var computedExpression = ctxObj.expression;
+
+    //generating the expression
+    //note: this is generated based on the worksheet
+    //note: you'll have to manually verify this
+
+    var contextEntries = [
+      {
+        "Existing Customer" : "Applicant. ExistingCustomer",
+        "Credit Score": "Report. CreditScore",
+        "Application Risk Score": "Affordability Model(Applicant, Product). Application Risk Score"
+      }
+    ];
+
+    var decisionContextEntries = [
+      'outputs: "Post Bureau Risk Category"',
+      {
+        "input expression list": [
+          "Existing Customer",
+          "Application Risk Score",
+          "Credit Score"
+        ],
+
+        "rule list" : [
+          [ "TRUE", "<=120", "<590", '"HIGH"'],
+          [ "TRUE", "<=120", "[590..610]", '"MEDIUM"'],
+          [ "TRUE", "<=120", ">610", '"LOW"'],
+
+          [ "FALSE", "<=100", "<580", '"HIGH"'],
+          [ "FALSE", "<=100", "[580..600]", '"MEDIUM"'],
+          [ "FALSE", "<=100", ">600", '"LOW"'],
+        ]
+      },
+      'hit policy: "U"'
+    ];
+
+    contextEntries.push({
+      result: `decision table(${DTable._.generateContextString(decisionContextEntries, csv)})`
+    });
+
+    var expectedExpression = DTable._.generateContextString(contextEntries);
+
+    expect(computedExpression).to.equal(expectedExpression);
   });
 
   it('should detect if a sheet is a decision table model', function() {
