@@ -46,7 +46,7 @@ describe("Excel reading...(internal stuff)...", function() {
     expect(Object.keys(result)).to.eql(['qn', 'contextString'])
   })
 
-  it.skip('should create feel context object for decision table correctly', function() {
+  it.skip('should parse decision table worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
@@ -74,6 +74,29 @@ describe("Excel reading...(internal stuff)...", function() {
     result = DTable._.isDecisionTableModel(values[0])
 
     expect(result).to.equal(true)
+  });
+
+  it('should parse a business model worksheet correctly', function() {
+    var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
+    var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
+    var values = Object.values(excelSheetsJsonCsv);
+    var businessModelCsv = values[1];
+
+    var contextString = DTable._.makeContext(businessModelCsv)
+
+    // here is the contextEntry object for the speific model - manually verify this
+    var contextEntries = [
+      'Post Bureau Risk Category Table',
+      {
+        "Existing Customer" : "Applicant. ExistingCustomer",
+        "Credit Score" : "Report. CreditScore",
+        "Application Risk Score": "Affordability Model(Applicant, Product). Application Risk Score"
+      }
+    ];
+
+    var expected = DTable._.generateContextString(contextEntries);
+
+    expect(contextString).to.equal(expected)
   })
 });
 
