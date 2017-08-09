@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var excelWorkbookPath = 'test/data/PostBureauRiskCategory2.xlsx';
 
-describe("Excel reading...(internal stuff)...", function() {
+describe("Internal tests...", function() {
   it('should be that parseXLS() returns an array', function() {
 
     var csvJson = DTable._.parseXLS(excelWorkbookPath)
@@ -43,7 +43,7 @@ describe("Excel reading...(internal stuff)...", function() {
 
     expect(result).to.be.object
 
-    expect(Object.keys(result)).to.eql(['qn', 'contextString'])
+    expect(Object.keys(result)).to.eql(['qn', 'expression'])
   })
 
   it.skip('should parse decision table worksheet correctly', function() {
@@ -81,10 +81,12 @@ describe("Excel reading...(internal stuff)...", function() {
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
     var businessModelCsv = values[1];
+    // console.log(businessModelCsv)
+    debugger;
+    var contextString = DTable._.makeContext(businessModelCsv).expression
 
-    var contextString = DTable._.makeContext(businessModelCsv)
-
-    // here is the contextEntry object for the speific model - manually verify this
+    // here is the contextEntry object for the speific model
+    //note: you'll have to manually verify this
     var contextEntries = [
       'Post Bureau Risk Category Table',
       {
@@ -97,10 +99,22 @@ describe("Excel reading...(internal stuff)...", function() {
     var expected = DTable._.generateContextString(contextEntries);
 
     expect(contextString).to.equal(expected)
+  });
+
+  it('should parse the qualified name of worksheet', function() {
+    var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
+    var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
+    var values = Object.values(excelSheetsJsonCsv);
+    var businessModelCsv = values[1];
+
+    var ctxObj = DTable._.makeContext(businessModelCsv)
+
+    expect(ctxObj.qn).to.be.defined
+    expect(ctxObj.qn).to.equal("Post Bureau Risk Category")
   })
 });
 
-describe('Excel workbook parsing...', function() {
+describe.skip('Excel workbook parsing...', function() {
   it.skip('should parse a workbook to a json-feel boxed expression', function(){
     var jsonFeel = DTable.parseWorkbook(excelWorkbookPath);
 
