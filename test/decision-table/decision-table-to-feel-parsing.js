@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var excelWorkbookPath = 'test/data/PostBureauRiskCategory2.xlsx';
 
-describe.skip("Internal tests...", function() {
+describe("Internal tests...", function() {
   it('should be that parseXLS() returns an array', function() {
 
     var csvJson = DTable._.parseXLS(excelWorkbookPath)
@@ -46,7 +46,7 @@ describe.skip("Internal tests...", function() {
     expect(Object.keys(result)).to.eql(['qn', 'expression'])
   })
 
-  it.skip('should parse decision table worksheet correctly', function() {
+  it('should parse decision table worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
@@ -58,6 +58,8 @@ describe.skip("Internal tests...", function() {
     //note: this is generated based on the worksheet
     //note: you'll have to manually verify this
 
+    var generateContextString = DTable._.generateContextString;
+
     var contextEntries = [
       {
         "Existing Customer" : "Applicant. ExistingCustomer",
@@ -66,33 +68,35 @@ describe.skip("Internal tests...", function() {
       }
     ];
 
+    var ruleList = [
+      [ "TRUE", "<=120", "<590", '"HIGH"'],
+      [ "TRUE", "<=120", "[590..610]", '"MEDIUM"'],
+      [ "TRUE", "<=120", ">610", '"LOW"'],
+
+      [ "FALSE", "<=100", "<580", '"HIGH"'],
+      [ "FALSE", "<=100", "[580..600]", '"MEDIUM"'],
+      [ "FALSE", "<=100", ">600", '"LOW"'],
+    ];
+
+
     var decisionContextEntries = [
-      'outputs: "Post Bureau Risk Category"',
+      'outputs : "Post Bureau Risk Category"',
+      'input expression list : ' + generateContextString([
+          "Existing Customer", "Application Risk Score", "Credit Score"
+        ], "csv"),
       {
-        "input expression list": [
-          "Existing Customer",
-          "Application Risk Score",
-          "Credit Score"
-        ],
-
-        "rule list" : [
-          [ "TRUE", "<=120", "<590", '"HIGH"'],
-          [ "TRUE", "<=120", "[590..610]", '"MEDIUM"'],
-          [ "TRUE", "<=120", ">610", '"LOW"'],
-
-          [ "FALSE", "<=100", "<580", '"HIGH"'],
-          [ "FALSE", "<=100", "[580..600]", '"MEDIUM"'],
-          [ "FALSE", "<=100", ">600", '"LOW"'],
-        ]
+        "rule list" : generateContextString(ruleList.map(cl => {
+          return generateContextString(cl, false)
+        }), "csv")
       },
       'hit policy: "U"'
     ];
 
     contextEntries.push({
-      result: `decision table(${DTable._.generateContextString(decisionContextEntries, "csv")})`
+      result: `decision table(${generateContextString(decisionContextEntries, "csv")})`
     });
 
-    var expectedExpression = DTable._.generateContextString(contextEntries);
+    var expectedExpression = generateContextString(contextEntries);
 
     expect(computedExpression).to.equal(expectedExpression);
   });

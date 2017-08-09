@@ -458,10 +458,13 @@ var generateContextString = function(contextEntries, isRoot = true) {
   }
   else if(feelType === 'array') {
     if (typeof isRoot === 'string' && isRoot === 'csv') {
-      return "[" + stringArray.join(',') + "]"
+      return "[" + stringArray.join(',') + "]";
+    }
+    else if (typeof isRoot === 'string' && isRoot === 'list') {
+      return stringArray.join(',');
     }
     else if (typeof isRoot === 'boolean' && isRoot) {
-      return "{" + stringArray.join(",") + "}"
+      return "{" + stringArray.join(",") + "}";
     }
     else {
       return "[" + stringArray.map(x => "'" + x + "'").join(",") + "]";

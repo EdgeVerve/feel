@@ -42,7 +42,8 @@ describe('Context generation tests...', function() {
   });
 
   it('should create FEEL context string - case 3', function() {
-
+    // generateContextString on array with 2nd argument as "csv"
+    // should give you a simple csv list [val1, val2, val3, ...]
     var contextEntries = {
       "input expression list":
         DTable._.generateContextString(
@@ -56,5 +57,18 @@ describe('Context generation tests...', function() {
     var expectedExpression = '{input expression list : [Existing Customer,Credit Score,Application Risk Score]}';
 
     expect(computedExpression).to.equal(expectedExpression)
+  });
+
+  it('should create FEEL context string - case 4', function() {
+    // generateContextString on array with 2nd argument as "list"
+    // should give you a simple  list - val1, val2, val3, ...
+
+    var list = ["Existing Customer", "Credit Score", "Application Risk Score"];
+    var expectedExpression = list.join(',');
+
+    var computedExpression = DTable._.generateContextString(list, "list");
+
+    expect(computedExpression).to.equal(expectedExpression);
+
   });
 })
