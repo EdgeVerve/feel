@@ -30,6 +30,10 @@ const parseXLS = (path) => {
 const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 
 const makeContextObject = (csv, modelObject) => {
+
+  //Convention: context entries are vertical
+  //Convention: decision table entries are horizontal
+
   let context = {};
   csv = csv.split('\n');
   const outputName = csv[0].substring(0, csv[0].indexOf(delimiter));
@@ -54,13 +58,21 @@ const makeContextObject = (csv, modelObject) => {
   // var hitPolicy = csv[i+1].substring(0, csv[i+1].indexOf(delimiter))
 
 
-  if (hasKeys(['ruleList', 'inputExpressionList'])) {
+  if (modelObject && hasKeys(['ruleList', 'inputExpressionList'])) {
     //! decision object
     const ruleList = modelObject.ruleList.map(r => `[${r.map(m => `'${m}'`).join(',')}]`).join(',');
 
     const hitPolicy = modelObject.hitPolicy;
 
-    let str = `decision table (outputs: \"${outputName}\",input expression list: [${modelObject.inputExpressionList.join(',')}],rule list: [${ruleList}],hit policy: \"${hitPolicy}\")`;
+    var dtContextEntries = {
+      "input expression list" : modelObject.inputExpressionList,
+      "rule list" : modelObject.ruleList,
+      "hit policy" : hitPolicy
+    };
+
+    var decisionContextEntries = [ `outputs: "${outputName}"`, dtContextEntries ]
+
+    let str = `decision table (${generateContextString(decisionContextEntries, false)})`;
     str = str.replace(/(\r\n|\n)/g, '');
 
     context.result = str;
@@ -316,25 +328,60 @@ var generateJsonFEEL = function (jsonCsvObject) {
   }, {});
 };
 
-var generateContextStringFromArray = function(contextEntries, parenthesis = true) {
+var generateContextString = function(contextEntries, isRoot = true) {
   var stringArray = []
-  contextEntries.forEach(entry => {
-    if (typeof entry === "object") {
-      //! process the object
-      stringArray.push(
-        generateContextStringFromArray(Object.keys(entry).map(e => `${e}: ${entry[e]}`), false)
-      );
-    }
-    else if(typeof entry === "string") {
-      stringArray.push(entry);
-    }
-  });
+  var feelType = 'string' //we'll assume default as string entry
 
-  if (parenthesis) {
-    return '{' + stringArray.join(',') + '}';
+  if (typeof contextEntries === "object" && Array.isArray(contextEntries)) {
+    //! process array entries
+    feelType = 'array'
+    contextEntries.forEach(entry => {
+      // var feelEntry = generateContextString(entry, false);
+      // stringArray.push(feelEntry)
+      var feelEntry
+      if (isRoot) {
+        feelEntry = generateContextString(entry)
+      }
+      else {
+        feelEntry = generateContextString(entry, false)
+      }
+      stringArray.push(feelEntry)
+    })
+  }
+  else if (typeof contextEntries === "object" && !Array.isArray(contextEntries)) {
+    //! process object entries
+
+    feelType = 'object'
+
+    var contextKeys = Object.keys(contextEntries)
+    contextKeys.forEach(key => {
+      var feelEntry = generateContextString(contextEntries[key], false)
+      stringArray.push(`${key} : ${feelEntry}`)
+    });
   }
   else {
+    //! default as string
+    console.assert(typeof contextEntries === 'string', "Expected context entry to be a string")
+    // stringArray.push(contextEntries)
+  }
+
+  if (feelType === 'object' && isRoot) {
     return stringArray.join(',')
+  }
+  else if(feelType === 'array' && isRoot) {
+    return "{" + stringArray.join(",") + "}"
+  }
+  else if (feelType === "object") {
+    return "{" + stringArray.join(',') + "}"
+  }
+  else if (feelType === "array") {
+    return "[" + stringArray.map(s => "'" + s + "'").join(',') + "]"
+  }
+  else if (feelType === "string") {
+    return contextEntries
+  }
+  else {
+    throw new Error("Cannot process contextEntries of type: " + typeof contextEntries)
   }
 };
 
@@ -356,6 +403,6 @@ api = module.exports = {
     isDecisionTableModel,
     generateJsonFEEL,
     createBusinessModel,
-    generateContextStringFromArray
+    generateContextString
   },
 };

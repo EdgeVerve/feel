@@ -46,7 +46,7 @@ describe("Excel reading...(internal stuff)...", function() {
     expect(Object.keys(result)).to.eql(['qn', 'contextString'])
   })
 
-  it('should create feel context object for decision table correctly', function() {
+  it.skip('should create feel context object for decision table correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
@@ -78,7 +78,7 @@ describe("Excel reading...(internal stuff)...", function() {
 });
 
 describe('Excel workbook parsing...', function() {
-  it('should parse a workbook to a json-feel boxed expression', function(){
+  it.skip('should parse a workbook to a json-feel boxed expression', function(){
     var jsonFeel = DTable.parseWorkbook(excelWorkbookPath);
 
     //this jsonFeel should have two keys
