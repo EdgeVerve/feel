@@ -23,13 +23,13 @@ describe("Internal tests...", function() {
     values.forEach(v => expect(v).to.be.string );
   });
 
-  it('should create the decision object without context property', function(){
-    var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
-    var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
-    var dto = DTable.csv_to_decision_table(values[0]);
-    expect(dto.context).to.be.undefined;
-  });
+  // it('should create the decision object without context property', function(){
+  //   var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
+  //   var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
+  //   var values = Object.values(excelSheetsJsonCsv);
+  //   var dto = DTable.csv_to_decision_table(values[0]);
+  //   expect(dto.context).to.be.undefined;
+  // });
 
   it('should be that makeContext() returns an object', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
