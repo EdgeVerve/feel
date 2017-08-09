@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var excelWorkbookPath = 'test/data/PostBureauRiskCategory2.xlsx';
 
-describe("Internal tests...", function() {
+describe.skip("Internal tests...", function() {
   it('should be that parseXLS() returns an array', function() {
 
     var csvJson = DTable._.parseXLS(excelWorkbookPath)
@@ -46,7 +46,7 @@ describe("Internal tests...", function() {
     expect(Object.keys(result)).to.eql(['qn', 'expression'])
   })
 
-  it('should parse decision table worksheet correctly', function() {
+  it.skip('should parse decision table worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
@@ -89,7 +89,7 @@ describe("Internal tests...", function() {
     ];
 
     contextEntries.push({
-      result: `decision table(${DTable._.generateContextString(decisionContextEntries, csv)})`
+      result: `decision table(${DTable._.generateContextString(decisionContextEntries, "csv")})`
     });
 
     var expectedExpression = DTable._.generateContextString(contextEntries);

@@ -6,8 +6,9 @@ var fs = require('fs');
 
 var excelWorkbookPath = 'test/data/PostBureauRiskCategory2.xlsx';
 
-describe('context-entries-generator tests...', function() {
-  it('should create a FEEL context string when provided with input containing context entries - case 1', function() {
+describe('Context generation tests...', function() {
+  it('should create a FEEL context - case 1', function() {
+    // string when provided with input containing context entries
     var contextEntriesArray = [
       'Post Bureau Risk Category',
       {
@@ -23,7 +24,8 @@ describe('context-entries-generator tests...', function() {
     expect(expected).to.equal(contextString);
   });
 
-  it('should create a FEEL context string when provided with input containing context entries - case 2', function() {
+  it('should create a FEEL context - case 2', function() {
+    // string when provided with input containing context entries
     var contextEntriesArray = [
       {
         "some list": [
@@ -37,5 +39,20 @@ describe('context-entries-generator tests...', function() {
     var contextString = DTable._.generateContextString(contextEntriesArray);
 
     expect(expected).to.equal(contextString);
+  });
+
+  it('should create FEEL context string - case 3', function() {
+
+    var contextEntries = {
+      "input expression list": [
+        "Existing Customer", "Credit Score", "Application Risk Score"
+      ]
+    };
+
+    var computedExpression = DTable._.generateContextString(contextEntries);
+
+    var expectedExpression = '{input expression list: [Existing Customer,Credit Score,Application Risk Score]}';
+
+    expect(computedExpression).to.equal(expectedExpression)
   });
 })
