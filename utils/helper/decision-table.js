@@ -29,63 +29,141 @@ const parseXLS = (path) => {
 
 const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 
-const makeContextObject = (csv, modelObject) => {
+const makeContextObject = (csvExcel) => {
 
   //Convention: context entries are vertical
   //Convention: decision table entries are horizontal
 
-  let context = {};
-  csv = csv.split('\n');
-  const outputName = csv[0].substring(0, csv[0].indexOf(delimiter));
+  var qualifiedName = csvExcel.substring(0 , csvExcel.indexOf(delimiter))
+  var expression;
 
-  let i = 1;
+  let { isDecisionTableModel, generateContextString } = api._
+  // var csvArray = csvExcel.split('\n');
+  var contextEntries;
+  if (isDecisionTableModel(csvExcel)) {
+    contextEntries = parseDecisionTableFromCsv(csvExcel)
+  }
+  else {
+    contextEntries = parseBusinessModelFromCsv(csvExcel)
+  }
 
-  const hasKeys = keys => keys.every(k => k in modelObject);
+  expression = generateContextString(contextEntries)
 
-  for (; i < csv.length; i += 1) {
-    const arr = csv[i].split(delimiter).filter(String);
-    if (arr.length > 0 && arr[0] === 'RuleTable') {
-      break;
-    } else if (arr.length > 0) {
-      const count = arr[1].split('"').length - 1;
-      if (count > 0) {
-        arr[1] = getFormattedValue(arr[1]);
-      }
-      context[arr[0]] = arr[1];
+  return {
+    qn: qualifiedName,
+    expression
+  }
+};
+
+function parseBusinessModelFromCsv(csvString) {
+  var csvArray = csvString.split('\n');
+  var i = 1;
+
+  var contextEntries = []
+
+  csvArray.slice(1).forEach(line => {
+    var fields = line.split(delimiter)
+
+    //TODO handle complex cases
+    var tokensCount = fields.filter(token => token.length).length
+    if( tokensCount > 1) {
+      contextEntries.push({ [fields[0]] : fields[1] })
+    }
+    else if(tokensCount === 1) {
+      contextEntries.push(fields[0])
+    }
+  });
+  return contextEntries;
+}
+
+function parseDecisionTableFromCsv(csvString) {
+  var csvArray = csvString.split('\n');
+  var contextEntries = [];
+  var dto = {}; //decision table object representation
+  let { generateContextString } = api._
+
+  var i = 1;
+  line = csvArray[i]
+
+  //parsing context stuff if any
+  while( !line.startsWith("RuleTable") ) {
+    var fields = line.split(delimiter);
+    var tokensCount = fields.filter(token => token.length).length
+    if (tokensCount > 1) {
+      contextEntries.push({
+        [fields[0]] : fields[1]
+      });
+    }
+    i++;
+    line = csvArray[i]
+  }
+
+  // 1. Parse the rule table
+
+  var components = line.split(delimiter);
+
+  // 1.1 determine number of input components
+  var conditionCount = components.filter( c => c === "Condition").length;
+
+  // 1.2 get the input expressions & hit policy
+  i++;
+  line = csvArray[i];
+  components = line.split(delimiter);
+  dto["hitPolicy"] = components[0];
+  var inputExpressionList = [];
+  // 1.2.1 loop though the rule table line to get input expressions
+  for(let j = 1; i < components.length; j++) {
+    if (j < conditionCount) {
+      inputExpressionList.push(components[j]);
+    }
+    else {
+      dto["outputs"] = components[j];
     }
   }
 
-  // var hitPolicy = csv[i+1].substring(0, csv[i+1].indexOf(delimiter))
+  dto["inputExpressionList"] = inputExpressionList;
 
-
-  if (modelObject && hasKeys(['ruleList', 'inputExpressionList'])) {
-    //! decision object
-    const ruleList = modelObject.ruleList.map(r => `[${r.map(m => `'${m}'`).join(',')}]`).join(',');
-
-    const hitPolicy = modelObject.hitPolicy;
-
-    var dtContextEntries = {
-      "input expression list" : modelObject.inputExpressionList,
-      "rule list" : modelObject.ruleList,
-      "hit policy" : hitPolicy
-    };
-
-    var decisionContextEntries = [ `outputs: "${outputName}"`, dtContextEntries ]
-
-    let str = `decision table (${generateContextString(decisionContextEntries, false)})`;
-    str = str.replace(/(\r\n|\n)/g, '');
-
-    context.result = str;
-  } else {
-    //! business model
-
+  // 1.3 populate the rule list
+  var ruleList = [];
+  var tmp = {};
+  for(; i < csvArray.length; i++) {
+    var conditionList = [];
+    line = csvArray[i];
+    components = line.split(delimiter)
+    for(let j = 1; j < components.length; j++) {
+      var token = components[j];
+      if (token.length) {
+        tmp[j] = token
+        conditionList.push(token)
+      }
+      else {
+        conditionList.push(tmp[j])
+      }
+    }
+    ruleList.push(conditionList);
   }
-  context = Object.keys(context).length > 0 ? JSON.stringify(context).replace(/"/g, '').replace(/\\/g, '"') : '';
-  return {
-    qn: outputName, // fully qualified name
-    contextString: context.length > 0 ? context : '',
-  };
-};
+
+  dto["ruleList"] = ruleList;
+
+  // 2. generating the context entry object for decision arguments
+  var contextEntry = [
+    `outputs: \"${dto["outputs"]}\"`,
+    {
+      "input expression list" : dto["inputExpressionList"],
+      "rule list": dto["ruleList"]
+    },
+    `hit policy: \"${dto["hitPolicy"]}\"`
+  ];
+
+  var dtContextString = generateContextString(contextEntry, "csv")
+
+  //3. final context entry
+  contextEntries.push({
+    result: `decision table (${dtContextString})`
+  });
+
+  return contextEntries;
+}
 
 const preparePriorityList = (priorityClass, priorityValues) => {
   const priority = {};
@@ -331,6 +409,12 @@ var generateJsonFEEL = function (jsonCsvObject) {
 var generateContextString = function(contextEntries, isRoot = true) {
   var stringArray = []
   var feelType = 'string' //we'll assume default as string entry
+  var override = false;
+
+  if(typeof isRoot === 'string') {
+    override = (isRoot === 'csv')
+    isRoot = !!isRoot
+  }
 
   if (typeof contextEntries === "object" && Array.isArray(contextEntries)) {
     //! process array entries
@@ -365,7 +449,10 @@ var generateContextString = function(contextEntries, isRoot = true) {
     // stringArray.push(contextEntries)
   }
 
-  if (feelType === 'object' && isRoot) {
+  if(override) {
+    return stringArray.join(',');
+  }
+  else if (feelType === 'object' && isRoot) {
     return stringArray.join(',')
   }
   else if(feelType === 'array' && isRoot) {
