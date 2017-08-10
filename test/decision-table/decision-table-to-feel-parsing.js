@@ -51,6 +51,7 @@ describe("Internal tests...", function() {
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
     var decisionModelCsv = values[0];
+    debugger;
     var ctxObj = DTable._.makeContext(decisionModelCsv);
     var computedExpression = ctxObj.expression;
 
@@ -93,12 +94,16 @@ describe("Internal tests...", function() {
     ];
 
     contextEntries.push({
-      result: `decision table(${generateContextString(decisionContextEntries, "csv")})`
+      result: `decision table (${generateContextString(decisionContextEntries, "list")})`
     });
 
     var expectedExpression = generateContextString(contextEntries);
+    // console.log('executed')
+    // fs.writeFileSync('file1.txt', computedExpression, {encoding: 'utf8'})
+    // fs.writeFileSync('file2.txt', expectedExpression, {encoding: 'utf8'})
 
     expect(computedExpression).to.equal(expectedExpression);
+
   });
 
   it('should detect if a sheet is a decision table model', function() {
@@ -120,7 +125,7 @@ describe("Internal tests...", function() {
     var values = Object.values(excelSheetsJsonCsv);
     var businessModelCsv = values[1];
     // console.log(businessModelCsv)
-    debugger;
+    // debugger;
     var contextString = DTable._.makeContext(businessModelCsv).expression
 
     // here is the contextEntry object for the speific model
@@ -152,20 +157,22 @@ describe("Internal tests...", function() {
   })
 });
 
-describe.skip('Excel workbook parsing...', function() {
-  it.skip('should parse a workbook to a json-feel boxed expression', function(){
+describe('Excel workbook parsing...', function() {
+  it('should parse a workbook to a json-feel boxed expression', function(){
     var jsonFeel = DTable.parseWorkbook(excelWorkbookPath);
 
     //this jsonFeel should have two keys
     var keys = Object.keys(jsonFeel)
     expect(keys.length).to.equal(2)
 
+    expect(keys).to.eql(['Post Bureau Risk Category Table', 'Post Bureau Risk Category'])
+
     //their values should be a FEEL string
     keys.map(key => {
       var val = jsonFeel[key]
       expect(val).to.be.defined
       expect(val).to.be.string
-    })
+    });
   });
 });
 

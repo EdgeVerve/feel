@@ -76,6 +76,13 @@ function parseBusinessModelFromCsv(csvString) {
   return contextEntries;
 }
 
+var rCsvString = /"""(\w+)"""/;
+var noop = function() {};
+
+function isCsvString(testString) {
+  return rCsvString.test(testString);
+}
+
 function parseDecisionTableFromCsv(csvString) {
   var csvArray = csvString.split('\n');
   var contextEntries = [];
@@ -83,7 +90,7 @@ function parseDecisionTableFromCsv(csvString) {
   let { generateContextString } = api._
 
   var i = 1;
-  line = csvArray[i]
+  var line = csvArray[i];
 
   //parsing context stuff if any
   while( !line.startsWith("RuleTable") ) {
@@ -112,8 +119,8 @@ function parseDecisionTableFromCsv(csvString) {
   dto["hitPolicy"] = components[0];
   var inputExpressionList = [];
   // 1.2.1 loop though the rule table line to get input expressions
-  for(let j = 1; i < components.length; j++) {
-    if (j < conditionCount) {
+  for(let j = 1; j < components.length; j++) {
+    if (j <= conditionCount) {
       inputExpressionList.push(components[j]);
     }
     else {
@@ -121,17 +128,21 @@ function parseDecisionTableFromCsv(csvString) {
     }
   }
 
-  dto["inputExpressionList"] = inputExpressionList;
+  dto["inputExpressionList"] = generateContextString(inputExpressionList, "csv");
 
   // 1.3 populate the rule list
   var ruleList = [];
   var tmp = {};
-  for(; i < csvArray.length; i++) {
+
+  for(i++; i < csvArray.length; i++) {
     var conditionList = [];
     line = csvArray[i];
     components = line.split(delimiter)
     for(let j = 1; j < components.length; j++) {
       var token = components[j];
+      if (isCsvString(token)) {
+        token = '"' + token.match(rCsvString)[1] +'"';
+      }
       if (token.length) {
         tmp[j] = token
         conditionList.push(token)
@@ -140,14 +151,16 @@ function parseDecisionTableFromCsv(csvString) {
         conditionList.push(tmp[j])
       }
     }
-    ruleList.push(conditionList);
+    components[0] ? ruleList.push(conditionList) : noop();
   }
 
-  dto["ruleList"] = ruleList;
+  dto["ruleList"] = generateContextString(ruleList.map(cl => {
+    return generateContextString(cl, false)
+  }), "csv");
 
   // 2. generating the context entry object for decision arguments
   var contextEntry = [
-    `outputs: \"${dto["outputs"]}\"`,
+    `outputs : \"${dto["outputs"]}\"`,
     {
       "input expression list" : dto["inputExpressionList"],
       "rule list": dto["ruleList"]
@@ -155,7 +168,7 @@ function parseDecisionTableFromCsv(csvString) {
     `hit policy: \"${dto["hitPolicy"]}\"`
   ];
 
-  var dtContextString = generateContextString(contextEntry, "csv")
+  var dtContextString = generateContextString(contextEntry, "list")
 
   //3. final context entry
   contextEntries.push({
@@ -391,19 +404,15 @@ const parseWorkbook = function (path) {
 };
 
 var generateJsonFEEL = function (jsonCsvObject) {
-  const jsonFeel = {};
+  // const jsonFeel = {};
   const { _: { isDecisionTableModel, makeContext, createBusinessModel } } = api;
 
-  Object.values(jsonCsvObject).reduce((hash, csvString) => {
-    if (isDecisionTableModel(csvString)) {
-      const dto = createDecisionTable(csvString);
-      const ctxObj = makeContext(csvString, dto);
-      hash[ctxObj.qn] = ctxObj.contextString;
-    } else {
-      let mo = createBusinessModel(csvString)
-    }
+  return Object.keys(jsonCsvObject).reduce( (hash, key) => {
+    var csvModel = jsonCsvObject[key];
+    var ctx = makeContext(csvModel);
+    hash[ctx.qn] = ctx.expression;
     return hash;
-  }, {});
+  }, {})
 };
 
 var generateContextString = function(contextEntries, isRoot = true) {
