@@ -139,6 +139,18 @@ module.exports = function (ast) {
     });
   };
 
+  ast.SimpleExpressionsNode.prototype.build = function (context) {
+    const args = {
+      context: Object.assign({}, context, builtInFns),
+      kwargs: {},
+    };
+    return new Promise((resolve, reject) => {
+      Promise.all(this.simpleExpressions.map(d => d.build(args)))
+      .then(results => resolve(results))
+      .catch(err => reject(err));
+    });
+  };
+
   // _fetch is used to return the name string or
   // the value extracted from context or kwargs using the name string
   ast.NameNode.prototype.build = function (args, _fetch = true) {

@@ -24,6 +24,16 @@ TextualExpression
     / TxtExph
     / TxtExpi
 
+SimpleExpression
+  = ArithmeticExpression
+  / SimpleValue
+
+SimpleExpressions
+  =   head:SimpleExpression tail:(__ "," __ SimpleExpression)*
+        {
+          return new ast.SimpleExpressionsNode(buildList(head,tail,3), location());
+        }
+
 TxtExpi
 	="(" __ expr:TextualExpression __ ")"
 		{

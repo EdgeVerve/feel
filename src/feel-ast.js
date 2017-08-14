@@ -71,6 +71,11 @@ function ArithmeticExpressionNode(operator, operand1, operand2, loc) {
   this.loc = loc;
 }
 
+function SimpleExpressionsNode(simpleExpressions, loc) {
+  this.simpleExpressions = simpleExpressions;
+  this.loc = loc;
+}
+
 function NameNode(nameChars, loc) {
   this.type = 'Name';
   this.nameChars = nameChars;
@@ -234,6 +239,7 @@ ast.SimpleUnaryTestsNode = SimpleUnaryTestsNode;
 ast.UnaryTestsNode = UnaryTestsNode;
 ast.QualifiedNameNode = QualifiedNameNode;
 ast.ArithmeticExpressionNode = ArithmeticExpressionNode;
+ast.SimpleExpressionsNode = SimpleExpressionsNode;
 ast.NameNode = NameNode;
 ast.LiteralNode = LiteralNode;
 ast.DateTimeLiteralNode = DateTimeLiteralNode;
