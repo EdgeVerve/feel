@@ -199,14 +199,52 @@ DecimalNumber
         }
 
 StringLiteral "string"
-  = '"' chars:StringCharacter* '"'
-    {
+  = '"' chars:DoubleStringCharacter* '"' {
       return new ast.LiteralNode(chars.join(""),location());
     }
+  / "'" chars:SingleStringCharacter* "'" {
+       return new ast.LiteralNode(chars.join(""),location());
+    }
 
-StringCharacter
+DoubleStringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
+  / "\\" sequence:EscapeSequence { return sequence; }
   / LineContinuation
+
+SingleStringCharacter
+  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  / "\\" sequence:EscapeSequence { return sequence; }
+  / LineContinuation
+
+LineContinuation
+  = "\\" LineTerminatorSequence { return ""; }
+
+EscapeSequence
+  = CharacterEscapeSequence
+
+CharacterEscapeSequence
+  = SingleEscapeCharacter
+
+SingleEscapeCharacter
+  = "'"
+  / '"'
+  / "\\"
+  / "b"  { return "\b"; }
+  / "f"  { return "\f"; }
+  / "n"  { return "\n"; }
+  / "r"  { return "\r"; }
+  / "t"  { return "\t"; }
+  / "v"  { return "\v"; }
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028"
+  / "\u2029"
 
 DateTimeLiteral
   = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
@@ -645,21 +683,8 @@ Keyword
     / FunctionToken
     / ExternalToken
 
-LineContinuation
-  = "\\" LineTerminatorSequence { return ""; }
-
-LineTerminator
-  = [\n\r\u2028\u2029]
-
 SourceCharacter
   = .
-
-LineTerminatorSequence "end of line"
-  = "\n"
-  / "\r\n"
-  / "\r"
-  / "\u2028"
-  / "\u2029"
 
 //WhiteSpace
 WhiteSpace "whitespace"
