@@ -211,7 +211,12 @@ module.exports = function (ast) {
         return fn.build(args);
       };
 
-      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(args.context, values));
+      const processInBuiltFunction = fnMeta => this.params.build(args).then((values) => {
+        if (Array.isArray(values)) {
+          return fnMeta(...[...values, args.context]);
+        }
+        return fnMeta(args.context, values);
+      });
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {
