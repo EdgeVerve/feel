@@ -211,7 +211,7 @@ module.exports = function (ast) {
         return fn.build(args);
       };
 
-      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(...[...values, args.context]));
+      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(args.context, values));
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {

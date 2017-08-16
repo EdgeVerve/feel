@@ -145,14 +145,16 @@ const prepareContext = (root, payload) => {
   return Promise.resolve(payload);
 };
 
-const traverseDecisionTree = (root, payload, cb) => {
-  prepareContext(root, payload).then((context) => {
+const traverseDecisionTree = (root, payload) => new Promise((resolve, reject) => {
+  prepareContext(root, payload)
+  .then((context) => {
     const ctx = Object.assign({}, payload, context);
-    traverseDecisionTreeUtil(root, ctx).then((results) => {
-      hitPolicyPass(root.hitPolicy, results, cb);
-    }).catch(err => cb(err, null));
-  }).catch(err => cb(err, null));
-};
+    return traverseDecisionTreeUtil(root, ctx);
+  })
+  .then(results => hitPolicyPass(root.hitPolicy, results))
+  .then(output => resolve(output))
+  .catch(err => reject(err));
+});
 
 module.exports = {
   createTree: createDecisionTree,
