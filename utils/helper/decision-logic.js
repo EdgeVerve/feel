@@ -12,6 +12,7 @@ const tree = require('./decision-tree.js');
 
 const rootMap = {};
 const delimiter = '&SP';
+const rowDelimiter = '&RSP';
 
 const parseXLS = (path) => {
   const workbook = XLSX.readFile(path);
@@ -20,7 +21,7 @@ const parseXLS = (path) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
     csv.push({
-      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter }),
+      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter }),
     });
   });
 
@@ -56,7 +57,7 @@ const makeContextObject = (csvExcel) => {
 };
 
 function parseBusinessModelFromCsv(csvString) {
-  var csvArray = csvString.split('\n');
+  var csvArray = csvString.split(rowDelimiter);
   var i = 1;
 
   var contextEntries = []
@@ -84,7 +85,7 @@ function isCsvString(testString) {
 }
 
 function parseDecisionTableFromCsv(csvString) {
-  var csvArray = csvString.split('\n');
+  var csvArray = csvString.split(rowDelimiter);
   var contextEntries = [];
   var dto = {}; //decision table object representation
   let { generateContextString } = api._
@@ -217,7 +218,7 @@ const createDecisionTable = (commaSeparatedValue) => {
   let priority = {};
   const priorityMat = [];
 
-  const csv = commaSeparatedValue.split('\n');
+  const csv = commaSeparatedValue.split(rowDelimiter);
 
   let numOfConditions = 0;
   let numOfActions = 0;
@@ -487,8 +488,10 @@ var generateContextString = function(contextEntries, isRoot = true) {
   }
 };
 
-var createBusinessModel = function(csvString) {
+var isDecisionService = function(csvString) {
+  var lines = csvString.split(rowDelimiter);
 
+  return lines[0].split(delimiter)[1] === "service";
 };
 
 let api;
@@ -504,7 +507,7 @@ api = module.exports = {
     makeContext: makeContextObject,
     isDecisionTableModel,
     generateJsonFEEL,
-    createBusinessModel,
-    generateContextString
+    generateContextString,
+    isDecisionService
   },
 };
