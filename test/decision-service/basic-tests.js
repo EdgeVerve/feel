@@ -22,7 +22,7 @@ describe('basic tests...', function() {
   it('should detect a sheet marked as a boxed invocation', function() {
     var workbook = XLSX.readFile(testDataFile);
 
-    var worksheet = workbook.Sheets["Routing"];
+    var worksheet = workbook.Sheets["Post-Bureau risk category"];
 
     var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
 

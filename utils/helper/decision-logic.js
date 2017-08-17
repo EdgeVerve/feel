@@ -44,8 +44,11 @@ const makeContextObject = (csvExcel) => {
   if (isDecisionTableModel(csvExcel)) {
     contextEntries = parseDecisionTableFromCsv(csvExcel)
   }
+  else if(isBoxedInvocation(csvExcel)) {
+    contextEntries = parseInvocationFromCsv(csvExcel);
+  }
   else {
-    contextEntries = parseBusinessModelFromCsv(csvExcel)
+    contextEntries = parseBusinessModelFromCsv(csvExcel);
   }
 
   expression = generateContextString(contextEntries)
@@ -494,6 +497,27 @@ var isDecisionService = function(csvString) {
   return lines[0].split(delimiter)[1] === "service";
 };
 
+var isBoxedInvocation = function(csvString) {
+  var lines = csvString.split(rowDelimiter);
+  return lines[0].split(delimiter)[2] === "invocation"
+}
+
+var parseInvocationFromCsv = function(csvString) {
+  var lines = csvString.split(rowDelimiter);
+  let { generateContextString } = api._;
+  var fnName = lines[1].split(delimiter)[0];
+  var entries = [];
+  for(var i = 2; i < lines.length; i++) {
+    var fields = lines[i].split(delimiter);
+    if (fields[0].length) { //to avoid blank lines
+      entries.push(`${fields[0]} : ${fields[1]}`)
+    }
+  }
+
+  return `${fnName} (${generateContextString(entries, "list")})`
+};
+
+
 let api;
 api = module.exports = {
   csv_to_decision_table: createDecisionTable,
@@ -508,6 +532,7 @@ api = module.exports = {
     isDecisionTableModel,
     generateJsonFEEL,
     generateContextString,
-    isDecisionService
+    isDecisionService,
+    isBoxedInvocation
   },
 };
