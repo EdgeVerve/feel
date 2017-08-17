@@ -1,7 +1,7 @@
 var XLSX = require('xlsx');
 var chai = require('chai');
 var expect = chai.expect;
-var DTable = require('../../utils/helper/decision-table');
+var DTable = require('../../utils/helper/decision-logic');
 var fs = require('fs');
 
 var excelWorkbookPath = 'test/data/PostBureauRiskCategory2.xlsx';
