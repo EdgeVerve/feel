@@ -38,7 +38,13 @@ const makeContextObject = (csvExcel) => {
   var qualifiedName = csvExcel.substring(0 , csvExcel.indexOf(delimiter))
   var expression;
 
-  let { isDecisionTableModel, generateContextString } = api._
+  let {
+    isDecisionTableModel,
+    generateContextString,
+    isBoxedInvocation,
+    isBoxedContextWithResult
+  } = api._;
+
   // var csvArray = csvExcel.split('\n');
   var contextEntries;
   if (isDecisionTableModel(csvExcel)) {
@@ -46,6 +52,9 @@ const makeContextObject = (csvExcel) => {
   }
   else if(isBoxedInvocation(csvExcel)) {
     contextEntries = parseInvocationFromCsv(csvExcel);
+  }
+  else if (isBoxedContextWithResult(csvExcel)) {
+    contextEntries = parseBoxedContextWithResultFromCsv(csvExcel)
   }
   else {
     contextEntries = parseBusinessModelFromCsv(csvExcel);
@@ -58,6 +67,26 @@ const makeContextObject = (csvExcel) => {
     expression
   }
 };
+
+function parseBoxedContextWithResultFromCsv(csvString) {
+  var csvArray = csvString.split(rowDelimiter);
+  var line;
+  var i, j;
+  var entries = [];
+  for(i = 1, j = csvArray.length; i < j; i++) {
+    line = csvArray[i];
+    if ( !line.startsWith('(') ) {
+      var fields = line.split(delimiter);
+      if (fields[0].length && fields.filter(f => f.length).length > 1) {
+        entries.push(`${fields[0]} : ${processString(fields[1])}`);
+      }
+      else if(fields[0].length) {
+        entries.push(`result : ${fields[0]}`)
+      }
+    }
+  }
+  return entries;
+}
 
 function parseBusinessModelFromCsv(csvString) {
   var csvArray = csvString.split(rowDelimiter);
@@ -85,6 +114,22 @@ var noop = function() {};
 
 function isCsvString(testString) {
   return rCsvString.test(testString);
+}
+
+function isType2String(testString) {
+  return testString[0] === '"' && testString[testString.length - 1] === '"'
+}
+
+function processString(inputString) {
+  if (isCsvString(inputString)) {
+    return rCsvString.match(inputString)[1];
+  }
+  else if (isType2String(inputString)) {
+    return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
+  }
+  else {
+    return inputString
+  }
 }
 
 function parseDecisionTableFromCsv(csvString) {

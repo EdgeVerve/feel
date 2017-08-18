@@ -54,19 +54,20 @@ describe('boxed expression tests...', function() {
     expect(isContextWithResult).to.be.true;
 
     var contextEntries = {
-      "Monthly Fee" : "if Product Type = \"STANDARD LOAN\"\n"
-                      + "then 20.00\n"
-                      + "else if Product Type=\"SPECIAL LOAD\"\n"
-                      + "then 25.00\n"
+      "Monthly Fee" : "if Product Type = \"STANDARD LOAN\"\r\n"
+                      + "then 20.00\r\n"
+                      + "else if Product Type = \"SPECIAL LOAN\"\r\n"
+                      + "then 25.00\r\n"
                       + "else null",
       "Monthly Repayment" : "PMT (Rate, Term, Amount)",
       "result" : "Monthly Repayment + Monthly Fee"
     };
 
-    var expectedCtxString = generateContextString(contextEntries);
+    var expectedCtxString = generateContextString(contextEntries, false);
 
     var computedCtxString = DL._.makeContext(csvExcel).expression;
-
+    fs.writeFileSync('file1.txt', computedCtxString)
+    fs.writeFileSync('file2.txt', expectedCtxString)
     expect(computedCtxString).to.equal(expectedCtxString);
 
   });
