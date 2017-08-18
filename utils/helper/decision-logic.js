@@ -517,6 +517,16 @@ var parseInvocationFromCsv = function(csvString) {
   return `${fnName} (${generateContextString(entries, "list")})`
 };
 
+var isBoxedContextWithResult = function(csvString) {
+  var line = csvString.split(rowDelimiter)[0];
+
+  if (line && line.length) {
+    var fields = line.split(delimiter);
+    return fields[2] === 'context-with-result';
+  }
+
+  return false;
+};
 
 let api;
 api = module.exports = {
@@ -533,6 +543,7 @@ api = module.exports = {
     generateJsonFEEL,
     generateContextString,
     isDecisionService,
-    isBoxedInvocation
+    isBoxedInvocation,
+    isBoxedContextWithResult
   },
 };

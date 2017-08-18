@@ -30,4 +30,18 @@ describe('basic tests...', function() {
 
     expect(result).to.equal(true);
   });
+
+  it('should detect a sheet marked as a boxed context with result', function() {
+    var workbook = XLSX.readFile(testDataFile);
+
+    var worksheet = workbook.Sheets["Installment Calculation"];
+
+    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
+
+    var result = DL._.isBoxedContextWithResult(csvExcel);
+
+    expect(result).to.be.true;
+
+  });
+
 })

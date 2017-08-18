@@ -6,8 +6,8 @@ var fs = require('fs');
 
 var testDataFile = 'test/data/RoutingDecisionService.xlsx';
 
-describe('invocation tests...', function() {
-  it('should generate the required invocation expression from worksheet', function() {
+describe('boxed expression tests...', function() {
+  it('should generate the required boxed invocation expression from worksheet', function() {
     var workbook = XLSX.readFile(testDataFile);
 
     var worksheet = workbook.Sheets["Application Risk Score"];
@@ -36,6 +36,39 @@ describe('invocation tests...', function() {
     var result = DL._.makeContext(csvExcel);
 
     expect(result.expression).to.equal(expectedCtxString);
+  });
+
+
+  it('should generate expression for boxed context with result correctly', function() {
+    var generateContextString = DL._.generateContextString;
+     var workbook = XLSX.readFile(testDataFile);
+
+    var worksheet = workbook.Sheets["Installment Calculation"];
+
+    expect(worksheet).to.be.defined;
+
+    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
+
+    var isContextWithResult = DL._.isBoxedContextWithResult(csvExcel);
+
+    expect(isContextWithResult).to.be.true;
+
+    var contextEntries = {
+      "Monthly Fee" : "if Product Type = \"STANDARD LOAN\"\n"
+                      + "then 20.00\n"
+                      + "else if Product Type=\"SPECIAL LOAD\"\n"
+                      + "then 25.00\n"
+                      + "else null",
+      "Monthly Repayment" : "PMT (Rate, Term, Amount)",
+      "result" : "Monthly Repayment + Monthly Fee"
+    };
+
+    var expectedCtxString = generateContextString(contextEntries);
+
+    var computedCtxString = DL._.makeContext(csvExcel).expression;
+
+    expect(computedCtxString).to.equal(expectedCtxString);
+
   });
 });
 
