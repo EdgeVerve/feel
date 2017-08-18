@@ -5,6 +5,7 @@ var DL = require('../../utils/helper/decision-logic');
 var fs = require('fs');
 
 var testDataFile = 'test/data/RoutingDecisionService.xlsx';
+var testDataFile2 = 'test/data/ApplicantData.xlsx';
 
 describe('basic tests...', function() {
   it('should detect a sheet marked to be exposed as decision service', function() {
@@ -44,4 +45,17 @@ describe('basic tests...', function() {
 
   });
 
-})
+  it('should detect a sheet marked as a boxed context without result', function() {
+    var workbook = XLSX.readFile(testDataFile2);
+
+    var worksheet = workbook.Sheets["Applicant Data"];
+
+    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
+
+    var result = DL._.isBoxedContextWithoutResult(csvExcel);
+
+    expect(result).to.be.true;
+
+  });
+
+});

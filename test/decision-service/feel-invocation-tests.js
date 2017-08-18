@@ -5,6 +5,7 @@ var DL = require('../../utils/helper/decision-logic');
 var fs = require('fs');
 
 var testDataFile = 'test/data/RoutingDecisionService.xlsx';
+var testDataFile2 = 'test/data/ApplicantData.xlsx';
 
 describe('boxed expression tests...', function() {
   it('should generate the required boxed invocation expression from worksheet', function() {
@@ -41,7 +42,7 @@ describe('boxed expression tests...', function() {
 
   it('should generate expression for boxed context with result correctly', function() {
     var generateContextString = DL._.generateContextString;
-     var workbook = XLSX.readFile(testDataFile);
+    var workbook = XLSX.readFile(testDataFile);
 
     var worksheet = workbook.Sheets["Installment Calculation"];
 
@@ -70,6 +71,32 @@ describe('boxed expression tests...', function() {
     fs.writeFileSync('file2.txt', expectedCtxString)
     expect(computedCtxString).to.equal(expectedCtxString);
 
+  });
+
+  it('should generate expression for boxed context without result', function() {
+    var generateContextString = DL._.generateContextString;
+    var workbook = XLSX.readFile(testDataFile2);
+
+    var worksheet = workbook.Sheets["Applicant Data"];
+
+    expect(worksheet).to.be.defined;
+
+    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
+    expect(csvExcel.length).to.not.equal(0)
+    var isContext = DL._.isBoxedContextWithoutResult(csvExcel);
+    expect(isContext).to.be.true;
+    var contextEntries = {
+      "Age" : '51',
+      "MaritalStatus" : '"M"',
+      EmploymentStatus: '"EMPLOYED"',
+      ExistingCustomer: 'FALSE'
+    };
+
+    var expectedCtxString = generateContextString(contextEntries, false);
+    // debugger;
+    var computedCtxString = DL._.makeContext(csvExcel).expression;
+
+    expect(computedCtxString).to.equal(expectedCtxString);
   });
 });
 

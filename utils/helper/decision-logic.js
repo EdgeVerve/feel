@@ -21,7 +21,7 @@ const parseXLS = (path) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
     csv.push({
-      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter }),
+      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter, blankrows: false }),
     });
   });
 
@@ -42,7 +42,8 @@ const makeContextObject = (csvExcel) => {
     isDecisionTableModel,
     generateContextString,
     isBoxedInvocation,
-    isBoxedContextWithResult
+    isBoxedContextWithResult,
+    isBoxedContextWithoutResult
   } = api._;
 
   // var csvArray = csvExcel.split('\n');
@@ -56,6 +57,9 @@ const makeContextObject = (csvExcel) => {
   else if (isBoxedContextWithResult(csvExcel)) {
     contextEntries = parseBoxedContextWithResultFromCsv(csvExcel)
   }
+  else if(isBoxedContextWithoutResult(csvExcel)) {
+    contextEntries = parseBoxedContextWithoutResultFromCsv(csvExcel)
+  }
   else {
     contextEntries = parseBusinessModelFromCsv(csvExcel);
   }
@@ -67,6 +71,21 @@ const makeContextObject = (csvExcel) => {
     expression
   }
 };
+
+function parseBoxedContextWithoutResultFromCsv(csvString) {
+  var lines = csvString.split(rowDelimiter);
+  var i, j;
+  var entries = [];
+  for(i = 1, j = lines.length; i < j; i++) {
+    var fields = lines[i].split(delimiter);
+    if (fields.filter(f => f.length).length) {
+      if (fields[0].length) {
+        entries.push(`${fields[0]} : ${processString(fields[1])}`)
+      }
+    }
+  }
+  return entries;
+}
 
 function parseBoxedContextWithResultFromCsv(csvString) {
   var csvArray = csvString.split(rowDelimiter);
@@ -122,7 +141,7 @@ function isType2String(testString) {
 
 function processString(inputString) {
   if (isCsvString(inputString)) {
-    return rCsvString.match(inputString)[1];
+    return '"' + inputString.match(rCsvString)[1] + '"';
   }
   else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
@@ -454,14 +473,19 @@ const parseWorkbook = function (path) {
 
 var generateJsonFEEL = function (jsonCsvObject) {
   // const jsonFeel = {};
-  const { _: { isDecisionTableModel, makeContext, createBusinessModel } } = api;
+  const { _: { isDecisionTableModel, makeContext, createBusinessModel, isDecisionService } } = api;
+  var services = Object.values(jsonCsvObject)
+    .filter(csv => isDecisionService(csv))
+    .map(csv => {
+      return csv.substring(0, csv.indexOf(delimiter))
+    });
 
   return Object.keys(jsonCsvObject).reduce( (hash, key) => {
     var csvModel = jsonCsvObject[key];
     var ctx = makeContext(csvModel);
     hash[ctx.qn] = ctx.expression;
     return hash;
-  }, {})
+  }, { _services: services })
 };
 
 var generateContextString = function(contextEntries, isRoot = true) {
@@ -573,6 +597,18 @@ var isBoxedContextWithResult = function(csvString) {
   return false;
 };
 
+var isBoxedContextWithoutResult = function(csvString) {
+  var line = csvString.split(rowDelimiter)[0];
+
+  if (line && line.length) {
+    var fields = line.split(delimiter);
+    return fields[2] === 'context';
+  }
+
+  return false;
+};
+
+
 let api;
 api = module.exports = {
   csv_to_decision_table: createDecisionTable,
@@ -589,6 +625,7 @@ api = module.exports = {
     generateContextString,
     isDecisionService,
     isBoxedInvocation,
-    isBoxedContextWithResult
+    isBoxedContextWithResult,
+    isBoxedContextWithoutResult
   },
 };
