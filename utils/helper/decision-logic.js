@@ -14,14 +14,18 @@ const rootMap = {};
 const delimiter = '&SP';
 const rowDelimiter = '&RSP';
 
+const rgxBlankRows = /^(&SP)+&RSP/; //for beginning blank rows
+
 const parseXLS = (path) => {
   const workbook = XLSX.readFile(path);
   const csv = [];
   workbook.SheetNames.forEach((sheetName) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
+    var csvString = XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter, blankrows: false });
+
     csv.push({
-      [sheetName]: XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter, blankrows: false }),
+      [sheetName]: csvString.replace(rgxBlankRows, ''),
     });
   });
 

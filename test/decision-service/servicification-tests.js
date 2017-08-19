@@ -7,15 +7,34 @@ var fs = require('fs');
 var testFile = 'test/data/RoutingDecisionService.xlsx';
 
 describe('servicification tests...', function() {
+  it('should be that each worksheet should not have blank rows at start', function() {
+    var { parseXLS } = DL._;
+
+    var parsed = parseXLS(testFile);
+
+    var regex = /^(&SP)+&RSP/;
+
+    parsed.forEach( sheetHash => {
+      var key = Object.keys(sheetHash)[0];
+      var csv = sheetHash[key];
+
+      expect(regex.test(csv), key + ' sheet is faulty').to.be.false;
+    });
+  });
+
   it('should be that each worksheet has a proper qualified name', function() {
-    var workbook = XLSX.readFile(testFile);
-    var sheets = workbook.SheetNames.map(name => {
-      var csv = XLSX.utils.sheet_to_csv( workbook.Sheets[name], {FS: '&SP', RS: '&RSP', blankrows: false });
-      return { name, csv };
-    }).filter(s => s.csv.substring(0, s.csv.indexOf('&SP')).length);
-    console.log(sheets.map(s => s.name));
-    console.log(workbook.SheetNames);
-    expect(sheets.length, 'not all sheets have qualified names').to.equal(workbook.SheetNames.length);
+    var { parseXLS } = DL._;
+
+    var parsed = parseXLS(testFile);
+
+    parsed.forEach( sheetHash => {
+      var key = Object.keys(sheetHash)[0];
+      var csv = sheetHash[key];
+      var qn = csv.substring(0, csv.indexOf('&SP'))
+      // expect(regex.test(csv), key + ' sheet is faulty').to.be.false;
+      expect(qn).to.be.string;
+      expect(qn.length, 'Could not detect qualified name for sheet: ' + key).to.not.equal(0)
+    });
   });
 
   it('should expose a servicified json-feel object', function() {
