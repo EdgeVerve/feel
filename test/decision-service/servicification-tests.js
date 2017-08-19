@@ -37,7 +37,7 @@ describe('servicification tests...', function() {
     });
   });
 
-  it('should expose a servicified json-feel object', function() {
+  it('should expose a json-feel object which exposes a service', function() {
     debugger;
     var jsonFeel = DL.parseWorkbook(testFile);
 
@@ -49,7 +49,7 @@ describe('servicification tests...', function() {
     expect(workbook.SheetNames.length + 1).to.equal(Object.keys(jsonFeel).length)
     expect(jsonFeel._services).to.be.defined;
 
-    expect(jsonFeel._services).to.be.array;
+    expect(jsonFeel._services).to.eql(['Routing']);
 
   });
 
