@@ -4,58 +4,53 @@ var expect = chai.expect;
 var DL = require('../../utils/helper/decision-logic');
 var fs = require('fs');
 
-var testDataFile = 'test/data/RoutingDecisionService.xlsx';
-var testDataFile2 = 'test/data/ApplicantData.xlsx';
+var testDataFile = 'test/data/CustomerDiscount2.xlsx';
+// var testDataFile2 = 'test/data/ApplicantData.xlsx';
 
-describe('basic tests...', function() {
-  it('should detect a sheet marked to be exposed as decision service', function() {
-    var workbook = XLSX.readFile(testDataFile);
+describe('additional decision table parsing logic...', function() {
+  it('should create decision table with input value list', function() {
+    var generateContextString = DL._.generateContextString;
+    var { parseXLS, parseCsv } = DL._;
+    var jsonCsvObject = parseCsv(parseXLS(testDataFile));
+    var values = Object.values(jsonCsvObject);
+    console.log(jsonCsvObject)
+    expect(values.length).to.equal(1);
+    debugger;
+    var result = DL._.makeContext(values[0]);
 
-    var worksheet = workbook.Sheets["Routing"];
+    expect(result.qn).to.equal('Customer Discount');
 
-    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
+    var computedExpression = result.expression;
+    var ruleList = [
+      ['"Business"', '< 10', '0.1'],
+      ['"Business"', '>=10', '0.15'],
+      ['"Private"', '-', '0.05'],
+    ];
 
-    var result = DL._.isDecisionService(csvExcel);
+    var inpValuesList = [['"Business"', '"Private"'], ['<10', '>=10']];
+    var outputValuesList = [['0.05', '0.10', '0.15']];
 
-    expect(result).to.equal(true)
-  });
+    var contextEntries = [
+      'outputs : "Discount"',
+      "input expression list : " + '[Customer,Order Size]',
+      {
+        "rule list" : generateContextString(ruleList.map(r => generateContextString(r, "csv")), "csv")
+      },
+      {
+        id: "Customer Discount"
+      },
+      'hit policy: "U"',
+      {
+        "input values list" : generateContextString(inpValuesList.map(i => generateContextString(i, "csv")), "csv"),
+        "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, "csv")), "csv")
+      }
+    ];
 
-  it('should detect a sheet marked as a boxed invocation', function() {
-    var workbook = XLSX.readFile(testDataFile);
+    var entry = `decision table (${generateContextString(contextEntries, "list")})`;
+    var finalCtxEntry = { result: entry };
 
-    var worksheet = workbook.Sheets["Post-Bureau risk category"];
-
-    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
-
-    var result = DL._.isBoxedInvocation(csvExcel);
-
-    expect(result).to.equal(true);
-  });
-
-  it('should detect a sheet marked as a boxed context with result', function() {
-    var workbook = XLSX.readFile(testDataFile);
-
-    var worksheet = workbook.Sheets["Installment Calculation"];
-
-    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
-
-    var result = DL._.isBoxedContextWithResult(csvExcel);
-
-    expect(result).to.be.true;
-
-  });
-
-  it('should detect a sheet marked as a boxed context without result', function() {
-    var workbook = XLSX.readFile(testDataFile2);
-
-    var worksheet = workbook.Sheets["Applicant Data"];
-
-    var csvExcel = XLSX.utils.sheet_to_csv(worksheet, { FS: '&SP', RS: '&RSP'});
-
-    var result = DL._.isBoxedContextWithoutResult(csvExcel);
-
-    expect(result).to.be.true;
-
+    var expectedContextString = generateContextString(finalCtxEntry, false);
+    expect(computedExpression).to.equal(expectedContextString);
   });
 
 });

@@ -133,6 +133,8 @@ function parseBusinessModelFromCsv(csvString) {
 }
 
 var rCsvString = /"""(\w+)"""/;
+var rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
+
 var noop = function() {};
 
 function isCsvString(testString) {
@@ -143,12 +145,34 @@ function isType2String(testString) {
   return testString[0] === '"' && testString[testString.length - 1] === '"'
 }
 
+function isType3String(testString) {
+  return rCsvStringType3.test(testString);
+}
+
+function isType4String(testString) {
+  return testString.indexOf('"') === -1
+    && testString.indexOf(',') > -1
+    && /[<>\+\-=\/\^\.]/.test(testString) //TODO: may need to add more operators here
+}
+
 function processString(inputString) {
   if (isCsvString(inputString)) {
     return '"' + inputString.match(rCsvString)[1] + '"';
   }
+  else if(isType3String(inputString)) {
+    return inputString.replace(/""(\w+)""/g, function(_, value){
+      return '*' + value + '*';
+    })
+      .replace(/"/g, '')
+      .replace(/\*/g, '"')
+      .replace(/\s/g, '')
+      .split(',')
+  }
   else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
+  }
+  else if (isType4String(inputString)) {
+    return inputString.replace(/\s/g, '').split(',')
   }
   else {
     return inputString
@@ -156,6 +180,7 @@ function processString(inputString) {
 }
 
 function parseDecisionTableFromCsv(csvString) {
+  var qualifiedName = csvString.substring(0, csvString.indexOf(delimiter))
   var csvArray = csvString.split(rowDelimiter);
   var contextEntries = [];
   var dto = {}; //decision table object representation
@@ -202,6 +227,32 @@ function parseDecisionTableFromCsv(csvString) {
 
   dto["inputExpressionList"] = generateContextString(inputExpressionList, "csv");
 
+  //1.2.1 detect if you have input/output components and process them
+  line = csvArray[i + 1];
+  var inputValuesList = [];
+  var outputValuesList = [];
+  components = line.split(delimiter);
+  if (components[0].length === 0) {
+    //! you have some input/output values here
+    var k, l, lst;
+    for(k = 1, l = components.length; k < l; k++) {
+      // lst = []
+      if (k <= conditionCount) {
+        //!input values list
+        if (components[k].length) {
+          inputValuesList.push(processString(components[k]))
+        }
+      }
+      else {
+        //!output values list
+        if (components[k].length) {
+          outputValuesList.push(processString(components[k]))
+        }
+      }
+    }
+    i++; //next line
+  }
+
   // 1.3 populate the rule list
   var ruleList = [];
   var tmp = {};
@@ -212,12 +263,9 @@ function parseDecisionTableFromCsv(csvString) {
     components = line.split(delimiter)
     for(let j = 1; j < components.length; j++) {
       var token = components[j];
-      if (isCsvString(token)) {
-        token = '"' + token.match(rCsvString)[1] +'"';
-      }
       if (token.length) {
-        tmp[j] = token
-        conditionList.push(token)
+        tmp[j] = processString(token)
+        conditionList.push(tmp[j])
       }
       else {
         conditionList.push(tmp[j])
@@ -227,7 +275,7 @@ function parseDecisionTableFromCsv(csvString) {
   }
 
   dto["ruleList"] = generateContextString(ruleList.map(cl => {
-    return generateContextString(cl, false)
+    return generateContextString(cl, "csv")
   }), "csv");
 
   // 2. generating the context entry object for decision arguments
@@ -237,8 +285,16 @@ function parseDecisionTableFromCsv(csvString) {
       "input expression list" : dto["inputExpressionList"],
       "rule list": dto["ruleList"]
     },
+    `id : ${qualifiedName}`,
     `hit policy: \"${dto["hitPolicy"]}\"`
   ];
+
+  if (inputValuesList.length || outputValuesList.length) {
+    contextEntry.push({
+      "input values list" : generateContextString(inputValuesList.map(i => generateContextString(i, "csv")), "csv"),
+      "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, "csv")), "csv")
+    });
+  }
 
   var dtContextString = generateContextString(contextEntry, "list")
 
