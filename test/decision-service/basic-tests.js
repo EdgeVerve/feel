@@ -13,9 +13,9 @@ describe('additional decision table parsing logic...', function() {
     var { parseXLS, parseCsv } = DL._;
     var jsonCsvObject = parseCsv(parseXLS(testDataFile));
     var values = Object.values(jsonCsvObject);
-    console.log(jsonCsvObject)
+    // console.log(jsonCsvObject)
     expect(values.length).to.equal(1);
-    debugger;
+    // debugger;
     var result = DL._.makeContext(values[0]);
 
     expect(result.qn).to.equal('Customer Discount');
