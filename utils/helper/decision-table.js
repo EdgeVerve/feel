@@ -30,149 +30,142 @@ const parseXLS = (path) => {
 const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 
 const makeContextObject = (csvExcel) => {
+  // Convention: context entries are vertical
+  // Convention: decision table entries are horizontal
 
-  //Convention: context entries are vertical
-  //Convention: decision table entries are horizontal
+  const qualifiedName = csvExcel.substring(0, csvExcel.indexOf(delimiter));
+  let expression;
 
-  var qualifiedName = csvExcel.substring(0 , csvExcel.indexOf(delimiter))
-  var expression;
-
-  let { isDecisionTableModel, generateContextString } = api._
+  const { isDecisionTableModel, generateContextString } = api._;
   // var csvArray = csvExcel.split('\n');
-  var contextEntries;
+  let contextEntries;
   if (isDecisionTableModel(csvExcel)) {
-    contextEntries = parseDecisionTableFromCsv(csvExcel)
-  }
-  else {
-    contextEntries = parseBusinessModelFromCsv(csvExcel)
+    contextEntries = parseDecisionTableFromCsv(csvExcel);
+  } else {
+    contextEntries = parseBusinessModelFromCsv(csvExcel);
   }
 
-  expression = generateContextString(contextEntries)
+  expression = generateContextString(contextEntries);
 
   return {
     qn: qualifiedName,
-    expression
-  }
+    expression,
+  };
 };
 
 function parseBusinessModelFromCsv(csvString) {
-  var csvArray = csvString.split('\n');
-  var i = 1;
+  const csvArray = csvString.split('\n');
+  const i = 1;
 
-  var contextEntries = []
+  const contextEntries = [];
 
-  csvArray.slice(1).forEach(line => {
-    var fields = line.split(delimiter)
+  csvArray.slice(1).forEach((line) => {
+    const fields = line.split(delimiter);
 
-    //TODO handle complex cases
-    var tokensCount = fields.filter(token => token.length).length
-    if( tokensCount > 1) {
-      contextEntries.push({ [fields[0]] : fields[1] })
-    }
-    else if(tokensCount === 1) {
-      contextEntries.push(fields[0])
+    // TODO handle complex cases
+    const tokensCount = fields.filter(token => token.length).length;
+    if (tokensCount > 1) {
+      contextEntries.push({ [fields[0]]: fields[1] });
+    } else if (tokensCount === 1) {
+      contextEntries.push(fields[0]);
     }
   });
   return contextEntries;
 }
 
-var rCsvString = /"""(\w+)"""/;
-var noop = function() {};
+const rCsvString = /"""(\w+)"""/;
+const noop = function () {};
 
 function isCsvString(testString) {
   return rCsvString.test(testString);
 }
 
 function parseDecisionTableFromCsv(csvString) {
-  var csvArray = csvString.split('\n');
-  var contextEntries = [];
-  var dto = {}; //decision table object representation
-  let { generateContextString } = api._
+  const csvArray = csvString.split('\n');
+  const contextEntries = [];
+  const dto = {}; // decision table object representation
+  const { generateContextString } = api._;
 
-  var i = 1;
-  var line = csvArray[i];
+  let i = 1;
+  let line = csvArray[i];
 
-  //parsing context stuff if any
-  while( !line.startsWith("RuleTable") ) {
-    var fields = line.split(delimiter);
-    var tokensCount = fields.filter(token => token.length).length
+  // parsing context stuff if any
+  while (!line.startsWith('RuleTable')) {
+    const fields = line.split(delimiter);
+    const tokensCount = fields.filter(token => token.length).length;
     if (tokensCount > 1) {
       contextEntries.push({
-        [fields[0]] : fields[1]
+        [fields[0]]: fields[1],
       });
     }
     i++;
-    line = csvArray[i]
+    line = csvArray[i];
   }
 
   // 1. Parse the rule table
 
-  var components = line.split(delimiter);
+  let components = line.split(delimiter);
 
   // 1.1 determine number of input components
-  var conditionCount = components.filter( c => c === "Condition").length;
+  const conditionCount = components.filter(c => c === 'Condition').length;
 
   // 1.2 get the input expressions & hit policy
   i++;
   line = csvArray[i];
   components = line.split(delimiter);
-  dto["hitPolicy"] = components[0];
-  var inputExpressionList = [];
+  dto.hitPolicy = components[0];
+  const inputExpressionList = [];
   // 1.2.1 loop though the rule table line to get input expressions
-  for(let j = 1; j < components.length; j++) {
+  for (let j = 1; j < components.length; j++) {
     if (j <= conditionCount) {
       inputExpressionList.push(components[j]);
-    }
-    else {
-      dto["outputs"] = components[j];
+    } else {
+      dto.outputs = components[j];
     }
   }
 
-  dto["inputExpressionList"] = generateContextString(inputExpressionList, "csv");
+  dto.inputExpressionList = generateContextString(inputExpressionList, 'csv');
 
   // 1.3 populate the rule list
-  var ruleList = [];
-  var tmp = {};
+  const ruleList = [];
+  const tmp = {};
 
-  for(i++; i < csvArray.length; i++) {
-    var conditionList = [];
+  for (i++; i < csvArray.length; i++) {
+    const conditionList = [];
     line = csvArray[i];
-    components = line.split(delimiter)
-    for(let j = 1; j < components.length; j++) {
-      var token = components[j];
+    components = line.split(delimiter);
+    for (let j = 1; j < components.length; j++) {
+      let token = components[j];
       if (isCsvString(token)) {
-        token = '"' + token.match(rCsvString)[1] +'"';
+        token = `"${token.match(rCsvString)[1]}"`;
       }
       if (token.length) {
-        tmp[j] = token
-        conditionList.push(token)
-      }
-      else {
-        conditionList.push(tmp[j])
+        tmp[j] = token;
+        conditionList.push(token);
+      } else {
+        conditionList.push(tmp[j]);
       }
     }
     components[0] ? ruleList.push(conditionList) : noop();
   }
 
-  dto["ruleList"] = generateContextString(ruleList.map(cl => {
-    return generateContextString(cl, false)
-  }), "csv");
+  dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, false)), 'csv');
 
   // 2. generating the context entry object for decision arguments
-  var contextEntry = [
-    `outputs : \"${dto["outputs"]}\"`,
+  const contextEntry = [
+    `outputs : \"${dto.outputs}\"`,
     {
-      "input expression list" : dto["inputExpressionList"],
-      "rule list": dto["ruleList"]
+      'input expression list': dto.inputExpressionList,
+      'rule list': dto.ruleList,
     },
-    `hit policy: \"${dto["hitPolicy"]}\"`
+    `hit policy: \"${dto.hitPolicy}\"`,
   ];
 
-  var dtContextString = generateContextString(contextEntry, "list")
+  const dtContextString = generateContextString(contextEntry, 'list');
 
-  //3. final context entry
+  // 3. final context entry
   contextEntries.push({
-    result: `decision table (${dtContextString})`
+    result: `decision table (${dtContextString})`,
   });
 
   return contextEntries;
@@ -407,87 +400,75 @@ var generateJsonFEEL = function (jsonCsvObject) {
   // const jsonFeel = {};
   const { _: { isDecisionTableModel, makeContext, createBusinessModel } } = api;
 
-  return Object.keys(jsonCsvObject).reduce( (hash, key) => {
-    var csvModel = jsonCsvObject[key];
-    var ctx = makeContext(csvModel);
+  return Object.keys(jsonCsvObject).reduce((hash, key) => {
+    const csvModel = jsonCsvObject[key];
+    const ctx = makeContext(csvModel);
     hash[ctx.qn] = ctx.expression;
     return hash;
-  }, {})
+  }, {});
 };
 
-var generateContextString = function(contextEntries, isRoot = true) {
-  var stringArray = []
-  var feelType = 'string' //we'll assume default as string entry
-  var override = false;
+var generateContextString = function (contextEntries, isRoot = true) {
+  const stringArray = [];
+  let feelType = 'string'; // we'll assume default as string entry
+  const override = false;
 
-  if (typeof contextEntries === "object" && Array.isArray(contextEntries)) {
+  if (typeof contextEntries === 'object' && Array.isArray(contextEntries)) {
     //! process array entries
-    feelType = 'array'
-    contextEntries.forEach(entry => {
+    feelType = 'array';
+    contextEntries.forEach((entry) => {
       // var feelEntry = generateContextString(entry, false);
       // stringArray.push(feelEntry)
-      var feelEntry
+      let feelEntry;
       if (isRoot) {
-        feelEntry = generateContextString(entry)
+        feelEntry = generateContextString(entry);
+      } else {
+        feelEntry = generateContextString(entry, false);
       }
-      else {
-        feelEntry = generateContextString(entry, false)
-      }
-      stringArray.push(feelEntry)
-    })
-  }
-  else if (typeof contextEntries === "object" && !Array.isArray(contextEntries)) {
+      stringArray.push(feelEntry);
+    });
+  } else if (typeof contextEntries === 'object' && !Array.isArray(contextEntries)) {
     //! process object entries
 
-    feelType = 'object'
+    feelType = 'object';
 
-    var contextKeys = Object.keys(contextEntries)
-    contextKeys.forEach(key => {
-      var feelEntry = generateContextString(contextEntries[key], false)
-      stringArray.push(`${key} : ${feelEntry}`)
+    const contextKeys = Object.keys(contextEntries);
+    contextKeys.forEach((key) => {
+      const feelEntry = generateContextString(contextEntries[key], false);
+      stringArray.push(`${key} : ${feelEntry}`);
     });
-  }
-  else {
+  } else {
     //! default as string
-    console.assert(typeof contextEntries === 'string', "Expected context entry to be a string")
+    console.assert(typeof contextEntries === 'string', 'Expected context entry to be a string');
     // stringArray.push(contextEntries)
   }
 
   if (feelType === 'object') {
     if (typeof isRoot === 'string' && isRoot === 'csv') {
-      return stringArray.join(',')
-    }
-    else if (typeof isRoot === 'boolean' && isRoot) {
-      return stringArray.join(',')
-    }
-    else {
-      return "{" + stringArray.join(',') + "}";
-    }
-
-  }
-  else if(feelType === 'array') {
-    if (typeof isRoot === 'string' && isRoot === 'csv') {
-      return "[" + stringArray.join(',') + "]";
-    }
-    else if (typeof isRoot === 'string' && isRoot === 'list') {
+      return stringArray.join(',');
+    } else if (typeof isRoot === 'boolean' && isRoot) {
       return stringArray.join(',');
     }
-    else if (typeof isRoot === 'boolean' && isRoot) {
-      return "{" + stringArray.join(",") + "}";
+
+    return `{${stringArray.join(',')}}`;
+  } else if (feelType === 'array') {
+    if (typeof isRoot === 'string' && isRoot === 'csv') {
+      return `[${stringArray.join(',')}]`;
+    } else if (typeof isRoot === 'string' && isRoot === 'list') {
+      return stringArray.join(',');
+    } else if (typeof isRoot === 'boolean' && isRoot) {
+      return `{${stringArray.join(',')}}`;
     }
-    else {
-      return "[" + stringArray.map(x => "'" + x + "'").join(",") + "]";
-    }
+
+    return `[${stringArray.map(x => `'${x}'`).join(',')}]`;
+  } else if (feelType === 'string') {
+    return contextEntries;
   }
-  else if (feelType === "string") {
-    return contextEntries
-  }
-  else {
-    throw new Error("Cannot process contextEntries of type: " + typeof contextEntries)
-  }
+
+  throw new Error(`Cannot process contextEntries of type: ${typeof contextEntries}`);
 };
 
-var createBusinessModel = function(csvString) {
+const createBusinessModel = function (csvString) {
 
 };
 
@@ -505,6 +486,6 @@ api = module.exports = {
     isDecisionTableModel,
     generateJsonFEEL,
     createBusinessModel,
-    generateContextString
+    generateContextString,
   },
 };

@@ -10,11 +10,12 @@ const XLSX = require('xlsx');
 const _ = require('lodash');
 const tree = require('./decision-tree.js');
 
+let api;
 const rootMap = {};
 const delimiter = '&SP';
 const rowDelimiter = '&RSP';
 
-const rgxBlankRows = /^(&SP)+&RSP/; //for beginning blank rows
+const rgxBlankRows = /^(&SP)+&RSP/; // for beginning blank rows
 
 const parseXLS = (path) => {
   const workbook = XLSX.readFile(path);
@@ -22,7 +23,7 @@ const parseXLS = (path) => {
   workbook.SheetNames.forEach((sheetName) => {
  /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
-    var csvString = XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter , RS: rowDelimiter, blankrows: false });
+    const csvString = XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter, RS: rowDelimiter, blankrows: false });
 
     csv.push({
       [sheetName]: csvString.replace(rgxBlankRows, ''),
@@ -32,117 +33,17 @@ const parseXLS = (path) => {
   return csv;
 };
 
-const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
+const rCsvString = /"""(\w+)"""/;
+const rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
 
-const makeContextObject = (csvExcel) => {
-
-  //Convention: context entries are vertical
-  //Convention: decision table entries are horizontal
-
-  var qualifiedName = csvExcel.substring(0 , csvExcel.indexOf(delimiter))
-  var expression;
-
-  let {
-    isDecisionTableModel,
-    generateContextString,
-    isBoxedInvocation,
-    isBoxedContextWithResult,
-    isBoxedContextWithoutResult
-  } = api._;
-
-  // var csvArray = csvExcel.split('\n');
-  var contextEntries;
-  if (isDecisionTableModel(csvExcel)) {
-    contextEntries = parseDecisionTableFromCsv(csvExcel)
-  }
-  else if(isBoxedInvocation(csvExcel)) {
-    contextEntries = parseInvocationFromCsv(csvExcel);
-  }
-  else if (isBoxedContextWithResult(csvExcel)) {
-    contextEntries = parseBoxedContextWithResultFromCsv(csvExcel)
-  }
-  else if(isBoxedContextWithoutResult(csvExcel)) {
-    contextEntries = parseBoxedContextWithoutResultFromCsv(csvExcel)
-  }
-  else {
-    contextEntries = parseBusinessModelFromCsv(csvExcel);
-  }
-
-  expression = generateContextString(contextEntries)
-
-  return {
-    qn: qualifiedName,
-    expression
-  }
-};
-
-function parseBoxedContextWithoutResultFromCsv(csvString) {
-  var lines = csvString.split(rowDelimiter);
-  var i, j;
-  var entries = [];
-  for(i = 1, j = lines.length; i < j; i++) {
-    var fields = lines[i].split(delimiter);
-    if (fields.filter(f => f.length).length) {
-      if (fields[0].length) {
-        entries.push(`${fields[0]} : ${processString(fields[1])}`)
-      }
-    }
-  }
-  return entries;
-}
-
-function parseBoxedContextWithResultFromCsv(csvString) {
-  var csvArray = csvString.split(rowDelimiter);
-  var line;
-  var i, j;
-  var entries = [];
-  for(i = 1, j = csvArray.length; i < j; i++) {
-    line = csvArray[i];
-    if ( !line.startsWith('(') ) {
-      var fields = line.split(delimiter);
-      if (fields[0].length && fields.filter(f => f.length).length > 1) {
-        entries.push(`${fields[0]} : ${processString(fields[1])}`);
-      }
-      else if(fields[0].length) {
-        entries.push(`result : ${fields[0]}`)
-      }
-    }
-  }
-  return entries;
-}
-
-function parseBusinessModelFromCsv(csvString) {
-  var csvArray = csvString.split(rowDelimiter);
-  var i = 1;
-
-  var contextEntries = []
-
-  csvArray.slice(1).forEach(line => {
-    var fields = line.split(delimiter)
-
-    //TODO handle complex cases
-    var tokensCount = fields.filter(token => token.length).length
-    if( tokensCount > 1) {
-      contextEntries.push({ [fields[0]] : fields[1] })
-    }
-    else if(tokensCount === 1) {
-      contextEntries.push(fields[0])
-    }
-  });
-  return contextEntries;
-}
-
-var rCsvString = /"""(\w+)"""/;
-var rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
-
-var noop = function() {};
+// const noop = function () {};
 
 function isCsvString(testString) {
   return rCsvString.test(testString);
 }
 
 function isType2String(testString) {
-  return testString[0] === '"' && testString[testString.length - 1] === '"'
+  return testString[0] === '"' && testString[testString.length - 1] === '"';
 }
 
 function isType3String(testString) {
@@ -152,159 +53,257 @@ function isType3String(testString) {
 function isType4String(testString) {
   return testString.indexOf('"') === -1
     && testString.indexOf(',') > -1
-    && /[<>\+\-=\/\^\.]/.test(testString) //TODO: may need to add more operators here
+    && /[<>\+\-=\/\^\.]/.test(testString); // TODO: may need to add more operators here
 }
 
 function processString(inputString) {
   if (isCsvString(inputString)) {
-    return '"' + inputString.match(rCsvString)[1] + '"';
-  }
-  else if(isType3String(inputString)) {
-    return inputString.replace(/""(\w+)""/g, function(_, value){
-      return '*' + value + '*';
-    })
+    return `"${inputString.match(rCsvString)[1]}"`;
+  } else if (isType3String(inputString)) {
+    return inputString.replace(/""(\w+)""/g, (_, value) => `*${value}*`)
       .replace(/"/g, '')
       .replace(/\*/g, '"')
       .replace(/\s/g, '')
-      .split(',')
-  }
-  else if (isType2String(inputString)) {
+      .split(',');
+  } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
+  } else if (isType4String(inputString)) {
+    return inputString.replace(/\s/g, '').split(',');
   }
-  else if (isType4String(inputString)) {
-    return inputString.replace(/\s/g, '').split(',')
-  }
-  else {
-    return inputString
-  }
+
+  return inputString;
 }
 
+const parseInvocationFromCsv = function (csvString) {
+  const lines = csvString.split(rowDelimiter);
+  const { generateContextString } = api._;
+  const fnName = lines[1].split(delimiter)[0];
+  const entries = [];
+  for (let i = 2; i < lines.length; i += 1) {
+    const fields = lines[i].split(delimiter);
+    if (fields[0].length) { // to avoid blank lines
+      entries.push(`${fields[0]} : ${fields[1]}`);
+    }
+  }
+
+  return `${fnName} (${generateContextString(entries, 'list')})`;
+};
+
 function parseDecisionTableFromCsv(csvString) {
-  var qualifiedName = csvString.substring(0, csvString.indexOf(delimiter))
-  var csvArray = csvString.split(rowDelimiter);
-  var contextEntries = [];
-  var dto = {}; //decision table object representation
-  let { generateContextString } = api._
+  const qualifiedName = csvString.substring(0, csvString.indexOf(delimiter));
+  const csvArray = csvString.split(rowDelimiter);
+  const contextEntries = [];
+  const dto = {}; // decision table object representation
+  const { generateContextString } = api._;
 
-  var i = 1;
-  var line = csvArray[i];
+  let i = 1;
+  let line = csvArray[i];
 
-  //parsing context stuff if any
-  while( !line.startsWith("RuleTable") ) {
-    var fields = line.split(delimiter);
-    var tokensCount = fields.filter(token => token.length).length
+  // parsing context stuff if any
+  while (!line.startsWith('RuleTable')) {
+    const fields = line.split(delimiter);
+    const tokensCount = fields.filter(token => token.length).length;
     if (tokensCount > 1) {
       contextEntries.push({
-        [fields[0]] : fields[1]
+        [fields[0]]: fields[1],
       });
     }
-    i++;
-    line = csvArray[i]
+    i += 1;
+    line = csvArray[i];
   }
 
   // 1. Parse the rule table
 
-  var components = line.split(delimiter);
+  let components = line.split(delimiter);
 
   // 1.1 determine number of input components
-  var conditionCount = components.filter( c => c === "Condition").length;
+  const conditionCount = components.filter(c => c === 'Condition').length;
 
   // 1.2 get the input expressions & hit policy
-  i++;
+  i += 1;
   line = csvArray[i];
   components = line.split(delimiter);
-  dto["hitPolicy"] = components[0];
-  var inputExpressionList = [];
+  dto.hitPolicy = components[0];
+  const inputExpressionList = [];
   // 1.2.1 loop though the rule table line to get input expressions
-  for(let j = 1; j < components.length; j++) {
+  for (let j = 1; j < components.length; j += 1) {
     if (j <= conditionCount) {
       inputExpressionList.push(components[j]);
-    }
-    else {
-      dto["outputs"] = components[j];
+    } else {
+      dto.outputs = components[j];
     }
   }
 
-  dto["inputExpressionList"] = generateContextString(inputExpressionList, "csv");
+  dto.inputExpressionList = generateContextString(inputExpressionList, 'csv');
 
-  //1.2.1 detect if you have input/output components and process them
+  // 1.2.1 detect if you have input/output components and process them
   line = csvArray[i + 1];
-  var inputValuesList = [];
-  var outputValuesList = [];
+  const inputValuesList = [];
+  const outputValuesList = [];
   components = line.split(delimiter);
   if (components[0].length === 0) {
     //! you have some input/output values here
-    var k, l, lst;
-    for(k = 1, l = components.length; k < l; k++) {
+    let k;
+    let l;
+    // let lst;
+    for (k = 1, l = components.length; k < l; k += 1) {
       // lst = []
       if (k <= conditionCount) {
-        //!input values list
+        //! input values list
         if (components[k].length) {
-          inputValuesList.push(processString(components[k]))
+          inputValuesList.push(processString(components[k]));
         }
-      }
-      else {
-        //!output values list
-        if (components[k].length) {
-          outputValuesList.push(processString(components[k]))
-        }
+      } else if (components[k].length) {
+        outputValuesList.push(processString(components[k]));
       }
     }
-    i++; //next line
+    i += 1; // next line
   }
 
   // 1.3 populate the rule list
-  var ruleList = [];
-  var tmp = {};
+  const ruleList = [];
+  const tmp = {};
 
-  for(i++; i < csvArray.length; i++) {
-    var conditionList = [];
+  for (i += 1; i < csvArray.length; i += 1) {
+    const conditionList = [];
     line = csvArray[i];
-    components = line.split(delimiter)
-    for(let j = 1; j < components.length; j++) {
-      var token = components[j];
+    components = line.split(delimiter);
+    for (let j = 1; j < components.length; j += 1) {
+      const token = components[j];
       if (token.length) {
-        tmp[j] = processString(token)
-        conditionList.push(tmp[j])
-      }
-      else {
-        conditionList.push(tmp[j])
+        tmp[j] = processString(token);
+        conditionList.push(tmp[j]);
+      } else {
+        conditionList.push(tmp[j]);
       }
     }
-    components[0] ? ruleList.push(conditionList) : noop();
+    // components[0] ? ruleList.push(conditionList) : noop();
+    if (components[0]) {
+      ruleList.push(conditionList);
+    }
   }
 
-  dto["ruleList"] = generateContextString(ruleList.map(cl => {
-    return generateContextString(cl, "csv")
-  }), "csv");
+  dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, 'csv')), 'csv');
 
   // 2. generating the context entry object for decision arguments
-  var contextEntry = [
-    `outputs : \"${dto["outputs"]}\"`,
+  const contextEntry = [
+    `outputs : \"${dto.outputs}\"`,
     {
-      "input expression list" : dto["inputExpressionList"],
-      "rule list": dto["ruleList"]
+      'input expression list': dto.inputExpressionList,
+      'rule list': dto.ruleList,
     },
     `id : ${qualifiedName}`,
-    `hit policy: \"${dto["hitPolicy"]}\"`
+    `hit policy: \"${dto.hitPolicy}\"`,
   ];
 
   if (inputValuesList.length || outputValuesList.length) {
     contextEntry.push({
-      "input values list" : generateContextString(inputValuesList.map(i => generateContextString(i, "csv")), "csv"),
-      "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, "csv")), "csv")
+      'input values list': generateContextString(inputValuesList.map(i => generateContextString(i, 'csv')), 'csv'),
+      'output values list': generateContextString(outputValuesList.map(i => generateContextString(i, 'csv')), 'csv'),
     });
   }
 
-  var dtContextString = generateContextString(contextEntry, "list")
+  const dtContextString = generateContextString(contextEntry, 'list');
 
-  //3. final context entry
+  // 3. final context entry
   contextEntries.push({
-    result: `decision table (${dtContextString})`
+    result: `decision table (${dtContextString})`,
   });
 
   return contextEntries;
 }
+// const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
+function parseBoxedContextWithoutResultFromCsv(csvString) {
+  const lines = csvString.split(rowDelimiter);
+  let i;
+  let j;
+  const entries = [];
+  for (i = 1, j = lines.length; i < j; i += 1) {
+    const fields = lines[i].split(delimiter);
+    if (fields.filter(f => f.length).length) {
+      if (fields[0].length) {
+        entries.push(`${fields[0]} : ${processString(fields[1])}`);
+      }
+    }
+  }
+  return entries;
+}
+
+function parseBoxedContextWithResultFromCsv(csvString) {
+  const csvArray = csvString.split(rowDelimiter);
+  let line;
+  let i;
+  let j;
+  const entries = [];
+  for (i = 1, j = csvArray.length; i < j; i += 1) {
+    line = csvArray[i];
+    if (!line.startsWith('(')) {
+      const fields = line.split(delimiter);
+      if (fields[0].length && fields.filter(f => f.length).length > 1) {
+        entries.push(`${fields[0]} : ${processString(fields[1])}`);
+      } else if (fields[0].length) {
+        entries.push(`result : ${fields[0]}`);
+      }
+    }
+  }
+  return entries;
+}
+
+function parseBusinessModelFromCsv(csvString) {
+  const csvArray = csvString.split(rowDelimiter);
+  // const i = 1;
+
+  const contextEntries = [];
+
+  csvArray.slice(1).forEach((line) => {
+    const fields = line.split(delimiter);
+
+    // TODO handle complex cases
+    const tokensCount = fields.filter(token => token.length).length;
+    if (tokensCount > 1) {
+      contextEntries.push({ [fields[0]]: fields[1] });
+    } else if (tokensCount === 1) {
+      contextEntries.push(fields[0]);
+    }
+  });
+  return contextEntries;
+}
+
+const makeContextObject = (csvExcel) => {
+  // Convention: context entries are vertical
+  // Convention: decision table entries are horizontal
+
+  const qualifiedName = csvExcel.substring(0, csvExcel.indexOf(delimiter));
+
+  const {
+    isDecisionTableModel,
+    generateContextString,
+    isBoxedInvocation,
+    isBoxedContextWithResult,
+    isBoxedContextWithoutResult,
+  } = api._;
+
+  // var csvArray = csvExcel.split('\n');
+  let contextEntries;
+  if (isDecisionTableModel(csvExcel)) {
+    contextEntries = parseDecisionTableFromCsv(csvExcel);
+  } else if (isBoxedInvocation(csvExcel)) {
+    contextEntries = parseInvocationFromCsv(csvExcel);
+  } else if (isBoxedContextWithResult(csvExcel)) {
+    contextEntries = parseBoxedContextWithResultFromCsv(csvExcel);
+  } else if (isBoxedContextWithoutResult(csvExcel)) {
+    contextEntries = parseBoxedContextWithoutResultFromCsv(csvExcel);
+  } else {
+    contextEntries = parseBusinessModelFromCsv(csvExcel);
+  }
+
+  const expression = generateContextString(contextEntries);
+
+  return {
+    qn: qualifiedName,
+    expression,
+  };
+};
 
 const preparePriorityList = (priorityClass, priorityValues) => {
   const priority = {};
@@ -514,8 +513,7 @@ const executeDecisionTable = (id, table, payload, cb) => {
 const parseCsvToJson = function (csvArr) {
   return csvArr.reduce((hash, item) => {
     const keys = Object.keys(item);
-    hash[keys[0]] = item[keys[0]];
-    return hash;
+    return Object.assign({}, hash, { [keys[0]]: item[keys[0]] });
   }, {});
 };
 
@@ -523,154 +521,124 @@ const isDecisionTableModel = function (csvString) {
   return csvString.indexOf('RuleTable') > -1;
 };
 
-const parseWorkbook = function (path) {
-  const { parseXLS, parseCsv, makeContext } = api._;
+const generateJsonFEEL = function (jsonCsvObject) {
+  // const jsonFeel = {};
+  const { _: { makeContext, isDecisionService } } = api;
+  const services = Object.values(jsonCsvObject)
+    .filter(csv => isDecisionService(csv))
+    .map(csv => csv.substring(0, csv.indexOf(delimiter)));
 
-  jsonCsv = parseCsv(parseXLS(path));
+  return Object.keys(jsonCsvObject).reduce((hash, key) => {
+    const csvModel = jsonCsvObject[key];
+    const ctx = makeContext(csvModel);
+    // hash[ctx.qn] = ctx.expression;
+    // return hash;
+    return Object.assign({}, hash, { [ctx.qn]: ctx.expression });
+  }, { _services: services });
+};
+
+const parseWorkbook = function (path) {
+  const { parseXLS, parseCsv } = api._;
+
+  const jsonCsv = parseCsv(parseXLS(path));
 
   return generateJsonFEEL(jsonCsv);
 };
 
-var generateJsonFEEL = function (jsonCsvObject) {
-  // const jsonFeel = {};
-  const { _: { isDecisionTableModel, makeContext, createBusinessModel, isDecisionService } } = api;
-  var services = Object.values(jsonCsvObject)
-    .filter(csv => isDecisionService(csv))
-    .map(csv => {
-      return csv.substring(0, csv.indexOf(delimiter))
-    });
+const generateContextString = function (contextEntries, isRoot = true) {
+  const stringArray = [];
+  let feelType = 'string'; // we'll assume default as string entry
+  // const override = false;
 
-  return Object.keys(jsonCsvObject).reduce( (hash, key) => {
-    var csvModel = jsonCsvObject[key];
-    var ctx = makeContext(csvModel);
-    hash[ctx.qn] = ctx.expression;
-    return hash;
-  }, { _services: services })
-};
-
-var generateContextString = function(contextEntries, isRoot = true) {
-  var stringArray = []
-  var feelType = 'string' //we'll assume default as string entry
-  var override = false;
-
-  if (typeof contextEntries === "object" && Array.isArray(contextEntries)) {
+  if (typeof contextEntries === 'object' && Array.isArray(contextEntries)) {
     //! process array entries
-    feelType = 'array'
-    contextEntries.forEach(entry => {
+    feelType = 'array';
+    contextEntries.forEach((entry) => {
       // var feelEntry = generateContextString(entry, false);
       // stringArray.push(feelEntry)
-      var feelEntry
+      let feelEntry;
       if (isRoot) {
-        feelEntry = generateContextString(entry)
+        feelEntry = generateContextString(entry);
+      } else {
+        feelEntry = generateContextString(entry, false);
       }
-      else {
-        feelEntry = generateContextString(entry, false)
-      }
-      stringArray.push(feelEntry)
-    })
-  }
-  else if (typeof contextEntries === "object" && !Array.isArray(contextEntries)) {
+      stringArray.push(feelEntry);
+    });
+  } else if (typeof contextEntries === 'object' && !Array.isArray(contextEntries)) {
     //! process object entries
 
-    feelType = 'object'
+    feelType = 'object';
 
-    var contextKeys = Object.keys(contextEntries)
-    contextKeys.forEach(key => {
-      var feelEntry = generateContextString(contextEntries[key], false)
-      stringArray.push(`${key} : ${feelEntry}`)
+    const contextKeys = Object.keys(contextEntries);
+    contextKeys.forEach((key) => {
+      const feelEntry = generateContextString(contextEntries[key], false);
+      stringArray.push(`${key} : ${feelEntry}`);
     });
-  }
-  else {
+  } else {
     //! default as string
-    console.assert(typeof contextEntries === 'string', "Expected context entry to be a string")
+    console.assert(typeof contextEntries === 'string', 'Expected context entry to be a string');
     // stringArray.push(contextEntries)
   }
 
   if (feelType === 'object') {
     if (typeof isRoot === 'string' && isRoot === 'csv') {
-      return stringArray.join(',')
-    }
-    else if (typeof isRoot === 'boolean' && isRoot) {
-      return stringArray.join(',')
-    }
-    else {
-      return "{" + stringArray.join(',') + "}";
-    }
-
-  }
-  else if(feelType === 'array') {
-    if (typeof isRoot === 'string' && isRoot === 'csv') {
-      return "[" + stringArray.join(',') + "]";
-    }
-    else if (typeof isRoot === 'string' && isRoot === 'list') {
+      return stringArray.join(',');
+    } else if (typeof isRoot === 'boolean' && isRoot) {
       return stringArray.join(',');
     }
-    else if (typeof isRoot === 'boolean' && isRoot) {
-      return "{" + stringArray.join(",") + "}";
+
+    return `{${stringArray.join(',')}}`;
+  } else if (feelType === 'array') {
+    if (typeof isRoot === 'string' && isRoot === 'csv') {
+      return `[${stringArray.join(',')}]`;
+    } else if (typeof isRoot === 'string' && isRoot === 'list') {
+      return stringArray.join(',');
+    } else if (typeof isRoot === 'boolean' && isRoot) {
+      return `{${stringArray.join(',')}}`;
     }
-    else {
-      return "[" + stringArray.map(x => "'" + x + "'").join(",") + "]";
-    }
+
+    return `[${stringArray.map(x => `'${x}'`).join(',')}]`;
+  } else if (feelType === 'string') {
+    return contextEntries;
   }
-  else if (feelType === "string") {
-    return contextEntries
-  }
-  else {
-    throw new Error("Cannot process contextEntries of type: " + typeof contextEntries)
-  }
+
+  throw new Error(`Cannot process contextEntries of type: ${typeof contextEntries}`);
 };
 
-var isDecisionService = function(csvString) {
-  var lines = csvString.split(rowDelimiter);
+const isDecisionService = function (csvString) {
+  const lines = csvString.split(rowDelimiter);
 
-  return lines[0].split(delimiter)[1] === "service";
+  return lines[0].split(delimiter)[1] === 'service';
 };
 
-var isBoxedInvocation = function(csvString) {
-  var lines = csvString.split(rowDelimiter);
-  return lines[0].split(delimiter)[2] === "invocation"
-}
-
-var parseInvocationFromCsv = function(csvString) {
-  var lines = csvString.split(rowDelimiter);
-  let { generateContextString } = api._;
-  var fnName = lines[1].split(delimiter)[0];
-  var entries = [];
-  for(var i = 2; i < lines.length; i++) {
-    var fields = lines[i].split(delimiter);
-    if (fields[0].length) { //to avoid blank lines
-      entries.push(`${fields[0]} : ${fields[1]}`)
-    }
-  }
-
-  return `${fnName} (${generateContextString(entries, "list")})`
+const isBoxedInvocation = function (csvString) {
+  const lines = csvString.split(rowDelimiter);
+  return lines[0].split(delimiter)[2] === 'invocation';
 };
 
-var isBoxedContextWithResult = function(csvString) {
-  var line = csvString.split(rowDelimiter)[0];
+const isBoxedContextWithResult = function (csvString) {
+  const line = csvString.split(rowDelimiter)[0];
 
   if (line && line.length) {
-    var fields = line.split(delimiter);
+    const fields = line.split(delimiter);
     return fields[2] === 'context-with-result';
   }
 
   return false;
 };
 
-var isBoxedContextWithoutResult = function(csvString) {
-  var line = csvString.split(rowDelimiter)[0];
+const isBoxedContextWithoutResult = function (csvString) {
+  const line = csvString.split(rowDelimiter)[0];
 
   if (line && line.length) {
-    var fields = line.split(delimiter);
+    const fields = line.split(delimiter);
     return fields[2] === 'context';
   }
 
   return false;
 };
 
-
-let api;
-api = module.exports = {
+module.exports = {
   csv_to_decision_table: createDecisionTable,
   xls_to_csv: parseXLS,
   execute_decision_table: executeDecisionTable,
@@ -686,6 +654,8 @@ api = module.exports = {
     isDecisionService,
     isBoxedInvocation,
     isBoxedContextWithResult,
-    isBoxedContextWithoutResult
+    isBoxedContextWithoutResult,
   },
 };
+
+api = module.exports;
