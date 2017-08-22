@@ -63,8 +63,8 @@ function processString(inputString) {
     return inputString.replace(/""(\w+)""/g, (_, value) => `*${value}*`)
       .replace(/"/g, '')
       .replace(/\*/g, '"')
-      .replace(/\s/g, '')
-      .split(',');
+      .replace(/\s/g, '');
+      // .split(',');
   } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
   } else if (isType4String(inputString)) {
@@ -208,7 +208,7 @@ function parseDecisionTableFromCsv(csvString) {
   if (inputValuesList.length || outputValuesList.length) {
     contextEntry.push({
       'input values list': generateContextString(inputValuesList.map(i => generateContextString(i, false)), 'csv'),
-      'output values list': generateContextString(outputValuesList.map(i => generateContextString(i, false)), 'csv'),
+      'output values': generateContextString(outputValuesList.map(i => generateContextString(i, false)), 'csv'),
     });
   }
 
