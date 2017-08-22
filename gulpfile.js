@@ -62,6 +62,7 @@ gulp.task('generate:parser',['clean:dist:feel'], () => gulp.src('src/feel.pegjs'
 		.pipe(peg({
   format: 'commonjs',
   cache: true,
+  allowedStartRules: ["Start", "SimpleExpressions", "UnaryTests", "SimpleUnaryTests"]
 }))
 		.pipe(gulp.dest('./dist')));
 

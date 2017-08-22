@@ -55,7 +55,7 @@ const createDecisionTree = (dTable) => {
     row.forEach((cellValue, colIndex) => {
       if (colIndex < numOfConditions) {
         const node = root.children[classNodeList[colIndex]].children[cellValue] || new Node(cellValue, 'Value');
-        node.ast = node.ast || FEEL(cellValue);
+        node.ast = node.ast || FEEL(cellValue, { startRule: 'SimpleUnaryTests' });
         node.children[data] = sentinelNode;
         root.children[classNodeList[colIndex]].children[cellValue] = root.children[classNodeList[colIndex]].children[cellValue] || node;
       } else {
@@ -138,6 +138,28 @@ const traverseDecisionTreeUtil = (root, payload) => {
   });
 };
 
+// const createPromiseForSentinelKeys = (node, payload) => {
+//   const sentinelKeys = Object.keys(node.children);
+//   return sentinelKeys.map(key => node.children[key].ast.build(payload, 'input'));
+// };
+
+// const createPromiseForClass = (root, payload) => {
+//   const classArr = Object.keys(root.children);
+//   return classArr.map((classKey) => {
+//     const node = root.children[classKey];
+//     return Promise.all(createPromiseForSentinelKeys(node, payload));
+//   });
+// };
+
+// const traverseDecisionTreeUtil = (root, payload) => new Promise((resolve, reject) => {
+//   Promise.all(createPromiseForClass(root, payload)).then((results) => {
+//     return resolveConflictRules(root, payload, results);
+//   }).then((results) => {
+//     console.log(results);
+//     resolve(results);
+//   }).catch(err => reject(err));
+// });
+
 const prepareContext = (root, payload) => {
   if (root.context !== null) {
     return root.context.ast.build(payload);
@@ -145,14 +167,16 @@ const prepareContext = (root, payload) => {
   return Promise.resolve(payload);
 };
 
-const traverseDecisionTree = (root, payload, cb) => {
-  prepareContext(root, payload).then((context) => {
+const traverseDecisionTree = (root, payload) => new Promise((resolve, reject) => {
+  prepareContext(root, payload)
+  .then((context) => {
     const ctx = Object.assign({}, payload, context);
-    traverseDecisionTreeUtil(root, ctx).then((results) => {
-      hitPolicyPass(root.hitPolicy, results, cb);
-    }).catch(err => cb(err, null));
-  }).catch(err => cb(err, null));
-};
+    return traverseDecisionTreeUtil(root, ctx);
+  })
+  .then(results => hitPolicyPass(root.hitPolicy, results))
+  .then(output => resolve(output))
+  .catch(err => reject(err));
+});
 
 module.exports = {
   createTree: createDecisionTree,

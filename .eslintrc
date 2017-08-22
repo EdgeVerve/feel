@@ -7,6 +7,7 @@
         "no-shadow":"off",
         "consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
         "no-nested-ternary":"off",
-        "no-useless-escape":"off"
+        "no-useless-escape":"off",
+        "no-prototype-builtins":"off"
     }
 }

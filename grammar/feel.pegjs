@@ -6,8 +6,6 @@ Start
 
 StartExpression
 	= Expression
-	/ SimpleUnaryTests
-	/ UnaryTests
 
 Expression
 	= BoxedExpression
@@ -23,6 +21,16 @@ TextualExpression
     / TxtExpg
     / TxtExph
     / TxtExpi
+
+SimpleExpression
+  = ArithmeticExpression
+  / SimpleValue
+
+SimpleExpressions
+  =   head:SimpleExpression tail:(__ "," __ SimpleExpression)*
+        {
+          return new ast.SimpleExpressionsNode(buildList(head,tail,3), location());
+        }
 
 TxtExpi
 	="(" __ expr:TextualExpression __ ")"
@@ -65,7 +73,8 @@ NamePart
         }
 
 Name
-    = !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
+    = "time zone"
+    / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
             return new ast.NameNode(buildName(head,tail,0),location());
         }
@@ -127,14 +136,52 @@ DecimalNumber
         }
 
 StringLiteral "string"
-  = '"' chars:StringCharacter* '"'
-    {
+  = '"' chars:DoubleStringCharacter* '"' {
       return new ast.LiteralNode(chars.join(""),location());
     }
+  / "'" chars:SingleStringCharacter* "'" {
+       return new ast.LiteralNode(chars.join(""),location());
+    }
 
-StringCharacter
+DoubleStringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
+  / "\\" sequence:EscapeSequence { return sequence; }
   / LineContinuation
+
+SingleStringCharacter
+  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  / "\\" sequence:EscapeSequence { return sequence; }
+  / LineContinuation
+
+LineContinuation
+  = "\\" LineTerminatorSequence { return ""; }
+
+EscapeSequence
+  = CharacterEscapeSequence
+
+CharacterEscapeSequence
+  = SingleEscapeCharacter
+
+SingleEscapeCharacter
+  = "'"
+  / '"'
+  / "\\"
+  / "b"  { return "\b"; }
+  / "f"  { return "\f"; }
+  / "n"  { return "\n"; }
+  / "r"  { return "\r"; }
+  / "t"  { return "\t"; }
+  / "v"  { return "\v"; }
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028"
+  / "\u2029"
 
 DateTimeLiteral
   = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
@@ -239,8 +286,8 @@ SimpleUnaryTests
 		}
 
 SimplePositiveUnaryTests
-	= head: SimplePositiveUnaryTest
-	tail: (__ "," __ SimplePositiveUnaryTest)*
+	= head: PositiveUnaryTest
+	tail: (__ "," __ PositiveUnaryTest)*
 	{
 		return buildList(head,tail,3);
 	}
@@ -251,7 +298,10 @@ SimplePositiveUnaryTests
 
 PositiveUnaryTest
 	= SimplePositiveUnaryTest
-	/ NullLiteral
+	/ head: NullLiteral
+  {
+    return new ast.SimplePositiveUnaryTestNode(null,head,location());
+  }
 
 PositiveUnaryTests
 	= head:PositiveUnaryTest
@@ -573,21 +623,8 @@ Keyword
     / FunctionToken
     / ExternalToken
 
-LineContinuation
-  = "\\" LineTerminatorSequence { return ""; }
-
-LineTerminator
-  = [\n\r\u2028\u2029]
-
 SourceCharacter
   = .
-
-LineTerminatorSequence "end of line"
-  = "\n"
-  / "\r\n"
-  / "\r"
-  / "\u2028"
-  / "\u2029"
 
 //WhiteSpace
 WhiteSpace "whitespace"

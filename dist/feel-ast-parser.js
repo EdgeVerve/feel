@@ -69,7 +69,11 @@ module.exports = function (ast) {
     });
   };
 
-  ast.SimpleUnaryTestsNode.prototype.build = function (args) {
+  ast.SimpleUnaryTestsNode.prototype.build = function (context) {
+    const args = {
+      context: Object.assign({}, context, builtInFns),
+      kwargs: {},
+    };
     return new Promise((resolve, reject) => {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
@@ -139,6 +143,18 @@ module.exports = function (ast) {
     });
   };
 
+  ast.SimpleExpressionsNode.prototype.build = function (context) {
+    const args = {
+      context: Object.assign({}, context, builtInFns),
+      kwargs: {},
+    };
+    return new Promise((resolve, reject) => {
+      Promise.all(this.simpleExpressions.map(d => d.build(args)))
+      .then(results => resolve(results))
+      .catch(err => reject(err));
+    });
+  };
+
   // _fetch is used to return the name string or
   // the value extracted from context or kwargs using the name string
   ast.NameNode.prototype.build = function (args, _fetch = true) {
@@ -199,7 +215,12 @@ module.exports = function (ast) {
         return fn.build(args);
       };
 
-      const processInBuiltFunction = fnMeta => this.params.build(args).then(values => fnMeta(...[...values, args.context]));
+      const processInBuiltFunction = fnMeta => this.params.build(args).then((values) => {
+        if (Array.isArray(values)) {
+          return fnMeta(...[...values, args.context]);
+        }
+        return fnMeta(args.context, values);
+      });
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {
@@ -437,7 +458,6 @@ module.exports = function (ast) {
   ast.ListNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
-        result.isList = true; // eslint-disable-line no-param-reassign
         resolve(result);
       }).catch(err => reject(err));
     });

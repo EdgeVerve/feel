@@ -263,4 +263,73 @@ describe(chalk.blue('Random list of rules'), function () {
             done(e);
         }
     })
+
+    it('Successfully parses and executes time with offset specified as duration', function (done) {
+        const text = 'time("T23:59:00z") = time(23, 59, 0, duration("PT0H"))';
+        try{
+            const parsedText = FEEL.parse(text);
+            parsedText.build().then((result) => {
+                expect(result).to.equal(true);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it('Successfully parses and executes time with offset specified as negative duration', function (done) {
+        const text = 'time("T10:15:00-07:00") = time(10, 15, 0, -duration("PT7H"))';
+        try{
+            const parsedText = FEEL.parse(text);
+            parsedText.build().then((result) => {
+                expect(result).to.equal(true);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it ('Successfully parses and executes SimpleExpressions and usage of mutiple grammar entry points', function (done) {
+       try{
+            const text = '1,2,3,4'
+            const parsedText = FEEL.parse(text,{startRule : "SimpleExpressions"}); // parsed with "SimpleExpressions" entry point
+            parsedText.build().then((result) => {
+                expect(result).to.eql([1,2,3,4]);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
+
+    it ('Successfully parses and executes SimpleExpressions and usage of mutiple grammar entry points with context entry', function (done) {
+       try{
+            const context = '{a : 1, b:2, c:3, d:4}';
+            const parsedContext = FEEL.parse(context); // parsed with default entry point
+
+            const text = 'a,b,c,d'
+            const parsedText = FEEL.parse(text,{startRule : "SimpleExpressions"}); // parsed with "SimpleExpressions" entry point
+            parsedContext.build().then(ctx => {
+              return parsedText.build(ctx);
+            }).then((result) => {
+                expect(result).to.eql([1,2,3,4]);
+                done()
+            }).catch(err => {
+                done(err);
+            });
+        }
+        catch(e){
+            done(e);
+        }
+    })
 });

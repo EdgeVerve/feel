@@ -114,7 +114,7 @@ const getValidationErrors = output =>
      return newRule;
    });
 
-const hitPolicyPass = (hitPolicy, output, cb) => {
+const hitPolicyPass = (hitPolicy, output) => new Promise((resolve, reject) => {
   const policy = hitPolicy.charAt(0);
   let ruleOutput = [];
   switch (policy) {
@@ -142,7 +142,7 @@ const hitPolicyPass = (hitPolicy, output, cb) => {
         try {
           result[key] = fn(arr);
         } catch (e) {
-          cb(e, null);
+          reject(e);
         }
         ruleOutput = result;
       } else {
@@ -162,8 +162,8 @@ const hitPolicyPass = (hitPolicy, output, cb) => {
     default :
       ruleOutput = output;
   }
-  cb(null, ruleOutput);
-};
+  resolve(ruleOutput);
+});
 
 const prepareOutputOrder = (output, priorityList) => {
   const arr = output.map((rule) => {

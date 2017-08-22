@@ -14,10 +14,10 @@ These are used for performing calculations and conversions.
 */
 
 const moment = require('moment-timezone');
-const { time, 'date and time': dateandtime, duration } = require('../built-in-functions');
-const { defaultTz, date_ISO_8601, time_ISO_8601, epoch } = require('./meta');
+const { time, 'date and time': dateAndTime, duration } = require('../built-in-functions');
+const { date_ISO_8601, time_ISO_8601, epoch } = require('./meta');
 
-const prepareTime = (value) => {
+const prepareTime = (value, offset) => {
   let remainingTime = value;
   const hour = Math.floor(remainingTime / 3600);
   remainingTime = value % 3600;
@@ -25,29 +25,32 @@ const prepareTime = (value) => {
   remainingTime = value % 60;
   const second = remainingTime;
 
-  return moment.tz({ hour, minute, second }, defaultTz).format(time_ISO_8601);
+  return moment.parseZone(`${moment({ hour, minute, second }).format('THH:mm:ss')}${offset}`, time_ISO_8601).format(time_ISO_8601);
 };
 
-const valueT = obj => moment.duration(`PT${obj.hour}H${obj.minute}M${obj.second}S`).asSeconds();
+const valueT = (obj) => {
+  const duration = moment.duration(`PT${obj.hour}H${obj.minute}M${obj.second}S`);
+  return duration.asSeconds();
+};
 
-const valueInverseT = (value) => {
+const valueInverseT = (value, offset = 'Z') => {
   if (value >= 0 && value <= 86400) {
-    return time(prepareTime(value));
+    return time(prepareTime(value, offset));
   }
   const secondsFromMidnight = value - (Math.floor(value / 86400) * 86400);
-  const timeStr = prepareTime(secondsFromMidnight);
+  const timeStr = prepareTime(secondsFromMidnight, offset);
   return time(`${timeStr}`);
 };
 
 const valueDT = (obj) => {
-  const e = moment(epoch, date_ISO_8601);
+  const e = moment.parseZone(epoch, date_ISO_8601);
   const duration = moment.duration(obj.diff(e));
   return duration.asSeconds();
 };
 
-const valueInverseDT = (value) => {
-  const e = moment(epoch, date_ISO_8601);
-  return dateandtime(e.add(value, 'seconds').format());
+const valueInverseDT = (value, offset = 'Z') => {
+  const e = moment.parseZone(epoch, date_ISO_8601);
+  return dateAndTime(e.add(value, 'seconds').utcOffset(offset).format());
 };
 
 const valueDTD = obj => obj.asSeconds();

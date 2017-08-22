@@ -372,7 +372,9 @@ const executeDecisionTable = (id, table, payload, cb) => {
   if (rootMap[id] == null || rootMap[id] === 'undefined') {
     rootMap[id] = tree.createTree(table);
   }
-  tree.traverseTree(rootMap[id], payload, cb);
+  tree.traverseTree(rootMap[id], payload)
+      .then(result => cb(null, result))
+      .catch(err => cb(err));
 };
 
 

@@ -30,16 +30,17 @@ e.g. : time(“T23:59:00z") = time(23, 59, 0, duration(“PT0H”))
 
 const moment = require('moment-timezone');
 const addProperties = require('./add-properties');
-const { defaultTz, time_ISO_8601, time_IANA_tz, types, properties } = require('../../helper/meta');
+const { time_ISO_8601, time_IANA_tz, types, properties } = require('../../helper/meta');
+const { duration } = require('./duration');
 
-const { hour, minute, second, time_offset, timezone } = properties;
-const props = Object.assign({}, { hour, minute, second, time_offset, timezone, type: types.time, isTime: true });
+const { hour, minute, second, 'time offset': time_offset, timezone } = properties;
+const props = Object.assign({}, { hour, minute, second, 'time offset': time_offset, timezone, type: types.time, isTime: true });
 
 const isNumber = args => args.reduce((prev, next) => prev && typeof next === 'number', true);
 
 const parseTime = (str) => {
   try {
-    const t = moment(str, time_ISO_8601);
+    const t = moment.parseZone(str, time_ISO_8601);
     if (t.isValid()) {
       return t;
     }
@@ -47,6 +48,28 @@ const parseTime = (str) => {
   } catch (err) {
     throw err;
   }
+};
+
+const dtdToOffset = (dtd) => {
+  const msPerDay = 86400000;
+  const msPerHour = 3600000;
+  const msPerMinute = 60000;
+  let d = dtd;
+  if (typeof dtd === 'number') {
+    const ms = Math.abs(dtd);
+    let remaining = ms % msPerDay;
+    const hours = remaining / msPerHour;
+    remaining %= msPerHour;
+    const minutes = remaining / msPerMinute;
+    d = duration(`PT${hours}H${minutes}M`);
+  }
+  if (d.isDtd) {
+    let { hours, minutes } = d;
+    hours = hours < 10 ? `0${hours}` : `${hours}`;
+    minutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    return `${hours}:${minutes}`;
+  }
+  throw new Error('Invalid Type');
 };
 
 const parseIANATz = (str) => {
@@ -79,14 +102,12 @@ const time = (...args) => {
       } catch (err) {
         throw err;
       }
-    } else if (typeof arg === 'object' && arg.isDateTime) {
+    } else if (typeof arg === 'object') {
       if (arg instanceof Date) {
-        t = moment(arg);
+        t = moment.parseZone(arg.toISOString);
       } else if (arg.isDateTime) {
-        const hour = arg.hour;
-        const minute = arg.minute;
-        const second = arg.second;
-        t = moment.tz({ hour, minute, second }, defaultTz);
+        const str = arg.format(time_ISO_8601);
+        t = moment.parseZone(str, time_ISO_8601);
       }
       if (!t.isValid()) {
         throw new Error('Invalid time. Parsing error while attempting to extract time from date and time.');
@@ -97,12 +118,15 @@ const time = (...args) => {
   } else if (args.length >= 3 && isNumber(args.slice(0, 3))) {
     const [hour, minute, second] = args.slice(0, 3);
     t = moment({ hour, minute, second });
-    const offset = args[3];
-    if (offset && offset.isDuration) {
-      // TODO : implement duration to offset conversion
-      t.utcOffset(offset.value);
-    } else {
-      throw new Error('Type Mismatch - the fourth argument in "time" in-built function is expected to be of type "duration"');
+    const dtd = args[3];
+    if (dtd) {
+      try {
+        const sign = Math.sign(dtd) < 0 ? '-' : '+';
+        const offset = `${sign}${dtdToOffset(dtd)}`;
+        t = moment.parseZone(`${moment({ hour, minute, second }).format('THH:mm:ss')}${offset}`, time_ISO_8601);
+      } catch (err) {
+        throw new Error(`${err.message} - the fourth argument in "time" in-built function is expected to be of type "days and time duration"`);
+      }
     }
     if (!t.isValid()) {
       throw new Error('Invalid time. Parsing error while attempting to create time from parts');
@@ -111,15 +135,7 @@ const time = (...args) => {
     throw new Error('Invalid number of arguments specified with "time" in-built function');
   }
 
-  try {
-    t = t.tz(defaultTz);
-    if (t.isValid()) {
-      return addProperties(t, props);
-    }
-    throw new Error('Please check the defaultTz property in the metadata. Possible invalid timezone id encountered');
-  } catch (err) {
-    throw err;
-  }
+  return addProperties(t, props);
 };
 
 module.exports = { time };

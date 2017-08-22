@@ -1,6 +1,6 @@
 /*
 ?2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary), Bangalore, India. All Rights Reserved.
-The EdgeVerve proprietary software program ("Program"), is protected by copyrights laws, international treaties and other pending or existing intellectual property rights in India, the United States and other countries. 
+The EdgeVerve proprietary software program ("Program"), is protected by copyrights laws, international treaties and other pending or existing intellectual property rights in India, the United States and other countries.
 The Program may contain/reference third party or open source components, the rights to which continue to remain with the applicable third party licensors or the open source community as the case may be and nothing here transfers the rights to the third party and open source components, except as expressly permitted.
 Any unauthorized reproduction, storage, transmission in any form or by any means (including without limitation to electronic, mechanical, printing, photocopying, recording or  otherwise), or any distribution of this Program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.
 */
@@ -26,7 +26,7 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('Collect hit policy without any operator', function (done) {
         decision_table.RoutingRules["hitPolicy"] = "C";
-        const payload = {"Age" : 18, "Risk category" : "High", "Debt review" : "false"};
+        const payload = {"Age" : 18, "Risk category" : "High", "Debt review" : false};
         DTable.execute_decision_table("RoutingRules", decision_table.RoutingRules, payload, (err, results)=> {
             if(err){
                 return done(err);
@@ -39,12 +39,12 @@ describe(chalk.blue('Decision table evaluation'), function () {
             Routing.push(results[1].Routing);
             expect(Routing).to.contain('Accept');
             expect(Routing).to.contain('Refer');
-        
+
             Review.push(results[0]['Review level']);
             Review.push(results[1]['Review level']);
             expect(Review).to.contain('None');
             expect(Review).to.contain('Level1');
-        
+
             Reason.push(results[0].Reason);
             Reason.push(results[1].Reason);
             expect(Reason).to.contain('Acceptable');
