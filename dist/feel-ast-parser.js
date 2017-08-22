@@ -457,9 +457,13 @@ module.exports = function (ast) {
 
   ast.ListNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
-        resolve(result);
-      }).catch(err => reject(err));
+      if (this.exprList && this.exprList.length) {
+        Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
+          resolve(result);
+        }).catch(err => reject(err));
+      } else {
+        resolve([]);
+      }
     });
   };
 
@@ -504,10 +508,14 @@ module.exports = function (ast) {
 
   ast.ContextNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.entries
-        .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
-        .then(result => resolve(result.kwargs))
-        .catch(err => reject(err));
+      if (this.entries && this.entries.length) {
+        this.entries
+          .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
+          .then(result => resolve(result.kwargs))
+          .catch(err => reject(err));
+      } else {
+        resolve({});
+      }
     });
   };
 
