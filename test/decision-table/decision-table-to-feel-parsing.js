@@ -87,7 +87,7 @@ describe("Internal tests...", function() {
         ], "csv"),
       {
         "rule list" : generateContextString(ruleList.map(cl => {
-          return generateContextString(cl, "csv")
+          return generateContextString(cl, false)
         }), "csv"),
         "id" : "Post Bureau Risk Category Table"
       },

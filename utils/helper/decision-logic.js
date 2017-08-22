@@ -74,6 +74,13 @@ function processString(inputString) {
   return inputString;
 }
 
+function processContextString(inputString) {
+  if (isType2String(inputString)) {
+    return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
+  }
+  return inputString;
+}
+
 const parseInvocationFromCsv = function (csvString) {
   const lines = csvString.split(rowDelimiter);
   const { generateContextString } = api._;
@@ -82,7 +89,7 @@ const parseInvocationFromCsv = function (csvString) {
   for (let i = 2; i < lines.length; i += 1) {
     const fields = lines[i].split(delimiter);
     if (fields[0].length) { // to avoid blank lines
-      entries.push(`${fields[0]} : ${fields[1]}`);
+      entries.push(`${fields[0]} : ${processContextString(fields[1])}`);
     }
   }
 
@@ -99,17 +106,19 @@ function parseDecisionTableFromCsv(csvString) {
   let i = 1;
   let line = csvArray[i];
 
-  // parsing context stuff if any
+  // 0. parsing context stuff if any
+  var hasContext = false;
   while (!line.startsWith('RuleTable')) {
     const fields = line.split(delimiter);
     const tokensCount = fields.filter(token => token.length).length;
     if (tokensCount > 1) {
       contextEntries.push({
-        [fields[0]]: fields[1],
+        [fields[0]]: processContextString(fields[1]),
       });
     }
     i += 1;
     line = csvArray[i];
+    hasContext = true;
   }
 
   // 1. Parse the rule table
@@ -151,10 +160,10 @@ function parseDecisionTableFromCsv(csvString) {
       if (k <= conditionCount) {
         //! input values list
         if (components[k].length) {
-          inputValuesList.push(processString(components[k]));
+          inputValuesList.push('\'' + processContextString(components[k]) + '\'');
         }
       } else if (components[k].length) {
-        outputValuesList.push(processString(components[k]));
+        outputValuesList.push('\'' + processContextString(components[k]) + '\'');
       }
     }
     i += 1; // next line
@@ -183,7 +192,7 @@ function parseDecisionTableFromCsv(csvString) {
     }
   }
 
-  dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, 'csv')), 'csv');
+  dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, false)), 'csv');
 
   // 2. generating the context entry object for decision arguments
   const contextEntry = [
@@ -198,19 +207,25 @@ function parseDecisionTableFromCsv(csvString) {
 
   if (inputValuesList.length || outputValuesList.length) {
     contextEntry.push({
-      'input values list': generateContextString(inputValuesList.map(i => generateContextString(i, 'csv')), 'csv'),
-      'output values list': generateContextString(outputValuesList.map(i => generateContextString(i, 'csv')), 'csv'),
+      'input values list': generateContextString(inputValuesList.map(i => generateContextString(i, false)), 'csv'),
+      'output values list': generateContextString(outputValuesList.map(i => generateContextString(i, false)), 'csv'),
     });
   }
 
   const dtContextString = generateContextString(contextEntry, 'list');
 
   // 3. final context entry
-  contextEntries.push({
-    result: `decision table (${dtContextString})`,
-  });
+  if (hasContext) {
+    contextEntries.push({
+      result: `decision table(${dtContextString})`,
+    });
 
-  return contextEntries;
+    return contextEntries;
+  }
+  else {
+    return `decision table(${dtContextString})`
+  }
+
 }
 // const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 function parseBoxedContextWithoutResultFromCsv(csvString) {
@@ -222,7 +237,7 @@ function parseBoxedContextWithoutResultFromCsv(csvString) {
     const fields = lines[i].split(delimiter);
     if (fields.filter(f => f.length).length) {
       if (fields[0].length) {
-        entries.push(`${fields[0]} : ${processString(fields[1])}`);
+        entries.push(`${fields[0]} : ${processContextString(fields[1])}`);
       }
     }
   }
@@ -240,9 +255,9 @@ function parseBoxedContextWithResultFromCsv(csvString) {
     if (!line.startsWith('(')) {
       const fields = line.split(delimiter);
       if (fields[0].length && fields.filter(f => f.length).length > 1) {
-        entries.push(`${fields[0]} : ${processString(fields[1])}`);
+        entries.push(`${fields[0]} : ${processContextString(fields[1])}`);
       } else if (fields[0].length) {
-        entries.push(`result : ${fields[0]}`);
+        entries.push(`result : ${processContextString(fields[0])}`);
       }
     }
   }

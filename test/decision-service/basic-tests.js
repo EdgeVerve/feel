@@ -34,23 +34,23 @@ describe('additional decision table parsing logic...', function() {
       'outputs : "Discount"',
       "input expression list : " + '[Customer,Order Size]',
       {
-        "rule list" : generateContextString(ruleList.map(r => generateContextString(r, "csv")), "csv")
+        "rule list" : generateContextString(ruleList.map(r => generateContextString(r, false)), "csv")
       },
       {
         id: "Customer Discount"
       },
       'hit policy: "U"',
       {
-        "input values list" : generateContextString(inpValuesList.map(i => generateContextString(i, "csv")), "csv"),
-        "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, "csv")), "csv")
+        "input values list" : generateContextString(inpValuesList.map(i => generateContextString(i, false)), "csv"),
+        "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, false)), "csv")
       }
     ];
 
     var entry = `decision table (${generateContextString(contextEntries, "list")})`;
-    var finalCtxEntry = { result: entry };
+    // var finalCtxEntry = { result: entry };
 
-    var expectedContextString = generateContextString(finalCtxEntry, false);
-    expect(computedExpression).to.equal(expectedContextString);
+    // var expectedContextString = generateContextString(finalCtxEntry, false);
+    expect(computedExpression).to.equal(entry);
   });
 
 });
