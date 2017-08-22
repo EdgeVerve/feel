@@ -55,10 +55,10 @@ describe('boxed expression tests...', function() {
     expect(isContextWithResult).to.be.true;
 
     var contextEntries = {
-      "Monthly Fee" : "if Product Type = \"STANDARD LOAN\"\r\n"
-                      + "then 20.00\r\n"
-                      + "else if Product Type = \"SPECIAL LOAN\"\r\n"
-                      + "then 25.00\r\n"
+      "Monthly Fee" : "if Product Type = \"STANDARD LOAN\" "
+                      + "then 20.00 "
+                      + "else if Product Type = \"SPECIAL LOAN\" "
+                      + "then 25.00 "
                       + "else null",
       "Monthly Repayment" : "PMT (Rate, Term, Amount)",
       "result" : "Monthly Repayment + Monthly Fee"

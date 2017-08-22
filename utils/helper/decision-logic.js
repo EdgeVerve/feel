@@ -107,7 +107,7 @@ function parseDecisionTableFromCsv(csvString) {
   let line = csvArray[i];
 
   // 0. parsing context stuff if any
-  var hasContext = false;
+  let hasContext = false;
   while (!line.startsWith('RuleTable')) {
     const fields = line.split(delimiter);
     const tokensCount = fields.filter(token => token.length).length;
@@ -160,10 +160,10 @@ function parseDecisionTableFromCsv(csvString) {
       if (k <= conditionCount) {
         //! input values list
         if (components[k].length) {
-          inputValuesList.push('\'' + processContextString(components[k]) + '\'');
+          inputValuesList.push(`'${processContextString(components[k])}'`);
         }
       } else if (components[k].length) {
-        outputValuesList.push('\'' + processContextString(components[k]) + '\'');
+        outputValuesList.push(`'${processContextString(components[k])}'`);
       }
     }
     i += 1; // next line
@@ -222,10 +222,8 @@ function parseDecisionTableFromCsv(csvString) {
 
     return contextEntries;
   }
-  else {
-    return `decision table(${dtContextString})`
-  }
 
+  return `decision table(${dtContextString})`;
 }
 // const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 function parseBoxedContextWithoutResultFromCsv(csvString) {

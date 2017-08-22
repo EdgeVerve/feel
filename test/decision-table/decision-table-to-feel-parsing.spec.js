@@ -95,7 +95,7 @@ describe("Internal tests...", function() {
     ];
 
     contextEntries.push({
-      result: `decision table (${generateContextString(decisionContextEntries, "list")})`
+      result: `decision table(${generateContextString(decisionContextEntries, "list")})`
     });
 
     var expectedExpression = generateContextString(contextEntries);

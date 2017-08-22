@@ -27,8 +27,8 @@ describe('additional decision table parsing logic...', function() {
       ['"Private"', '-', '0.05'],
     ];
 
-    var inpValuesList = [['"Business"', '"Private"'], ['<10', '>=10']];
-    var outputValuesList = [['0.05', '0.10', '0.15']];
+    var inpValuesList = ['"Business", "Private"', '<10, >=10'];
+    var outputValuesList = ['0.05, 0.10, 0.15'];
 
     var contextEntries = [
       'outputs : "Discount"',
@@ -41,12 +41,12 @@ describe('additional decision table parsing logic...', function() {
       },
       'hit policy: "U"',
       {
-        "input values list" : generateContextString(inpValuesList.map(i => generateContextString(i, false)), "csv"),
-        "output values list" : generateContextString(outputValuesList.map(i => generateContextString(i, false)), "csv")
+        "input values list" : generateContextString(inpValuesList, false),
+        "output values" : generateContextString(outputValuesList, false)
       }
     ];
 
-    var entry = `decision table (${generateContextString(contextEntries, "list")})`;
+    var entry = `decision table(${generateContextString(contextEntries, "list")})`;
     // var finalCtxEntry = { result: entry };
 
     // var expectedContextString = generateContextString(finalCtxEntry, false);
