@@ -55,7 +55,7 @@ const createDecisionTree = (dTable) => {
     row.forEach((cellValue, colIndex) => {
       if (colIndex < numOfConditions) {
         const node = root.children[classNodeList[colIndex]].children[cellValue] || new Node(cellValue, 'Value');
-        node.ast = node.ast || FEEL(cellValue);
+        node.ast = node.ast || FEEL(cellValue, { startRule: 'SimpleUnaryTests' });
         node.children[data] = sentinelNode;
         root.children[classNodeList[colIndex]].children[cellValue] = root.children[classNodeList[colIndex]].children[cellValue] || node;
       } else {
@@ -137,6 +137,28 @@ const traverseDecisionTreeUtil = (root, payload) => {
             resolve(results))).catch(err => reject(err));
   });
 };
+
+// const createPromiseForSentinelKeys = (node, payload) => {
+//   const sentinelKeys = Object.keys(node.children);
+//   return sentinelKeys.map(key => node.children[key].ast.build(payload, 'input'));
+// };
+
+// const createPromiseForClass = (root, payload) => {
+//   const classArr = Object.keys(root.children);
+//   return classArr.map((classKey) => {
+//     const node = root.children[classKey];
+//     return Promise.all(createPromiseForSentinelKeys(node, payload));
+//   });
+// };
+
+// const traverseDecisionTreeUtil = (root, payload) => new Promise((resolve, reject) => {
+//   Promise.all(createPromiseForClass(root, payload)).then((results) => {
+//     return resolveConflictRules(root, payload, results);
+//   }).then((results) => {
+//     console.log(results);
+//     resolve(results);
+//   }).catch(err => reject(err));
+// });
 
 const prepareContext = (root, payload) => {
   if (root.context !== null) {

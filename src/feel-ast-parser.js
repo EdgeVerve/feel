@@ -454,7 +454,6 @@ module.exports = function (ast) {
   ast.ListNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
       Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
-        result.isList = true; // eslint-disable-line no-param-reassign
         resolve(result);
       }).catch(err => reject(err));
     });

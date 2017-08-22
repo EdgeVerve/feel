@@ -1,6 +1,6 @@
 const { execute_decision_table: execDTable } = require('../../helper/decision-table');
 
-const decisionTable = (context, tableData) => {
+const decisionTable = (args, tableData) => {
   const {
     id,
     'input expression list': inputExpressionList,
@@ -12,8 +12,10 @@ const decisionTable = (context, tableData) => {
     'default output value': defaultOutputValue,
   } = tableData;
 
+  const context = null;
+
   return new Promise((resolve, reject) => {
-    execDTable(id, {inputExpressionList, inputValuesList, outputs, outputValues, ruleList, hitPolicy, defaultOutputValue }, context, (err, result) => {
+    execDTable(id, { context, inputExpressionList, inputValuesList, outputs, outputValues, ruleList, hitPolicy, defaultOutputValue }, args, (err, result) => {
       if (err) {
         reject(err);
       } else {

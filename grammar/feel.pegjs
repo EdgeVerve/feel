@@ -6,8 +6,6 @@ Start
 
 StartExpression
 	= Expression
-	/ SimpleUnaryTests
-	/ UnaryTests
 
 Expression
 	= BoxedExpression
@@ -288,8 +286,8 @@ SimpleUnaryTests
 		}
 
 SimplePositiveUnaryTests
-	= head: SimplePositiveUnaryTest
-	tail: (__ "," __ SimplePositiveUnaryTest)*
+	= head: PositiveUnaryTest
+	tail: (__ "," __ PositiveUnaryTest)*
 	{
 		return buildList(head,tail,3);
 	}
@@ -300,7 +298,10 @@ SimplePositiveUnaryTests
 
 PositiveUnaryTest
 	= SimplePositiveUnaryTest
-	/ NullLiteral
+	/ head: NullLiteral
+  {
+    return new ast.SimplePositiveUnaryTestNode(null,head,location());
+  }
 
 PositiveUnaryTests
 	= head:PositiveUnaryTest

@@ -17,7 +17,12 @@ function extractOptional(optional, index) {
 }
 
 function flatten(list) {
-  return list.filter( d => d && d.length).reduce((recur, next) => [].concat.call(recur, next), []);
+  return list.filter( d => d && d.length).reduce((recur, next) => {
+    if(next && Array.isArray(next)) {
+      return [].concat.call(recur, flatten(next));
+    }
+    return [].concat.call(recur, next);
+  }, []);
 }
 
 function extractList(list, index) {
@@ -29,7 +34,7 @@ function buildList(head, tail, index) {
 }
 
 function buildName(head, tail, index) {
-  return tail && tail.length ? [...head, ...flatten(tail[index])].join("") : head.join("");
+  return tail && tail.length ? [...head, ...flatten(tail)].join("") : head.join("");
 }
 
 
