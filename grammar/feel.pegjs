@@ -558,10 +558,16 @@ BoxedExpression
     / Context
 
 List
-    = "[" __ head:Expression tail:(__ "," __ Expression)* __ "]"
+    = "[" __ list:ListEntries? __ "]"
         {
-            return new ast.ListNode(buildList(head,tail,3),location());
+            return new ast.ListNode(list,location());
         }
+
+ListEntries
+    = head:Expression tail:(__ "," __ Expression)*
+      {
+        return buildList(head,tail,3);
+      }
 
 Context
     = "{" entries:(__ ContextEntries)? __ "}"
@@ -581,7 +587,7 @@ ContextEntry
     ;
 
 ContextEntries
-    = head:ContextEntry tail:(__ "," __ ContextEntry)*
+    = head:ContextEntry? tail:(__ "," __ ContextEntry)*
         {
             return buildList(head,tail,3);
         }
