@@ -18,7 +18,13 @@ const rowDelimiter = '&RSP';
 const rgxBlankRows = /^(&SP)+&RSP/; // for beginning blank rows
 
 const parseXLS = (path) => {
-  const workbook = XLSX.readFile(path);
+  let workbook;
+  if (typeof path === 'string') {
+    workbook = XLSX.readFile(path);
+  } else {
+    workbook = path;
+  }
+
   const csv = [];
   workbook.SheetNames.forEach((sheetName) => {
  /* iterate through sheets */
