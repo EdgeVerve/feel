@@ -12,5 +12,5 @@ const feel = require('./dist/feel');
 module.exports = {
   decisionTable,
   feel,
-  decisionLogic
+  decisionLogic,
 };
