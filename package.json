@@ -7,9 +7,10 @@
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "test": "./node_modules/.bin/mocha ./test/**/*.spec.js",
-    "build": "./node_modules/.bin/gulp"
+    "build": "./node_modules/.bin/gulp",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
-  "pre-commit": [ "lint" ],
+  "pre-commit": [ "precommit-msg" ,"lint" ],
   "engines": {
     "node": ">=6.9.2"
   },
