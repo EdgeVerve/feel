@@ -9,6 +9,7 @@
     "test": "./node_modules/.bin/mocha ./test/**/*.spec.js",
     "build": "./node_modules/.bin/gulp"
   },
+  "pre-commit": [ "lint" ],
   "engines": {
     "node": ">=6.9.2"
   },
@@ -57,6 +58,7 @@
     "mocha": "^3.2.0",
     "pegjs": "^0.10.0",
     "pegjs-backtrace": "^0.1.1",
+    "pre-commit": "^1.2.2",
     "through2": "^2.0.3"
   }
 }

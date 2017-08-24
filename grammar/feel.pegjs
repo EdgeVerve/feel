@@ -6,21 +6,22 @@ Start
 
 StartExpression
 	= Expression
+  / SimpleUnaryTests
 
 Expression
 	= BoxedExpression
 	/ TextualExpression
 
 TextualExpression
-    = TxtExpa
-    / TxtExpb
-    / TxtExpc
-    / TxtExpd
-    / TxtExpe
-    / TxtExpf
-    / TxtExpg
-    / TxtExph
-    / TxtExpi
+    = TxtExpa // literal | simple positive unary test | name | "(" , textual expression , ")"
+    / TxtExpb // filter expression | function invocation |
+    / TxtExpc // path expression |
+    / TxtExpd // instance of |
+    / TxtExpe // arithmetic expression |
+    / TxtExpf // comparison |
+    / TxtExpg // conjunction |
+    / TxtExph // disjunction |
+    / TxtExpi // function definition | for expression | if expression | quantified expression |
 
 SimpleExpression
   = ArithmeticExpression

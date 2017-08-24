@@ -268,7 +268,12 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       const [expr, ...names] = this.exprs;
       Promise.all([].concat.call([expr.build(args)], names.map(d => d.build(null, false))))
-      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => accu[next], root))
+      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => {
+        if (Array.isArray(accu)) {
+          return accu.map(d => d[next]);
+        }
+        return accu[next];
+      }, root))
       .then(result => resolve(result))
       .catch(err => reject(err));
     });
@@ -511,7 +516,7 @@ module.exports = function (ast) {
       if (this.entries && this.entries.length) {
         this.entries
           .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
-          .then(result => resolve(result.kwargs))
+          .then(ctx => resolve(ctx.kwargs && (ctx.kwargs.result || ctx.kwargs)))
           .catch(err => reject(err));
       } else {
         resolve({});
