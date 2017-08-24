@@ -552,7 +552,7 @@ const generateJsonFEEL = function (jsonCsvObject) {
     const ctx = makeContext(csvModel);
     // hash[ctx.qn] = ctx.expression;
     // return hash;
-    return Object.assign({}, hash, { [ctx.qn]: `function() ${ctx.expression}` });
+    return Object.assign({}, hash, { [ctx.qn]: ctx.expression });
   }, { _services: services });
 };
 
