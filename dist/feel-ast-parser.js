@@ -11,14 +11,18 @@ const fnGen = require('../utils/helper/fn-generator');
 const addKwargs = require('../utils/helper/add-kwargs');
 const builtInFns = require('../utils/built-in-functions');
 const externalFn = require('../utils/helper/external-function');
+const resolveName = require('../utils/helper/name-resolution.js');
 
 module.exports = function (ast) {
-  ast.ProgramNode.prototype.build = function (context, type = 'output') {
+  ast.ProgramNode.prototype.build = function (data = {}, env = {}, type = 'output') {
     return new Promise((resolve, reject) => {
-      const args = {
-        context: Object.assign({}, context, builtInFns),
-        kwargs: {},
-      };
+      let context = {};
+      if (!data.isBuiltInFn) {
+        context = Object.assign({}, data, builtInFns, { isBuiltInFn: true });
+      } else {
+        context = data;
+      }
+      const args = { context, env };
       // bodybuilding starts here...
       // let's pump some code ;)
       this.body.build(args)
@@ -69,11 +73,9 @@ module.exports = function (ast) {
     });
   };
 
-  ast.SimpleUnaryTestsNode.prototype.build = function (context) {
-    const args = {
-      context: Object.assign({}, context, builtInFns),
-      kwargs: {},
-    };
+  ast.SimpleUnaryTestsNode.prototype.build = function (data = {}) {
+    const context = Object.assign({}, data, builtInFns);
+    const args = { context };
     return new Promise((resolve, reject) => {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
@@ -143,11 +145,14 @@ module.exports = function (ast) {
     });
   };
 
-  ast.SimpleExpressionsNode.prototype.build = function (context) {
-    const args = {
-      context: Object.assign({}, context, builtInFns),
-      kwargs: {},
-    };
+  ast.SimpleExpressionsNode.prototype.build = function (data = {}, env = {}) {
+    let context = {};
+    if (!data.isBuiltInFn) {
+      context = Object.assign({}, data, builtInFns, { isBuiltInFn: true });
+    } else {
+      context = data;
+    }
+    const args = { context, env };
     return new Promise((resolve, reject) => {
       Promise.all(this.simpleExpressions.map(d => d.build(args)))
       .then(results => resolve(results))
@@ -162,12 +167,12 @@ module.exports = function (ast) {
     if (!_fetch) {
       return Promise.resolve(name);
     }
-    try {
-      const obj = (args.kwargs && typeof args.kwargs[name] !== 'undefined' && args.kwargs) || (args.context && typeof args.context[name] !== 'undefined' && args.context);
-      return Promise.resolve(obj[name]);
-    } catch (err) {
-      return Promise.reject(err);
-    }
+
+    return new Promise((resolve, reject) => {
+      resolveName(name, args)
+      .then(result => resolve(result))
+      .catch(err => reject(err));
+    });
   };
 
   ast.LiteralNode.prototype.build = function () {
