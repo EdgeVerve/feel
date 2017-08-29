@@ -67,8 +67,8 @@ describe('boxed expression tests...', function() {
     var expectedCtxString = generateContextString(contextEntries, false);
 
     var computedCtxString = DL._.makeContext(csvExcel).expression;
-    fs.writeFileSync('file1.txt', computedCtxString)
-    fs.writeFileSync('file2.txt', expectedCtxString)
+    // fs.writeFileSync('file1.txt', computedCtxString)
+    // fs.writeFileSync('file2.txt', expectedCtxString)
     expect(computedCtxString).to.equal(expectedCtxString);
 
   });

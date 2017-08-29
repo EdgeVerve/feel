@@ -32,7 +32,7 @@ describe('additional decision table parsing logic...', function() {
 
     var contextEntries = [
       'outputs : "Discount"',
-      "input expression list : " + '[Customer,Order Size]',
+      "input expression list : " + '[\'Customer\',\'Order Size\']',
       {
         "rule list" : generateContextString(ruleList.map(r => generateContextString(r, false)), "csv")
       },

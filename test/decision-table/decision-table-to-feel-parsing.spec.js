@@ -84,7 +84,7 @@ describe("Internal tests...", function() {
       'outputs : "Post Bureau Risk Category"',
       'input expression list : ' + generateContextString([
           "Existing Customer", "Application Risk Score", "Credit Score"
-        ], "csv"),
+        ], false),
       {
         "rule list" : generateContextString(ruleList.map(cl => {
           return generateContextString(cl, false)

@@ -149,7 +149,7 @@ function parseDecisionTableFromCsv(csvString) {
     }
   }
 
-  dto.inputExpressionList = generateContextString(inputExpressionList, 'csv');
+  dto.inputExpressionList = generateContextString(inputExpressionList, false);
 
   // 1.2.1 detect if you have input/output components and process them
   line = csvArray[i + 1];
