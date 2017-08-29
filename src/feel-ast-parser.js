@@ -16,13 +16,14 @@ const resolveName = require('../utils/helper/name-resolution.js');
 module.exports = function (ast) {
   ast.ProgramNode.prototype.build = function (data = {}, env = {}, type = 'output') {
     return new Promise((resolve, reject) => {
-      let context = {};
-      if (!data.isBuiltInFn) {
-        context = Object.assign({}, data, builtInFns, { isBuiltInFn: true });
+      let args = {};
+      if (!data.isContextBuilt) {
+        const context = Object.assign({}, data, builtInFns);
+        args = Object.assign({}, { context }, env);
+        args.isContextBuilt = true;
       } else {
-        context = data;
+        args = data;
       }
-      const args = { context, env };
       // bodybuilding starts here...
       // let's pump some code ;)
       this.body.build(args)
@@ -152,7 +153,7 @@ module.exports = function (ast) {
     } else {
       context = data;
     }
-    const args = { context, env };
+    const args = Object.assign({}, { context }, env);
     return new Promise((resolve, reject) => {
       Promise.all(this.simpleExpressions.map(d => d.build(args)))
       .then(results => resolve(results))
@@ -169,7 +170,7 @@ module.exports = function (ast) {
     }
 
     return new Promise((resolve, reject) => {
-      resolveName(name, args)
+      resolveName(name, args, this.isResult)
       .then(result => resolve(result))
       .catch(err => reject(err));
     });
@@ -196,9 +197,9 @@ module.exports = function (ast) {
   // Function supports positional as well as named parameters
   ast.FunctionInvocationNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      const processFormalParameters = (fn, formalParams) => this.params.build(args)
+      const processFormalParameters = formalParams => this.params.build(args)
         .then((values) => {
-          if (values && Array.isArray(values)) {
+          if (formalParams && values && Array.isArray(values)) {
             const kwParams = values.reduce((recur, next, i) => {
               const obj = {};
               obj[formalParams[i]] = next;
@@ -214,8 +215,8 @@ module.exports = function (ast) {
         const formalParams = fnMeta.params;
 
         if (formalParams) {
-          return processFormalParameters(fn, formalParams)
-          .then(argsNew => fn.build(argsNew));
+          return processFormalParameters(formalParams)
+            .then(argsNew => fn.build(argsNew));
         }
         return fn.build(args);
       };
@@ -224,15 +225,27 @@ module.exports = function (ast) {
         if (Array.isArray(values)) {
           return fnMeta(...[...values, args.context]);
         }
-        return fnMeta(args.context, values);
+        return fnMeta(Object.assign({}, args.context, args.kwargs), values);
       });
+
+      const processDecision = (fnMeta) => {
+        const expr = fnMeta.expr;
+        return processFormalParameters()
+            .then(argsNew => expr.build(argsNew));
+            // .then((result) => {
+            //   if (!fnMeta.isResult) {
+            //     return Object.keys(result).map(next => result[next])[0];
+            //   }
+            //   return result;
+            // });
+      };
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {
-          // for built-in functions like min,max,etc...
           return processInBuiltFunction(fnMeta);
+        } else if (typeof fnMeta === 'object' && fnMeta.isDecision) {
+          return processDecision(fnMeta);
         }
-
         return processUserDefinedFunction(fnMeta);
       };
 
@@ -253,6 +266,7 @@ module.exports = function (ast) {
 
   ast.NamedParameterNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
+      this.expr.isResult = false;
       Promise.all([this.expr.build(args), this.paramName.build(null, false)])
       .then(([value, paramName]) => {
         const obj = {};

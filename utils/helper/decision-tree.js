@@ -25,7 +25,7 @@ const createDecisionTree = (dTable) => {
   const root = ruleTree.root;
   const classNodeList = dTable.inputExpressionList;
   const numOfConditions = classNodeList.length;
-  const outputNodeList = dTable.outputs;
+  const outputNodeList = dTable.outputs && Array.isArray(dTable.outputs) ? dTable.outputs : [dTable.outputs];
   const ruleList = dTable.ruleList;
   const outputSet = {};
 
