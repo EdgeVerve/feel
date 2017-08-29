@@ -38,7 +38,6 @@ const resolveName = (name, args, isResult = true) => new Promise((resolve, rejec
       return true;
     }
     if (index === nameResolutionOrder.length - 1) {
-      console.log(`${name} : ${value}`);
       resolve(value);
     }
     return false;
