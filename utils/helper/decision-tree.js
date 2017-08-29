@@ -25,7 +25,7 @@ const createDecisionTree = (dTable) => {
   const root = ruleTree.root;
   const classNodeList = dTable.inputExpressionList;
   const numOfConditions = classNodeList.length;
-  const outputNodeList = dTable.outputs;
+  const outputNodeList = dTable.outputs && Array.isArray(dTable.outputs) ? dTable.outputs : [dTable.outputs];
   const ruleList = dTable.ruleList;
   const outputSet = {};
 
@@ -126,7 +126,7 @@ const traverseDecisionTreeUtil = (root, payload) => {
       const node = root.children[classKey];
       const sentinelKeys = Object.keys(node.children);
       return new Promise((resolve, reject) => {
-        Promise.all(sentinelKeys.map(key => node.children[key].ast.build(payload, 'input'))).then((results) => {
+        Promise.all(sentinelKeys.map(key => node.children[key].ast.build(payload, {}, 'input'))).then((results) => {
           let res = results.map((f, i) => ({ value: f(payload[classKey]), index: i })).filter(d => d.value === true);
           res = res.map(obj => obj.index);
           resolve(res);
@@ -137,28 +137,6 @@ const traverseDecisionTreeUtil = (root, payload) => {
             resolve(results))).catch(err => reject(err));
   });
 };
-
-// const createPromiseForSentinelKeys = (node, payload) => {
-//   const sentinelKeys = Object.keys(node.children);
-//   return sentinelKeys.map(key => node.children[key].ast.build(payload, 'input'));
-// };
-
-// const createPromiseForClass = (root, payload) => {
-//   const classArr = Object.keys(root.children);
-//   return classArr.map((classKey) => {
-//     const node = root.children[classKey];
-//     return Promise.all(createPromiseForSentinelKeys(node, payload));
-//   });
-// };
-
-// const traverseDecisionTreeUtil = (root, payload) => new Promise((resolve, reject) => {
-//   Promise.all(createPromiseForClass(root, payload)).then((results) => {
-//     return resolveConflictRules(root, payload, results);
-//   }).then((results) => {
-//     console.log(results);
-//     resolve(results);
-//   }).catch(err => reject(err));
-// });
 
 const prepareContext = (root, payload) => {
   if (root.context !== null) {

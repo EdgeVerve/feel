@@ -6,6 +6,6 @@
 */
 // add new properties to the kwargs object
 // returns the updated _args object
-module.exports = (_args, obj) => Object.assign({}, _args, {
+module.exports = (_args, obj = {}) => Object.assign({}, _args, {
   kwargs: Object.assign({}, _args.kwargs, obj),
 });

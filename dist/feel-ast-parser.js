@@ -11,14 +11,19 @@ const fnGen = require('../utils/helper/fn-generator');
 const addKwargs = require('../utils/helper/add-kwargs');
 const builtInFns = require('../utils/built-in-functions');
 const externalFn = require('../utils/helper/external-function');
+const resolveName = require('../utils/helper/name-resolution.js');
 
 module.exports = function (ast) {
-  ast.ProgramNode.prototype.build = function (context, type = 'output') {
+  ast.ProgramNode.prototype.build = function (data = {}, env = {}, type = 'output') {
     return new Promise((resolve, reject) => {
-      const args = {
-        context: Object.assign({}, context, builtInFns),
-        kwargs: {},
-      };
+      let args = {};
+      if (!data.isContextBuilt) {
+        const context = Object.assign({}, data, builtInFns);
+        args = Object.assign({}, { context }, env);
+        args.isContextBuilt = true;
+      } else {
+        args = data;
+      }
       // bodybuilding starts here...
       // let's pump some code ;)
       this.body.build(args)
@@ -69,11 +74,9 @@ module.exports = function (ast) {
     });
   };
 
-  ast.SimpleUnaryTestsNode.prototype.build = function (context) {
-    const args = {
-      context: Object.assign({}, context, builtInFns),
-      kwargs: {},
-    };
+  ast.SimpleUnaryTestsNode.prototype.build = function (data = {}) {
+    const context = Object.assign({}, data, builtInFns);
+    const args = { context };
     return new Promise((resolve, reject) => {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
@@ -143,11 +146,14 @@ module.exports = function (ast) {
     });
   };
 
-  ast.SimpleExpressionsNode.prototype.build = function (context) {
-    const args = {
-      context: Object.assign({}, context, builtInFns),
-      kwargs: {},
-    };
+  ast.SimpleExpressionsNode.prototype.build = function (data = {}, env = {}) {
+    let context = {};
+    if (!data.isBuiltInFn) {
+      context = Object.assign({}, data, builtInFns, { isBuiltInFn: true });
+    } else {
+      context = data;
+    }
+    const args = Object.assign({}, { context }, env);
     return new Promise((resolve, reject) => {
       Promise.all(this.simpleExpressions.map(d => d.build(args)))
       .then(results => resolve(results))
@@ -162,12 +168,12 @@ module.exports = function (ast) {
     if (!_fetch) {
       return Promise.resolve(name);
     }
-    try {
-      const obj = (args.kwargs && typeof args.kwargs[name] !== 'undefined' && args.kwargs) || (args.context && typeof args.context[name] !== 'undefined' && args.context);
-      return Promise.resolve(obj[name]);
-    } catch (err) {
-      return Promise.reject(err);
-    }
+
+    return new Promise((resolve, reject) => {
+      resolveName(name, args, this.isResult)
+      .then(result => resolve(result))
+      .catch(err => reject(err));
+    });
   };
 
   ast.LiteralNode.prototype.build = function () {
@@ -191,9 +197,9 @@ module.exports = function (ast) {
   // Function supports positional as well as named parameters
   ast.FunctionInvocationNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      const processFormalParameters = (fn, formalParams) => this.params.build(args)
+      const processFormalParameters = formalParams => this.params.build(args)
         .then((values) => {
-          if (values && Array.isArray(values)) {
+          if (formalParams && values && Array.isArray(values)) {
             const kwParams = values.reduce((recur, next, i) => {
               const obj = {};
               obj[formalParams[i]] = next;
@@ -209,8 +215,8 @@ module.exports = function (ast) {
         const formalParams = fnMeta.params;
 
         if (formalParams) {
-          return processFormalParameters(fn, formalParams)
-          .then(argsNew => fn.build(argsNew));
+          return processFormalParameters(formalParams)
+            .then(argsNew => fn.build(argsNew));
         }
         return fn.build(args);
       };
@@ -219,15 +225,27 @@ module.exports = function (ast) {
         if (Array.isArray(values)) {
           return fnMeta(...[...values, args.context]);
         }
-        return fnMeta(args.context, values);
+        return fnMeta(Object.assign({}, args.context, args.kwargs), values);
       });
+
+      const processDecision = (fnMeta) => {
+        const expr = fnMeta.expr;
+        return processFormalParameters()
+            .then(argsNew => expr.build(argsNew));
+            // .then((result) => {
+            //   if (!fnMeta.isResult) {
+            //     return Object.keys(result).map(next => result[next])[0];
+            //   }
+            //   return result;
+            // });
+      };
 
       const processFnMeta = (fnMeta) => {
         if (typeof fnMeta === 'function') {
-          // for built-in functions like min,max,etc...
           return processInBuiltFunction(fnMeta);
+        } else if (typeof fnMeta === 'object' && fnMeta.isDecision) {
+          return processDecision(fnMeta);
         }
-
         return processUserDefinedFunction(fnMeta);
       };
 
@@ -248,6 +266,7 @@ module.exports = function (ast) {
 
   ast.NamedParameterNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
+      this.expr.isResult = false;
       Promise.all([this.expr.build(args), this.paramName.build(null, false)])
       .then(([value, paramName]) => {
         const obj = {};
@@ -268,7 +287,12 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       const [expr, ...names] = this.exprs;
       Promise.all([].concat.call([expr.build(args)], names.map(d => d.build(null, false))))
-      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => accu[next], root))
+      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => {
+        if (Array.isArray(accu)) {
+          return accu.map(d => d[next]);
+        }
+        return accu[next];
+      }, root))
       .then(result => resolve(result))
       .catch(err => reject(err));
     });
@@ -511,7 +535,7 @@ module.exports = function (ast) {
       if (this.entries && this.entries.length) {
         this.entries
           .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
-          .then(result => resolve(result.kwargs))
+          .then(ctx => resolve(ctx.kwargs && (ctx.kwargs.result || ctx.kwargs)))
           .catch(err => reject(err));
       } else {
         resolve({});
