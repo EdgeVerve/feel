@@ -15,7 +15,7 @@ describe('additional decision table parsing logic...', function() {
     var values = Object.values(jsonCsvObject);
     // console.log(jsonCsvObject)
     expect(values.length).to.equal(1);
-    // debugger;
+    debugger;
     var result = DL._.makeContext(values[0]);
 
     expect(result.qn).to.equal('Customer Discount');
@@ -27,8 +27,10 @@ describe('additional decision table parsing logic...', function() {
       ['"Private"', '-', '0.05'],
     ];
 
-    var inpValuesList = ['"Business", "Private"', '<10, >=10'];
-    var outputValuesList = ['0.05, 0.10, 0.15'];
+    // var inpValuesList = ['"Business", "Private"', '<10, >=10'];
+    var inpValuesList = [['"Business"', '"Private"'], ['<10', '>=10']]
+    // var outputValuesList = ['0.05, 0.10, 0.15'];
+    var outputValuesList = [['0.05', '0.10', '0.15']]
 
     var contextEntries = [
       'outputs : "Discount"',
@@ -41,8 +43,8 @@ describe('additional decision table parsing logic...', function() {
       },
       'hit policy: "U"',
       {
-        "input values list" : generateContextString(inpValuesList, false),
-        "output values" : generateContextString(outputValuesList, false)
+        "input values list" : generateContextString(inpValuesList.map(cl => generateContextString(cl, false)), 'csv'),
+        "output values" : generateContextString(outputValuesList.map(cl => generateContextString(cl, false)), 'csv')
       }
     ];
 
