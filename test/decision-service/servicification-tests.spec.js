@@ -36,21 +36,21 @@ describe('servicification tests...', function() {
       expect(qn.length, 'Could not detect qualified name for sheet: ' + key).to.not.equal(0)
     });
   });
+  // became defunct
+  // it('should expose a json-feel object which exposes a service', function() {
+  //   debugger;
+  //   var jsonFeel = DL.parseWorkbook(testFile);
 
-  it('should expose a json-feel object which exposes a service', function() {
-    debugger;
-    var jsonFeel = DL.parseWorkbook(testFile);
+  //   expect(jsonFeel).to.be.defined;
+  //   expect(jsonFeel).to.be.object;
 
-    expect(jsonFeel).to.be.defined;
-    expect(jsonFeel).to.be.object;
+  //   var workbook = XLSX.readFile(testFile);
 
-    var workbook = XLSX.readFile(testFile);
+  //   expect(workbook.SheetNames.length + 1).to.equal(Object.keys(jsonFeel).length)
+  //   expect(jsonFeel._services).to.be.defined;
 
-    expect(workbook.SheetNames.length + 1).to.equal(Object.keys(jsonFeel).length)
-    expect(jsonFeel._services).to.be.defined;
+  //   expect(jsonFeel._services).to.eql(['Routing']);
 
-    expect(jsonFeel._services).to.eql(['Routing']);
-
-  });
+  // });
 
 });

@@ -60,7 +60,7 @@ describe('boxed expression tests...', function() {
                       + "else if Product Type = \"SPECIAL LOAN\" "
                       + "then 25.00 "
                       + "else null",
-      "Monthly Repayment" : "PMT (Rate, Term, Amount)",
+      "Monthly Repayment" : "PMT(Rate, Term, Amount)",
       "result" : "Monthly Repayment + Monthly Fee"
     };
 

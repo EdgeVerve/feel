@@ -42,7 +42,7 @@ function generatePriorityList(dTable) {
     ruleLine.forEach( (_, ordinal) => {
       var pty = {};
       pty.Rule = ordinal + 1;
-      var outputOrdinal = index - numOfConditions
+      var outputOrdinal = ordinal - numOfConditions
       var pValue = outputOrdinal < 0 ? -1 : outputValuesList[outputOrdinal].indexOf(_);
       pty[outputs[outputOrdinal]] = (pValue === -1 ? 0 : (pValue + 1));
       matrix[ordinal] = pty;

@@ -37,7 +37,7 @@ describe('additional decision table parsing logic...', function() {
         "rule list" : generateContextString(ruleList.map(r => generateContextString(r, false)), "csv")
       },
       {
-        id: "Customer Discount"
+        id: "\'Customer Discount\'"
       },
       'hit policy: "U"',
       {

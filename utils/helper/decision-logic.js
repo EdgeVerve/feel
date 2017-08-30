@@ -207,7 +207,7 @@ function parseDecisionTableFromCsv(csvString) {
       'input expression list': dto.inputExpressionList,
       'rule list': dto.ruleList,
     },
-    `id : ${qualifiedName}`,
+    `id : '${qualifiedName}'`,
     `hit policy: \"${dto.hitPolicy}\"`,
   ];
 
@@ -553,7 +553,7 @@ const generateJsonFEEL = function (jsonCsvObject) {
     // hash[ctx.qn] = ctx.expression;
     // return hash;
     return Object.assign({}, hash, { [ctx.qn]: ctx.expression });
-  }, { _services: services });
+  }, {});
 };
 
 const parseWorkbook = function (path) {
