@@ -5,7 +5,7 @@
 *
 */
 
-
+const _ = require('lodash');
 const FEEL = require('../../dist/feel').parse;
 const { getOrderedOutput, hitPolicyPass } = require('./hit-policy.js');
 
@@ -20,6 +20,38 @@ function Tree(data) {
   this.root = node;
 }
 
+function generatePriorityList(dTable) {
+  const outputs = dTable.outputs && Array.isArray(dTable.outputs) ? dTable.outputs : [dTable.outputs];
+  const outputValuesList = dTable.outputValues;
+  // .map(outputValue => FEEL(outputValue));
+  const ruleList = dTable.ruleList;
+  const numOfConditions = dTable.inputExpressionList.length;
+  const calcPriority = (priorityMat, outputs) => {
+    const sortedPriority = _.sortBy(priorityMat, outputs);
+    const rulePriority = {};
+    sortedPriority.forEach((priority, index) => {
+      const key = `Rule${priority.Rule}`;
+      rulePriority[key] = index + 1;
+    });
+    return rulePriority;
+  };
+
+  const matrix = [];
+  ruleList.forEach((ruleLine) => {
+    ruleLine.forEach((_, ordinal) => {
+      const pty = {};
+      pty.Rule = ordinal + 1;
+      const outputOrdinal = ordinal - numOfConditions;
+      const pValue = outputOrdinal < 0 ? -1 : outputValuesList[outputOrdinal].indexOf(_);
+      pty[outputs[outputOrdinal]] = (pValue === -1 ? 0 : (pValue + 1));
+      matrix[ordinal] = pty;
+    });
+  });
+
+  return calcPriority(matrix, outputs);
+}
+
+
 const createDecisionTree = (dTable) => {
   const ruleTree = new Tree('Rule');
   const root = ruleTree.root;
@@ -31,8 +63,13 @@ const createDecisionTree = (dTable) => {
 
   root.hitPolicy = dTable.hitPolicy;
   if (root.hitPolicy === 'P' || root.hitPolicy === 'O') {
-    root.priorityList = dTable.priorityList;
+    if (dTable.priorityList) {
+      root.priorityList = dTable.priorityList;
+    } else {
+      root.priorityList = generatePriorityList(dTable);
+    }
   }
+
   if (dTable.context !== null) {
     root.context = new Node(dTable.context, 'Context');
     root.context.ast = FEEL(root.context.data);
