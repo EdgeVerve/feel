@@ -7,7 +7,7 @@
 
 const nameResolutionOrder = ['kwargs', 'context', 'decisionMap', 'plugin'];
 
-const resolveName = (name, args, isResult = true) => new Promise((resolve, reject) => {
+const resolveName = (name, args, isResult = false) => new Promise((resolve, reject) => {
   nameResolutionOrder.some((key, index) => {
     const value = args[key] && args[key][name];
     if (typeof value !== 'undefined') {
@@ -16,7 +16,7 @@ const resolveName = (name, args, isResult = true) => new Promise((resolve, rejec
       } else if (key === 'decisionMap') {
         if (!isResult) {
           value.build(Object.assign({}, args.context, args.kwargs), { decisionMap: args.decisionMap, plugin: args.plugin }).then((result) => {
-            const decisionValue = typeof result === 'object' && Object.keys(result).map(key => result[key])[0];
+            const decisionValue = typeof result === 'object' ? Object.keys(result).map(key => result[key])[0] : result;
             resolve(decisionValue);
           });
         } else {

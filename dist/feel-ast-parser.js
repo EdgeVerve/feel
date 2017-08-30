@@ -230,14 +230,12 @@ module.exports = function (ast) {
 
       const processDecision = (fnMeta) => {
         const expr = fnMeta.expr;
+        if (expr.body instanceof ast.FunctionDefinitionNode) {
+          return expr.body.build(args)
+            .then(fnMeta => processUserDefinedFunction(fnMeta));
+        }
         return processFormalParameters()
             .then(argsNew => expr.build(argsNew));
-            // .then((result) => {
-            //   if (!fnMeta.isResult) {
-            //     return Object.keys(result).map(next => result[next])[0];
-            //   }
-            //   return result;
-            // });
       };
 
       const processFnMeta = (fnMeta) => {
@@ -248,6 +246,8 @@ module.exports = function (ast) {
         }
         return processUserDefinedFunction(fnMeta);
       };
+
+      this.fnName.isResult = true;
 
       this.fnName.build(args)
       .then(processFnMeta)
@@ -266,7 +266,6 @@ module.exports = function (ast) {
 
   ast.NamedParameterNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.expr.isResult = false;
       Promise.all([this.expr.build(args), this.paramName.build(null, false)])
       .then(([value, paramName]) => {
         const obj = {};
@@ -535,7 +534,17 @@ module.exports = function (ast) {
       if (this.entries && this.entries.length) {
         this.entries
           .reduce((p, entry) => p.then(argsNew => entry.build(argsNew)), Promise.resolve(args))
-          .then(ctx => resolve(ctx.kwargs && (ctx.kwargs.result || ctx.kwargs)))
+          .then((ctx) => {
+            if (ctx.kwargs) {
+              if (typeof ctx.kwargs.result !== 'undefined') {
+                resolve(ctx.kwargs.result);
+              } else {
+                resolve(ctx.kwargs);
+              }
+            } else {
+              reject('Error while parsing context. ctx.kwargs undefined');
+            }
+          })
           .catch(err => reject(err));
       } else {
         resolve({});
