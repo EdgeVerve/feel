@@ -41,7 +41,10 @@ const parseXLS = (path) => {
 
 const rCsvString = /"""(\w+)"""/;
 const rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
-
+const rCsvStringType5 = /^"(""[^"]*""(\s*,?\s*)?)+"$/;
+const rCaptureQuotes = /""([^"]+)""/g;
+const rTrailingSpaceCommas = /(\s*)?,(\s*)?/g;
+// const rCsvStingType6 = /[.]+\s*,\s*/
 // const noop = function () {};
 
 function isCsvString(testString) {
@@ -85,6 +88,21 @@ function processContextString(inputString) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
   }
   return inputString;
+}
+
+function processValueString(inputString) {
+
+  //check for string of type """s1"",""s2"",""s3"""
+  if (rCsvStringType5.test(inputString)) {
+    return inputString
+      .replace(rCaptureQuotes, (_, val) => val)
+      .replace(rTrailingSpaceCommas, ',')
+      .split(',').map(s => '\'' + s + '\'')
+  }
+  else if (inputString.indexOf(',') > -1) { // val1, val2, val3, ...
+    return inputString.split(/\s*,\s*/)
+  }
+
 }
 
 const parseInvocationFromCsv = function (csvString) {
@@ -165,11 +183,10 @@ function parseDecisionTableFromCsv(csvString) {
       // lst = []
       if (k <= conditionCount) {
         //! input values list
-        if (components[k].length) {
-          inputValuesList.push(`'${processContextString(components[k])}'`);
-        }
-      } else if (components[k].length) {
-        outputValuesList.push(`'${processContextString(components[k])}'`);
+        inputValuesList.push(components[k].length ? processValueString(components[k]) : []);
+      } 
+      else {
+        outputValuesList.push(components[k].length ? processValueString(components[k]) : []);
       }
     }
     i += 1; // next line
