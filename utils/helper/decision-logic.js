@@ -65,14 +65,21 @@ function isType4String(testString) {
     && /[<>\+\-=\/\^\.]/.test(testString); // TODO: may need to add more operators here
 }
 
+function isType5String(testString) {
+  return rCsvStringType5.test(testString)
+}
+
 function processString(inputString) {
   if (isCsvString(inputString)) {
     return `"${inputString.match(rCsvString)[1]}"`;
-  } else if (isType3String(inputString)) {
-    return inputString.replace(/""(\w+)""/g, (_, value) => `*${value}*`)
-      .replace(/"/g, '')
-      .replace(/\*/g, '"')
-      .replace(/\s/g, '');
+  } else if (isType5String(inputString)) {
+    // return inputString.replace(/""(\w+)""/g, (_, value) => `*${value}*`)
+    //   .replace(/"/g, '')
+    //   .replace(/\*/g, '"')
+    //   .replace(/\s/g, '');
+    return inputString
+      .match(rCaptureQuotes)
+      .map(s => s.replace(/""/g, '"')).join(',')
       // .split(',');
   } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
