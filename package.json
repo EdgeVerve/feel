@@ -1,6 +1,6 @@
 {
   "name": "js-feel",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "FEEL(Friendly Enough Expression Language) based on DMN specification 1.1 for conformance level 3",
   "main": "index.js",
   "scripts": {
