@@ -31,7 +31,7 @@ describe("Internal tests...", function() {
   //   expect(dto.context).to.be.undefined;
   // });
 
-  it('should be that makeContext() returns an object', function() {
+  xit('should be that makeContext() returns an object', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
     var values = Object.values(excelSheetsJsonCsv);
