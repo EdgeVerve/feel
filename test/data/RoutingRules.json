@@ -1,0 +1,3 @@
+{
+  "Routing rules": "decision table(outputs : ['Routing','Review level','Reason'],input expression list : ['Age','Risk category','Debt review'],rule list : [['-','-','-','\"Accept\"','\"None\"','\"Acceptable\"'],['<18','-','-','\"Decline\"','\"None\"','\"Applicant too young\"'],['-','\"High\"','-','\"Refer\"','\"Level1\"','\"High risk application\"'],['-','-','true','\"Refer\"','\"Level2\"','\"Applicant under debt review\"']],id : 'Routing rules',hit policy: \"O\",input values list : [[],['\"Low\"','\"Medium\"','\"High\"'],[]],output values : [['\"Decline\"','\"Refer\"','\"Accept\"'],['\"Level2\"','\"Level1\"','\"None\"'],[]])"
+}
