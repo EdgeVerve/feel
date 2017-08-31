@@ -123,10 +123,12 @@ describe(chalk.blue('Decision table evaluation'), function () {
 
     it('RoutingRules table evaluation', function (done) {
         var payload = {"Age" : 18, "Risk category" : "High", "Debt review" : false};
+        debugger;
         DTable.execute_decision_table("RoutingRules", decision_table, payload, (err, results)=> {
             if(err){
                 return done(err);
             }
+            console.log(results)
             expect(results.length).to.equal(2);
             expect(results[0].Routing).to.equal('Refer');
             expect(results[0]['Review level']).to.equal('Level1');

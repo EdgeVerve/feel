@@ -37,14 +37,15 @@ function generatePriorityList(dTable) {
   };
 
   const matrix = [];
-  ruleList.forEach((ruleLine) => {
-    ruleLine.forEach((_, ordinal) => {
-      const pty = {};
-      pty.Rule = ordinal + 1;
+  ruleList.forEach((ruleLine, ruleIndex) => {
+    ruleLine.forEach((ruleComponent, ordinal) => {
+      const pty = matrix[ruleIndex] || {};
+      pty.Rule = ruleIndex + 1;
       const outputOrdinal = ordinal - numOfConditions;
-      const pValue = outputOrdinal < 0 ? -1 : outputValuesList[outputOrdinal].indexOf(_);
+      if (outputOrdinal < 0) { return };
+      const pValue = outputOrdinal < 0 ? -1 : outputValuesList[outputOrdinal].indexOf(ruleComponent);
       pty[outputs[outputOrdinal]] = (pValue === -1 ? 0 : (pValue + 1));
-      matrix[ordinal] = pty;
+      matrix[ruleIndex] = pty;
     });
   });
 

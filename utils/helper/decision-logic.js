@@ -165,13 +165,15 @@ function parseDecisionTableFromCsv(csvString) {
   line = csvArray[i];
   components = line.split(delimiter);
   dto.hitPolicy = components[0];
+  dto.outputs = [];
   const inputExpressionList = [];
   // 1.2.1 loop though the rule table line to get input expressions
   for (let j = 1; j < components.length; j += 1) {
     if (j <= conditionCount) {
       inputExpressionList.push(components[j]);
     } else {
-      dto.outputs = components[j];
+      // dto.outputs = components[j];
+      dto.outputs.push(components[j]);
     }
   }
 
@@ -192,7 +194,7 @@ function parseDecisionTableFromCsv(csvString) {
       if (k <= conditionCount) {
         //! input values list
         inputValuesList.push(components[k].length ? processValueString(components[k]) : []);
-      } 
+      }
       else {
         outputValuesList.push(components[k].length ? processValueString(components[k]) : []);
       }
@@ -226,8 +228,15 @@ function parseDecisionTableFromCsv(csvString) {
   dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, false)), 'csv');
 
   // 2. generating the context entry object for decision arguments
+  var outputsString;
+  if (dto.outputs.length === 1) {
+    outputsString = `"${dto.outputs[0]}"`
+  }
+  else {
+    outputsString = generateContextString(dto.outputs, false)
+  }
   const contextEntry = [
-    `outputs : \"${dto.outputs}\"`,
+    `outputs : ${outputsString}`,
     {
       'input expression list': dto.inputExpressionList,
       'rule list': dto.ruleList,
