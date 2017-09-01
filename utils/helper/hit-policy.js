@@ -41,7 +41,8 @@ const _ = require('lodash');
 const getDistinct = arr => arr.filter((item, index, arr) => arr.indexOf(item) === index);
 
 const sum = (arr) => {
-  const distinctArr = getDistinct(arr);
+  // const distinctArr = getDistinct(arr);
+  const distinctArr = arr;
   const elem = distinctArr[0];
   if (typeof elem === 'string') {
     return distinctArr.join(' ');

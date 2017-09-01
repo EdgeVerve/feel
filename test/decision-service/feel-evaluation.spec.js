@@ -51,7 +51,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
       done();
     });
   });
-  xit('should execute a decision logic correctly - case 1', function(done) {
+  it('should execute a decision logic correctly - case 1', function(done) {
     //from the routingdecisionservice.json file
     const inputData = {
       'Applicant data': {
@@ -94,7 +94,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
 
   });
 
-  xit('should execute a decision service given manually created decision map', function(done){
+  it('should execute a decision service given manually created decision map', function(done){
     const { createDecisionGraphAST, executeDecisionService } = DS;
 
     const inputData = {
@@ -147,7 +147,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
 
   });
 
-  xit('should execute the Routing rules decision service when input with payload', function(done) {
+  it('should execute the Routing rules decision service when input with payload', function(done) {
     var file = 'test/data/RoutingRules.xlsx';
     var jsonFEEL = DL.parseWorkbook(file);
     const { createDecisionGraphAST, executeDecisionService } = DS;
@@ -168,7 +168,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
     }).catch(done)
   });
 
-  xit('should execute a decision logic correctly - case 2', function(done) { //from workbook
+  it('should execute a decision logic correctly - case 2', function(done) { //from workbook
     const inputData = {
       'Applicant data': {
         Age: 51,

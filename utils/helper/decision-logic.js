@@ -7,11 +7,11 @@
 
 
 const XLSX = require('xlsx');
-const _ = require('lodash');
-const tree = require('./decision-tree.js');
+// const _ = require('lodash');
+// const tree = require('./decision-tree.js');
 
 let api;
-const rootMap = {};
+// const rootMap = {};
 const delimiter = '&SP';
 const rowDelimiter = '&RSP';
 
@@ -40,10 +40,10 @@ const parseXLS = (path) => {
 };
 
 const rCsvString = /"""(\w+)"""/;
-const rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
+// const rCsvStringType3 = /(""\w+""\s*,?\s*)+/;
 const rCsvStringType5 = /^"(""[^"]*""(\s*,?\s*)?)+"$/;
 const rCaptureQuotes = /""([^"]+)""/g;
-const rTrailingSpaceCommas = /(\s*)?,(\s*)?/g;
+// const rTrailingSpaceCommas = /(\s*)?,(\s*)?/g;
 // const rCsvStingType6 = /[.]+\s*,\s*/
 // const noop = function () {};
 
@@ -55,9 +55,9 @@ function isType2String(testString) {
   return testString[0] === '"' && testString[testString.length - 1] === '"';
 }
 
-function isType3String(testString) {
-  return rCsvStringType3.test(testString);
-}
+// function isType3String(testString) {
+//   return rCsvStringType3.test(testString);
+// }
 
 function isType4String(testString) {
   return testString.indexOf('"') === -1
@@ -66,7 +66,7 @@ function isType4String(testString) {
 }
 
 function isType5String(testString) {
-  return rCsvStringType5.test(testString)
+  return rCsvStringType5.test(testString);
 }
 
 function processString(inputString) {
@@ -79,7 +79,7 @@ function processString(inputString) {
     //   .replace(/\s/g, '');
     return inputString
       .match(rCaptureQuotes)
-      .map(s => s.replace(/""/g, '"')).join(',')
+      .map(s => s.replace(/""/g, '"')).join(',');
       // .split(',');
   } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
@@ -98,19 +98,16 @@ function processContextString(inputString) {
 }
 
 function processValueString(inputString) {
-
-  //check for string of type """s1"",""s2"",""s3"""
+  // check for string of type """s1"",""s2"",""s3"""
   if (rCsvStringType5.test(inputString)) {
     return inputString
       .match(rCaptureQuotes)
-      .map(s => s.replace(/""/g, '"'))
+      .map(s => s.replace(/""/g, '"'));
+  } else if (inputString.indexOf(',') > -1) { // val1, val2, val3, ...
+    return inputString.split(/\s*,\s*/);
   }
-  else if (inputString.indexOf(',') > -1) { // val1, val2, val3, ...
-    return inputString.split(/\s*,\s*/)
-  }
-  else {
-    return inputString;
-  }
+
+  return inputString;
 }
 
 const parseInvocationFromCsv = function (csvString) {
@@ -194,8 +191,7 @@ function parseDecisionTableFromCsv(csvString) {
       if (k <= conditionCount) {
         //! input values list
         inputValuesList.push(components[k].length ? processValueString(components[k]) : []);
-      }
-      else {
+      } else {
         outputValuesList.push(components[k].length ? processValueString(components[k]) : []);
       }
     }
@@ -228,12 +224,11 @@ function parseDecisionTableFromCsv(csvString) {
   dto.ruleList = generateContextString(ruleList.map(cl => generateContextString(cl, false)), 'csv');
 
   // 2. generating the context entry object for decision arguments
-  var outputsString;
+  let outputsString;
   if (dto.outputs.length === 1) {
-    outputsString = `"${dto.outputs[0]}"`
-  }
-  else {
-    outputsString = generateContextString(dto.outputs, false)
+    outputsString = `"${dto.outputs[0]}"`;
+  } else {
+    outputsString = generateContextString(dto.outputs, false);
   }
   const contextEntry = [
     `outputs : ${outputsString}`,
@@ -371,10 +366,10 @@ const isDecisionTableModel = function (csvString) {
 
 const generateJsonFEEL = function (jsonCsvObject) {
   // const jsonFeel = {};
-  const { _: { makeContext, isDecisionService } } = api;
-  const services = Object.values(jsonCsvObject)
-    .filter(csv => isDecisionService(csv))
-    .map(csv => csv.substring(0, csv.indexOf(delimiter)));
+  const { _: { makeContext } } = api;
+  // const services = Object.values(jsonCsvObject)
+  //   .filter(csv => isDecisionService(csv))
+  //   .map(csv => csv.substring(0, csv.indexOf(delimiter)));
 
   return Object.keys(jsonCsvObject).reduce((hash, key) => {
     const csvModel = jsonCsvObject[key];
@@ -422,10 +417,6 @@ const generateContextString = function (contextEntries, isRoot = true) {
       const feelEntry = generateContextString(contextEntries[key], false);
       stringArray.push(`${key} : ${feelEntry}`);
     });
-  } else {
-    //! default as string
-    console.assert(typeof contextEntries === 'string', 'Expected context entry to be a string, but got: ' + typeof contextEntries + '(' + contextEntries + ')' );
-    // stringArray.push(contextEntries)
   }
 
   if (feelType === 'object') {
@@ -453,11 +444,11 @@ const generateContextString = function (contextEntries, isRoot = true) {
   throw new Error(`Cannot process contextEntries of type: ${typeof contextEntries}`);
 };
 
-const isDecisionService = function (csvString) {
-  const lines = csvString.split(rowDelimiter);
+// const isDecisionService = function (csvString) {
+//   const lines = csvString.split(rowDelimiter);
 
-  return lines[0].split(delimiter)[1] === 'service';
-};
+//   return lines[0].split(delimiter)[1] === 'service';
+// };
 
 const isBoxedInvocation = function (csvString) {
   const lines = csvString.split(rowDelimiter);
@@ -496,7 +487,7 @@ module.exports = {
     isDecisionTableModel,
     generateJsonFEEL,
     generateContextString,
-    isDecisionService,
+    // isDecisionService,
     isBoxedInvocation,
     isBoxedContextWithResult,
     isBoxedContextWithoutResult,

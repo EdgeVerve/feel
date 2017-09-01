@@ -42,7 +42,7 @@ function generatePriorityList(dTable) {
       const pty = matrix[ruleIndex] || {};
       pty.Rule = ruleIndex + 1;
       const outputOrdinal = ordinal - numOfConditions;
-      if (outputOrdinal < 0) { return };
+      if (outputOrdinal < 0) { return; }
       const pValue = outputOrdinal < 0 ? -1 : outputValuesList[outputOrdinal].indexOf(ruleComponent);
       pty[outputs[outputOrdinal]] = (pValue === -1 ? 0 : (pValue + 1));
       matrix[ruleIndex] = pty;
