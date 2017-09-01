@@ -5,11 +5,53 @@ var fs = require('fs');
 var FEEL = require('../../dist/feel');
 var chalk = require('chalk');
 
+
 var DS = require('../../utils/helper/decision-service');
 
 describe(chalk.yellow('Feel evaluation...'), function(){
 
-  it('should execute a decision logic correctly - case 1', function(done) {
+  it('RoutingRules2.xlsx', function(done){
+    var parseWorkbook = DL.parseWorkbook;
+    var { createDecisionGraphAST, executeDecisionService } = DS;
+
+    var decMap = parseWorkbook('test/data/RoutingRules2.xlsx');
+    var ast = createDecisionGraphAST(decMap);
+
+    const payload = {
+      'Post Bureau Risk Category' : 'MEIDUM',
+      'Post Bureau Affordability' : false,
+      'Bankrupt' : false,
+      'Credit Score': 600
+    };
+    debugger;
+    executeDecisionService(ast, 'Routing Rules', payload)
+      .then(result => {
+        expect({Routing: 'ACCEPT'}).to.deep.equal(result);
+        done();
+      })
+      .catch(done)
+  });
+
+  it('RoutingRules2.xlsx - old path', function(done){
+    var DT = require('../../utils/helper/decision-table');
+    debugger;
+    var decision_table = DT.xls_to_csv('test/data/RoutingRules2.xlsx');
+    var payload = {
+      'Post Bureau Risk Category' : 'MEIDUM',
+      'Post Bureau Affordability' : false,
+      'Bankrupt' : false,
+      'Credit Score': 600
+    };
+    DT.execute_decision_table("Routing Rules", decision_table, payload, (err, results) => {
+      if(err){
+          done(err);
+          return;
+      }
+      expect({Routing: 'ACCEPT'}).to.deep.equal(results);
+      done();
+    });
+  });
+  xit('should execute a decision logic correctly - case 1', function(done) {
     //from the routingdecisionservice.json file
     const inputData = {
       'Applicant data': {
@@ -43,7 +85,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
 
 
     var decisionAST = DS.createDecisionGraphAST(decisionMap);
-
+    debugger;
     DS.executeDecisionService(decisionAST, 'Routing', inputData).then( r => {
       // console.log(r);
       expect({Routing: 'ACCEPT'}).to.deep.equal(r);
@@ -52,7 +94,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
 
   });
 
-  it('should execute a decision service given manually created decision map', function(done){
+  xit('should execute a decision service given manually created decision map', function(done){
     const { createDecisionGraphAST, executeDecisionService } = DS;
 
     const inputData = {
@@ -105,7 +147,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
 
   });
 
-  it('should execute the Routing rules decision service when input with payload', function(done) {
+  xit('should execute the Routing rules decision service when input with payload', function(done) {
     var file = 'test/data/RoutingRules.xlsx';
     var jsonFEEL = DL.parseWorkbook(file);
     const { createDecisionGraphAST, executeDecisionService } = DS;
@@ -126,7 +168,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
     }).catch(done)
   });
 
-  it('should execute a decision logic correctly - case 2', function(done) { //from workbook
+  xit('should execute a decision logic correctly - case 2', function(done) { //from workbook
     const inputData = {
       'Applicant data': {
         Age: 51,
@@ -169,4 +211,8 @@ describe(chalk.yellow('Feel evaluation...'), function(){
     }).catch(done);
 
   });
+
+
 });
+
+
