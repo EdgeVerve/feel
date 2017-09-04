@@ -14,7 +14,8 @@ describe('additional decision table parsing logic...', () => {
     const generateContextString = DL._.generateContextString;
     const { parseXLS, parseCsv } = DL._;
     const jsonCsvObject = parseCsv(parseXLS(testDataFile));
-    const values = Object.values(jsonCsvObject);
+    // const values = Object.values(jsonCsvObject);
+    const values = Object.keys(jsonCsvObject).map(k => jsonCsvObject[k]);
     // console.log(jsonCsvObject)
     expect(values.length).to.equal(1);
     // debugger;

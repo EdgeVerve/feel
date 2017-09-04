@@ -59,11 +59,11 @@ function isType2String(testString) {
 //   return rCsvStringType3.test(testString);
 // }
 
-function isType4String(testString) {
-  return testString.indexOf('"') === -1
-    && testString.indexOf(',') > -1
-    && /[<>\+\-=\/\^\.]/.test(testString); // TODO: may need to add more operators here
-}
+// function isType4String(testString) {
+//   return testString.indexOf('"') === -1
+//     && testString.indexOf(',') > -1
+//     && /[<>\+\-=\/\^\.\(\)]/.test(testString); // TODO: may need to add more operators here
+// }
 
 function isType5String(testString) {
   return rCsvStringType5.test(testString);
@@ -83,8 +83,6 @@ function processString(inputString) {
       // .split(',');
   } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
-  } else if (isType4String(inputString)) {
-    return inputString.replace(/\s/g, '').split(',');
   }
 
   return inputString;
@@ -452,7 +450,7 @@ const generateContextString = function (contextEntries, isRoot = true) {
 
 const isBoxedInvocation = function (csvString) {
   const lines = csvString.split(rowDelimiter);
-  return lines[0].split(delimiter)[2] === 'invocation';
+  return lines[0].split(delimiter)[1] === 'invocation';
 };
 
 const isBoxedContextWithResult = function (csvString) {
@@ -460,7 +458,7 @@ const isBoxedContextWithResult = function (csvString) {
 
   if (line && line.length) {
     const fields = line.split(delimiter);
-    return fields[2] === 'context-with-result';
+    return fields[1] === 'context-with-result';
   }
 
   return false;
@@ -471,7 +469,7 @@ const isBoxedContextWithoutResult = function (csvString) {
 
   if (line && line.length) {
     const fields = line.split(delimiter);
-    return fields[2] === 'context';
+    return fields[1] === 'context';
   }
 
   return false;

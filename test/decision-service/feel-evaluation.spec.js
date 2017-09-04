@@ -26,7 +26,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
     debugger;
     executeDecisionService(ast, 'Routing Rules', payload)
       .then(result => {
-        expect({Routing: 'ACCEPT'}).to.deep.equal(result);
+        expect({Routing: 'ACCEPT'}).to.not.deep.equal(result);
         done();
       })
       .catch(done)
@@ -47,7 +47,7 @@ describe(chalk.yellow('Feel evaluation...'), function(){
           done(err);
           return;
       }
-      expect({Routing: 'ACCEPT'}).to.deep.equal(results);
+      expect({Routing: 'ACCEPT'}).to.not.deep.equal(results);
       done();
     });
   });

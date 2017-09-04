@@ -14,5 +14,5 @@ module.exports = {
   decisionTable,
   feel,
   decisionLogic,
-  decisionService
+  decisionService,
 };

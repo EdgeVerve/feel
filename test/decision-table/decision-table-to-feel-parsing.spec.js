@@ -16,7 +16,8 @@ describe("Internal tests...", function() {
   it('should be that parseCsv() returns an object', function(){
     var csvJson = DTable._.parseXLS(excelWorkbookPath);
     var resultObject = DTable._.parseCsv(csvJson);
-    var values = Object.values(resultObject);
+    // var values = Object.values(resultObject);
+    var values = Object.keys(resultObject).map(k => resultObject[k]);
 
     expect(Array.isArray(values)).to.equal(true);
 
@@ -31,25 +32,27 @@ describe("Internal tests...", function() {
   //   expect(dto.context).to.be.undefined;
   // });
 
-  xit('should be that makeContext() returns an object', function() {
-    var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
-    var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
-    var boxedExpression = fs.readFileSync('test\\data\\BoxedExpression-PostBureauRiskCategoryTable-Compressed.txt', { encoding: 'utf8' });
-    // boxedExpression = boxedExpression.replace(/(\r\n|\n|\t)/g, '')
-    var dto = DTable.csv_to_decision_table(values[0]);
-    // debugger;
-    var result = DTable._.makeContext(values[0], dto)
+  // defunct
+  // it('should be that makeContext() returns an object', function() {
+  //   var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
+  //   var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
+  //   var values = Object.values(excelSheetsJsonCsv);
+  //   var boxedExpression = fs.readFileSync('test\\data\\BoxedExpression-PostBureauRiskCategoryTable-Compressed.txt', { encoding: 'utf8' });
+  //   // boxedExpression = boxedExpression.replace(/(\r\n|\n|\t)/g, '')
+  //   var dto = DTable.csv_to_decision_table(values[0]);
+  //   // debugger;
+  //   var result = DTable._.makeContext(values[0], dto)
 
-    expect(result).to.be.object
+  //   expect(result).to.be.object
 
-    expect(Object.keys(result)).to.eql(['qn', 'expression'])
-  })
+  //   expect(Object.keys(result)).to.eql(['qn', 'expression'])
+  // })
 
   it('should parse decision table worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
+    // var values = Object.values(excelSheetsJsonCsv);
+    var values = Object.keys(excelSheetsJsonCsv).map(k => excelSheetsJsonCsv[k]);
     var decisionModelCsv = values[0];
     debugger;
     var ctxObj = DTable._.makeContext(decisionModelCsv);
@@ -110,7 +113,8 @@ describe("Internal tests...", function() {
   it('should detect if a sheet is a decision table model', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
+    // var values = Object.values(excelSheetsJsonCsv);
+    var values = Object.keys(excelSheetsJsonCsv).map(k => excelSheetsJsonCsv[k]);
     var result = DTable._.isDecisionTableModel(values[1])
 
     expect(result).to.equal(false)
@@ -123,7 +127,8 @@ describe("Internal tests...", function() {
   it('should parse a business model worksheet correctly', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
+    // var values = Object.values(excelSheetsJsonCsv);
+    var values = Object.keys(excelSheetsJsonCsv).map(k => excelSheetsJsonCsv[k]);
     var businessModelCsv = values[1];
     // console.log(businessModelCsv)
     // debugger;
@@ -148,7 +153,8 @@ describe("Internal tests...", function() {
   it('should parse the qualified name of worksheet', function() {
     var excelSheetsCsvPartial = DTable._.parseXLS(excelWorkbookPath);
     var excelSheetsJsonCsv = DTable._.parseCsv(excelSheetsCsvPartial);
-    var values = Object.values(excelSheetsJsonCsv);
+    // var values = Object.values(excelSheetsJsonCsv);
+    var values = Object.keys(excelSheetsJsonCsv).map(k => excelSheetsJsonCsv[k]);
     var businessModelCsv = values[1];
 
     var ctxObj = DTable._.makeContext(businessModelCsv)
