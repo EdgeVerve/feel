@@ -11,12 +11,12 @@ const watch = require('gulp-watch');
 const insert = require('gulp-insert');
 const clean = require('gulp-clean');
 const peg = require('./utils/dev/gulp-pegjs');
-const gulpif = require('gulp-if');
 const minimist = require('minimist');
 const gutil = require('gulp-util');
 const mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
 const eslint = require('gulp-eslint');
+const through = require('through2');
 
 const knownOptions = {
   string: 'expr',
@@ -24,6 +24,14 @@ const knownOptions = {
 };
 
 const options = minimist(process.argv.slice(2), knownOptions);
+
+const log = label => {
+  const log = (file, enc, cb) => {
+    console.log(`${label} : ${file.path}`);
+    cb(null, file);
+  };
+  return through.obj(log);
+};
 
 gulp.task('initialize:feel', () => gulp.src('./grammar/feel-initializer.js')
 		.pipe(insert.transform((contents, file) => {
@@ -84,6 +92,7 @@ gulp.task('mocha', () => gulp.src(['test/*.js'], {
 
 gulp.task('lint', () => {
     return gulp.src(['**/*.js','!node_modules/**'])
+        .pipe(log('linting'))
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(eslint.failAfterError());
