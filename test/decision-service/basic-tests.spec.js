@@ -1,3 +1,9 @@
+/**
+ *
+ * ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ * Bangalore, India. All Rights Reserved.
+ *
+ */
 // const XLSX = require('xlsx');
 const chai = require('chai');
 // process.on('error', (e) => console.error(e))
