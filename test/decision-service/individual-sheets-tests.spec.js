@@ -1,3 +1,9 @@
+/**
+ *
+ * ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ * Bangalore, India. All Rights Reserved.
+ *
+ */
 const DL = require('../../utils/helper/decision-logic');
 const DS = require('../../utils/helper/decision-service');
 const expect = require('chai').expect;
