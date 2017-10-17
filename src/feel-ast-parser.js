@@ -284,16 +284,18 @@ module.exports = function (ast) {
 
   ast.PathExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      const [expr, ...names] = this.exprs;
-      Promise.all([].concat.call([expr.build(args)], names.map(d => d.build(null, false))))
-      .then(([root, ...pathNames]) => pathNames.reduce((accu, next) => {
-        if (Array.isArray(accu)) {
-          return accu.map(d => d[next]);
-        }
-        return accu[next];
-      }, root))
-      .then(result => resolve(result))
-      .catch(err => reject(err));
+      this.exprs
+        .reduce((p, expr) => { // eslint-disable-line arrow-body-style
+          return p.then((argsNew) => { // eslint-disable-line arrow-body-style
+            return expr.build(argsNew);
+          });
+        }, Promise.resolve(args))
+        .then((value) => {
+          resolve(value);
+        })
+        .catch((err) => {
+          reject(err);
+        });
     });
   };
 

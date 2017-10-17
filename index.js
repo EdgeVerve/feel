@@ -10,9 +10,15 @@ const decisionLogic = require('./utils/helper/decision-logic');
 const feel = require('./dist/feel');
 const decisionService = require('./utils/helper/decision-service');
 
-module.exports = {
+const jsFeel = {
   decisionTable,
   feel,
   decisionLogic,
   decisionService,
 };
+
+jsFeel.use = function (plugin) {
+  plugin.call(this);
+};
+
+module.exports = jsFeel;
