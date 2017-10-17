@@ -126,7 +126,7 @@ gulp.task('test-ci', ['pre-test-ci'], function () {
       reporters: [ 'lcovonly'],
       reportOpts: { dir: './coverage' }
     }))
-    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 70, branches: 60, lines: 70, functions: 85 }} }));
+    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 85, branches: 70, lines: 85, functions: 90 }} }));
 });
 
 gulp.task('test-ci-html', ['pre-test-ci'], function () {
@@ -137,7 +137,7 @@ gulp.task('test-ci-html', ['pre-test-ci'], function () {
       reporters: [ 'lcov'],
       reportOpts: { dir: './coverage' }
     }))
-    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 70, branches: 60, lines: 70, functions: 85 }} }));
+    .pipe(istanbul.enforceThresholds({ thresholds:{ global: {statements: 85, branches: 70, lines: 85, functions: 90 }} }));
 });
 
 gulp.task('build', ['initialize:feel', 'clean:src:feel', 'concat:feel', 'clean:temp']);
