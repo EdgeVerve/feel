@@ -286,8 +286,14 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       this.exprs
         .reduce((p, expr) => { // eslint-disable-line arrow-body-style
-          return p.then((argsNew) => { // eslint-disable-line arrow-body-style
-            return expr.build(argsNew);
+          return p.then((argsNew) => {
+            if (Array.isArray(argsNew)) {
+              const pArray = argsNew.context
+                                    ? argsNew.map(arg => expr.build(arg))
+                                    : argsNew.map(arg => expr.build({ kwargs: arg }));
+              return Promise.all(pArray);
+            }
+            return argsNew.context ? expr.build(argsNew) : expr.build({ kwargs: argsNew });
           });
         }, Promise.resolve(args))
         .then((value) => {

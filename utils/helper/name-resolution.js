@@ -5,25 +5,22 @@
  *
  */
 
-const nameResolutionOrder = ['kwargs', 'context', 'decisionMap'];
+const nameResolutionOrder = ['kwargs', 'context', 'decisionMap', 'plugin'];
 
 const resolveName = (name, args, isResult = false) =>
   new Promise((resolve, reject) => {
     nameResolutionOrder.some((key, index) => {
-      const value = args[key] && args[key][name];
+      let value;
+      if (key === 'plugin') {
+        value =
+          args.context && args.context.plugin && args.context.plugin[name];
+      } else {
+        value = args[key] && args[key][name];
+      }
+
       if (typeof value !== 'undefined') {
         if (key === 'kwargs' || key === 'context') {
-          if (typeof value === 'function') {
-            value()
-              .then((result) => {
-                resolve({ kwargs: result });
-              })
-              .catch((err) => {
-                reject(err);
-              });
-          } else {
-            resolve(value);
-          }
+          resolve(value);
         } else if (key === 'decisionMap') {
           if (!isResult) {
             value
@@ -43,6 +40,19 @@ const resolveName = (name, args, isResult = false) =>
               isDecision: true,
             };
             resolve(decision);
+          }
+        } else if (key === 'plugin') {
+          if (typeof value === 'function') {
+            // Assumption: functions added to plugins return a promise
+            value()
+              .then((result) => {
+                resolve({ context: result });
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          } else {
+            resolve(value);
           }
         }
         return true;
