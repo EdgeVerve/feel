@@ -296,7 +296,8 @@ module.exports = function (ast) {
             return argsNew.context ? expr.build(argsNew) : expr.build({ kwargs: argsNew });
           });
         }, Promise.resolve(args))
-        .then((value) => {
+        .then((result) => {
+          const value = result.context ? result.context : result;
           resolve(value);
         })
         .catch((err) => {
@@ -454,7 +455,9 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       this.expr.build(args).then((result) => {
         if (this.filterExpr instanceof ast.LiteralNode) {
-          this.filterExpr.build(args).then(value => resolve(result[value]));
+          this.filterExpr.build(args).then((value) => {
+            resolve(result[value]);
+          });
         } else {
           let kwargsNew = {};
           if (Array.isArray(result)) {
