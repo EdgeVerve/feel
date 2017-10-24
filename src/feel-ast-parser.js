@@ -288,12 +288,12 @@ module.exports = function (ast) {
         .reduce((p, expr) => { // eslint-disable-line arrow-body-style
           return p.then((argsNew) => {
             if (Array.isArray(argsNew)) {
-              const pArray = argsNew.context
+              const pArray = (argsNew.context || argsNew.kwargs)
                                     ? argsNew.map(arg => expr.build(arg))
                                     : argsNew.map(arg => expr.build({ kwargs: arg }));
               return Promise.all(pArray);
             }
-            return argsNew.context ? expr.build(argsNew) : expr.build({ kwargs: argsNew });
+            return (argsNew.context || argsNew.kwargs) ? expr.build(argsNew) : expr.build({ kwargs: argsNew });
           });
         }, Promise.resolve(args))
         .then((result) => {
@@ -453,7 +453,8 @@ module.exports = function (ast) {
   // TODO : see if the filter returns a function which can be applied on the list during execution
   ast.FilterExpressionNode.prototype.build = function (args) {
     return new Promise((resolve, reject) => {
-      this.expr.build(args).then((result) => {
+      this.expr.build(args).then((exprResult) => {
+        const result = exprResult.context ? exprResult.context : exprResult;
         if (this.filterExpr instanceof ast.LiteralNode) {
           this.filterExpr.build(args).then((value) => {
             resolve(result[value]);

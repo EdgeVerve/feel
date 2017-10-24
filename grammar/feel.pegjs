@@ -13,15 +13,15 @@ Expression
 	/ TextualExpression
 
 TextualExpression
-    = TxtExpa // literal | simple positive unary test | name | "(" , textual expression , ")"
-    / TxtExpb // filter expression | function invocation |
-    / TxtExpc // path expression |
-    / TxtExpd // instance of |
+    = TxtExpa // function definition | for expression | if expression | quantified expression |
+    / TxtExpb // disjunction |
+    / TxtExpc // conjunction |
+    / TxtExpd // comparison |
     / TxtExpe // arithmetic expression |
-    / TxtExpf // comparison |
-    / TxtExpg // conjunction |
-    / TxtExph // disjunction |
-    / TxtExpi // function definition | for expression | if expression | quantified expression |
+    / TxtExpf // instance of |
+    / TxtExpg // path expression |
+    / TxtExph // filter expression | function invocation |
+    / TxtExpi // literal | simple positive unary test | name | "(" , textual expression , ")"
 
 SimpleExpression
   = ArithmeticExpression
@@ -377,7 +377,7 @@ LeftExpg
 	/ LeftExph
 
 PathExpression
-    = head:LeftExpg tail: (__ "." __ Name)+
+    = head:LeftExpg tail: (__ "." __ Expression)+
         {
             return new ast.PathExpressionNode(buildList(head,tail,3),location());
         }
