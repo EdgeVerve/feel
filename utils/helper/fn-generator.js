@@ -27,7 +27,7 @@ const presence = (...args) => args.reduce((acc, arg) => acc && (arg || arg === 0
 
 const typeEq = (...args) => args.reduce((acc, arg) => acc && typeof arg === acc ? typeof arg : false, typeof args[0]); // eslint-disable-line
 
-const presencetypeEq = (...args) => presence(args) && typeEq(args) && true;
+const presencetypeEq = (...args) => presence(...args) && typeEq(...args) && true;
 
 const operatorMap = {
   '<': _.curry((x, y) => {
