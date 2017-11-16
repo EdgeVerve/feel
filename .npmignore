@@ -1,0 +1,28 @@
+#tests
+test
+coverage
+src
+grammar
+
+#build tools
+.travis.yml
+gulpfile.js
+
+#linters
+.eslintrc
+.eslintignore
+
+#editor settings
+.editorconfig
+
+#markdown
+CONTRIBUTION.md
+CORPORATE_CLA.md
+INDIVIDUAL_CLA.md
+
+#textfile
+dmn-feel-grammar.txt
+
+#git
+.gitattributes
+.gitignore
