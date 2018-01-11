@@ -9,15 +9,27 @@
 
 // ast nodes are the constructors used to construct the ast for the parsed grammar
 const ast = require('./feel-ast');
+const { enableLexerLogging } = require('../settings');
 
+const {logger} = require('../logger');
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
+const _log = logger('feel-grammer-parser');
+let loggerOptions;
+function log(msg) {
+  loggerOptions = options.loggerOptions || {};
+  if (enableLexerLogging) {
+    _log.debug(loggerOptions, msg)
+  }
+};
 
 function extractOptional(optional, index) {
+  log('_extractOptional');
   return optional ? optional[index] : null;
 }
 
 function flatten(list) {
+  log('_flatten');
   return list.filter( d => d && d.length).reduce((recur, next) => {
     if(next && Array.isArray(next)) {
       return [].concat.call(recur, flatten(next));
@@ -27,30 +39,36 @@ function flatten(list) {
 }
 
 function extractList(list, index) {
+  log('_extractList');
   return list.map(element => element[index]);
 }
 
 function buildList(head, tail, index) {
+  log('_buildList')
   return [head].concat(extractList(tail, index));
 }
 
 function buildName(head, tail, index) {
+  log('_buildName');
   return tail && tail.length ? [...head, ...flatten(tail)].join("") : head.join("");
 }
 
 
-function buildBinaryExpression(head, tail, loc) {
-  return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc), head);
+function buildBinaryExpression(head, tail, loc, text) {
+  log('_buildBinaryExpression');
+  return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc, text), head);
 }
 
-function buildComparisionExpression(head, tail, loc) {
+function buildComparisionExpression(head, tail, loc, text) {
+  log('_buildComparisionExpression');
   return tail.reduce((result, element) => {
     const operator = Array.isArray(element[1]) ? element[1][0] : element[1];
-    return new ast.ComparisionExpressionNode(operator, result, element[3], null, loc);
+    return new ast.ComparisionExpressionNode(operator, result, element[3], null, loc, text);
   }, head);
 }
 
-function buildLogicalExpression(head, tail, loc) {
+function buildLogicalExpression(head, tail, loc, text) {
+  log('_buildLogicalExpression');
   return tail.reduce((result, element) => {
     let operator = element[1];
     if (operator === 'and') {
@@ -58,7 +76,7 @@ function buildLogicalExpression(head, tail, loc) {
     } else if (operator === 'or') {
       operator = '||';
     }
-    return new ast.LogicalExpressionNode(operator, result, element[3], loc);
+    return new ast.LogicalExpressionNode(operator, result, element[3], loc, text);
   }, head);
 }
 
@@ -67,7 +85,8 @@ function buildLogicalExpression(head, tail, loc) {
 Start
     = __ program:(StartExpression __)?
         {
-            return new ast.ProgramNode(extractOptional(program,0),location());
+            log('Start');
+            return new ast.ProgramNode(extractOptional(program,0),location(), text());
         }
 
 StartExpression
@@ -96,12 +115,14 @@ SimpleExpression
 SimpleExpressions
   =   head:SimpleExpression tail:(__ "," __ SimpleExpression)*
         {
-          return new ast.SimpleExpressionsNode(buildList(head,tail,3), location());
+          log('SimpleExpressions');
+          return new ast.SimpleExpressionsNode(buildList(head,tail,3), location(), text());
         }
 
 TxtExpi
 	="(" __ expr:TextualExpression __ ")"
 		{
+      log('TxtExpi');
 			return expr;
 		}
 	/ Name
@@ -130,12 +151,14 @@ NamePartChar
 NameStart
     = head:NameStartChar tail:(NamePartChar)*
         {
+            log('NameStart');
             return buildList(head,tail,0);
         }
 
 NamePart
     = head:NamePartChar tail:(NamePartChar)*
         {
+            log('NamePart');
             return buildList(head,tail,0);
         }
 
@@ -143,7 +166,8 @@ Name
     = "time zone"
     / !ReservedWord head:NameStart tail:(__ (!ReservedWord) __ NamePart)*
         {
-            return new ast.NameNode(buildName(head,tail,0),location());
+            log('Name');
+            return new ast.NameNode(buildName(head,tail,0),location(), text());
         }
 
 //Name End
@@ -163,17 +187,17 @@ SimpleLiteral
 NullLiteral
     = $NullToken
         {
-            return new ast.LiteralNode(null, location());
+            return new ast.LiteralNode(null, location(), text());
         }
 
 BooleanLiteral
     = $TrueToken
         {
-            return new ast.LiteralNode(true, location());
+            return new ast.LiteralNode(true, location(), text());
         }
     / $FalseToken
         {
-            return new ast.LiteralNode(false, location());
+            return new ast.LiteralNode(false, location(), text());
         }
 
 Digit
@@ -185,43 +209,49 @@ Digits
 NumericLiteral
     = negative:("-")? __ number:DecimalNumber
         {
-            return new ast.LiteralNode(Number((negative || "") + number),location());
+            log('NumericLiteral');
+            return new ast.LiteralNode(Number((negative || "") + number),location(), text());
         }
 
 DecimalNumber
     = integer:Digits "." decimal:Digits
         {
+            log('DecimalNumber:1');
             return integer.join("") + "." + decimal.join("");
         }
     / "." decimal:Digits
         {
+            log('DecimalNumber:2');
             return "." + decimal.join("");
         }
      / integer:Digits
         {
+            log('DecimalNumber:3');
             return integer.join("");
         }
 
 StringLiteral "string"
   = '"' chars:DoubleStringCharacter* '"' {
-      return new ast.LiteralNode(chars.join(""),location());
+      log('StringLiteral:1');
+      return new ast.LiteralNode(chars.join(""),location(), text());
     }
   / "'" chars:SingleStringCharacter* "'" {
-       return new ast.LiteralNode(chars.join(""),location());
+       log('SingleLiteral:2')
+       return new ast.LiteralNode(chars.join(""),location(), text());
     }
 
 DoubleStringCharacter
-  = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  = !('"' / "\\" / LineTerminator) SourceCharacter { log('DoubleStringCharacter:1'); return text(); }
+  / "\\" sequence:EscapeSequence { log('DoubleStringCharacter:2'); return sequence; }
   / LineContinuation
 
 SingleStringCharacter
-  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
+  = !("'" / "\\" / LineTerminator) SourceCharacter { log('SingleStringCharacter:1'); return text(); }
+  / "\\" sequence:EscapeSequence { log('SingleStringCharacter:2'); return sequence; }
   / LineContinuation
 
 LineContinuation
-  = "\\" LineTerminatorSequence { return ""; }
+  = "\\" LineTerminatorSequence { log('LineContinuation'); return ""; }
 
 EscapeSequence
   = CharacterEscapeSequence
@@ -233,12 +263,12 @@ SingleEscapeCharacter
   = "'"
   / '"'
   / "\\"
-  / "b"  { return "\b"; }
-  / "f"  { return "\f"; }
-  / "n"  { return "\n"; }
-  / "r"  { return "\r"; }
-  / "t"  { return "\t"; }
-  / "v"  { return "\v"; }
+  / "b"  { log('SingleEscapeCharacter:1');return "\b"; }
+  / "f"  { log('SingleEscapeCharacter:2');return "\f"; }
+  / "n"  { log('SingleEscapeCharacter:3');return "\n"; }
+  / "r"  { log('SingleEscapeCharacter:4');return "\r"; }
+  / "t"  { log('SingleEscapeCharacter:5');return "\t"; }
+  / "v"  { log('SingleEscapeCharacter:6');return "\v"; }
 
 LineTerminator
   = [\n\r\u2028\u2029]
@@ -253,7 +283,8 @@ LineTerminatorSequence "end of line"
 DateTimeLiteral
   = symbol: DateTimeKeyword "(" __ head:Expression tail:(__ "," __ Expression)* __ ")"
     {
-        return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location());
+        log('DateTimeLiteral');
+        return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location(), text());
     }
 
 
@@ -264,7 +295,8 @@ DateTimeLiteral
 SimplePositiveUnaryTest
     = head:(UnaryOperator __)? tail:Endpoint __ !(ArithmeticOperator/ReservedWord/"..")
         {
-             return new ast.SimplePositiveUnaryTestNode(extractOptional(head,0),tail,location());
+             log('SimplePositiveUnaryTest');
+             return new ast.SimplePositiveUnaryTestNode(extractOptional(head,0),tail,location(), text());
         }
      / Interval
 
@@ -284,27 +316,32 @@ ArithmeticOperator
 Interval
     = start:IntervalStart !(IntervalStart / IntervalEnd) __ first:Endpoint __ ".." __ second:Endpoint __ end:IntervalEnd
         {
-            return new ast.IntervalNode(start,first,second,end,location());
+            log('Interval');
+            return new ast.IntervalNode(start,first,second,end,location(), text());
         }
 
 IntervalStart
     = OpenIntervalStart
         {
-            return new ast.IntervalStartLiteralNode("<",location());
+            log('IntervalStart:1');
+            return new ast.IntervalStartLiteralNode("<",location(), text());
         }
     / ClosedIntervalStart
         {
-            return new ast.IntervalStartLiteralNode("<=",location());
+            log('IntervalStart:2');
+            return new ast.IntervalStartLiteralNode("<=",location(), text());
         }
 
 IntervalEnd
     = OpenIntervalEnd
         {
-            return new ast.IntervalEndLiteralNode(">",location());
+            log('IntervalEnd:1');
+            return new ast.IntervalEndLiteralNode(">",location(), text());
         }
     / ClosedIntervalEnd
         {
-            return new ast.IntervalEndLiteralNode(">=",location());
+            log('IntervalEnd:2');
+            return new ast.IntervalEndLiteralNode(">=",location(), text());
         }
 
 OpenIntervalStart
@@ -331,7 +368,8 @@ SimpleValue
 QualifiedName
     = head:Name tail: (__ "->" __ Name)*
         {
-             return new ast.QualifiedNameNode(buildList(head,tail,3),location());
+             log('QualifiedName');
+             return new ast.QualifiedNameNode(buildList(head,tail,3),location(), text());
         }
 
 //SimplePositiveUnaryTest End
@@ -341,21 +379,25 @@ QualifiedName
 SimpleUnaryTests
 	= expr:SimplePositiveUnaryTests
 		{
-			return new ast.SimpleUnaryTestsNode(expr,null,location());
+      log('SimpleUnaryTests:1');
+			return new ast.SimpleUnaryTestsNode(expr,null,location(), text(), text());
 		}
 	/ not:$NotToken __ "(" __ expr:SimplePositiveUnaryTests __ ")"
 		{
-			return new ast.SimpleUnaryTestsNode(expr,not,location());
+      log('SimpleUnaryTests:2');
+			return new ast.SimpleUnaryTestsNode(expr,not,location(), text());
 		}
 	/ "-"
 		{
-			return new ast.SimpleUnaryTestsNode(null,null,location());
+      log('SimpleUnaryTests:3');
+			return new ast.SimpleUnaryTestsNode(null,null,location(), text());
 		}
 
 SimplePositiveUnaryTests
 	= head: PositiveUnaryTest
 	tail: (__ "," __ PositiveUnaryTest)*
 	{
+    log('SimplePositiveUnaryTests');
 		return buildList(head,tail,3);
 	}
 
@@ -367,13 +409,15 @@ PositiveUnaryTest
 	= SimplePositiveUnaryTest
 	/ head: NullLiteral
   {
-    return new ast.SimplePositiveUnaryTestNode(null,head,location());
+    log('PositiveUnaryTest');
+    return new ast.SimplePositiveUnaryTestNode(null,head,location(), text());
   }
 
 PositiveUnaryTests
 	= head:PositiveUnaryTest
 	tail:(__ "," __ PositiveUnaryTest)*
 	{
+    log('PositiveUnaryTests');
 		return buildList(head,tail,3);
 	}
 
@@ -384,15 +428,18 @@ PositiveUnaryTests
 UnaryTests
 	= expr:PositiveUnaryTests
 		{
-			return ast.UnaryTestsNode(expr,null,location());
+      log('UnaryTests:1');
+			return ast.UnaryTestsNode(expr,null,location(), text());
 		}
 	/ not:$NotToken __ "(" __ expr:PositiveUnaryTests __ ")"
 		{
-			return ast.UnaryTestsNode(expr,not,location());
+      log('UnaryTests:2');
+			return ast.UnaryTestsNode(expr,not,location(), text());
 		}
 	/ "-"
 		{
-		 	return ast.UnaryTestsNode(null,null,location());
+      log('UnaryTests:3');
+		 	return ast.UnaryTestsNode(null,null,location(), text());
 		}
 
 //UnaryTests End
@@ -407,31 +454,36 @@ LeftExph
 FilterExpression
     = head:LeftExph __ "[" __ tail:Expression __ "]"
         {
-            return new ast.FilterExpressionNode(head,tail,location());
+            log('FilterExpression');
+            return new ast.FilterExpressionNode(head,tail,location(), text());
         }
 
 FunctionInvocation
     = fnName:LeftExph __ "(" params:(__ (NamedParameters/PositionalParameters))? __ ")"
         {
-            return new ast.FunctionInvocationNode(fnName,extractOptional(params,1),location());
+            log('FunctionInvocation');
+            return new ast.FunctionInvocationNode(fnName,extractOptional(params,1),location(), text());
         }
 
 NamedParameters
     = head:NamedParameter tail:(__ "," __ NamedParameter)*
         {
-            return new ast.NamedParametersNode(buildList(head,tail,3),location());
+            log('NamedParameters');
+            return new ast.NamedParametersNode(buildList(head,tail,3),location(), text());
         }
 
 NamedParameter
     = head:Name __ ":" __ tail:Expression
         {
-             return new ast.NamedParameterNode(head,tail,location());
+             log('NamedParameter');
+             return new ast.NamedParameterNode(head,tail,location(), text());
         }
 
 PositionalParameters
     = head:Expression tail:(__ "," __ Expression)*
         {
-            return new ast.PositionalParametersNode(buildList(head,tail,3),location());
+            log('PositionalParameters');
+            return new ast.PositionalParametersNode(buildList(head,tail,3),location(), text());
         }
 
 
@@ -445,7 +497,8 @@ LeftExpg
 PathExpression
     = head:LeftExpg tail: (__ "." __ Expression)+
         {
-            return new ast.PathExpressionNode(buildList(head,tail,3),location());
+            log('PathExpression');
+            return new ast.PathExpressionNode(buildList(head,tail,3),location(), text());
         }
 
 TxtExpf
@@ -459,7 +512,8 @@ LeftExpf
 InstanceOf
 	= expr:LeftExpf __ $InstanceOfToken __ type:QualifiedName
 		{
-			return new ast.InstanceOfNode(expr,type,location());
+      log('InstanceOf');
+			return new ast.InstanceOfNode(expr,type,location(), text());
 		}
 
 TxtExpe
@@ -478,7 +532,8 @@ ArithmeticExpression
 ArithmeticNegation
     = $("-") __ expr:Expression
         {
-            return buildBinaryExpression(null, [[null,"-",null,expr]], location());
+            log('ArithmeticNegation');
+            return buildBinaryExpression(null, [[null,"-",null,expr]], location(), text());
         }
 
 UnaryExpression
@@ -488,7 +543,10 @@ UnaryExpression
 Exponentiation
   	= head:UnaryExpression
     tail:(__ $("**") __ UnaryExpression)*
-    { return buildBinaryExpression(head, tail, location()); }
+    {
+      log('Exponentiation');
+      return buildBinaryExpression(head, tail, location(), text());
+    }
 
 MultiplicativeOperator
 	= $("*" !"*")
@@ -497,12 +555,12 @@ MultiplicativeOperator
 Multiplicative
     =  head:Exponentiation
     tail:(__ MultiplicativeOperator __ Exponentiation)*
-    { return buildBinaryExpression(head, tail, location()); }
+    { log('Multiplicative'); return buildBinaryExpression(head, tail, location(), text()); }
 
 Additive
     = head:Multiplicative
     tail:(__ $("+"/"-") __ Multiplicative)*
-    { return buildBinaryExpression(head, tail, location()); }
+    { log('Additive'); return buildBinaryExpression(head, tail, location(), text()); }
 
 TxtExpd
 	= Comparision
@@ -521,18 +579,21 @@ ComparisionOperator
 
 Comparision
 	= head:LeftExpd tail:(__ ComparisionOperator __ LeftExpd)+
-	  { return buildComparisionExpression(head,tail,location()); }
+	  { log('Comparision:1');return buildComparisionExpression(head,tail,location(), text()); }
 	/ head:LeftExpd __ operator:$BetweenToken __ first:LeftExpd __ and:AndToken __ second:LeftExpd
         {
-            return new ast.ComparisionExpressionNode(operator,head,first,second,location());
+            log('Comparision:2');
+            return new ast.ComparisionExpressionNode(operator,head,first,second,location(), text());
         }
     / head:LeftExpd __ operator:$InToken __ tail:PositiveUnaryTest
         {
-            return new ast.ComparisionExpressionNode(operator,head,tail,null,location());
+            log('Comparision:3');
+            return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text());
         }
     / head:LeftExpd __ operator:$InToken __ "(" __ tail:PositiveUnaryTests __ ")"
         {
-            return new ast.ComparisionExpressionNode(operator,head,tail,null,location());
+            log('Comparision:4');
+            return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text());
         }
 
 TxtExpc
@@ -545,7 +606,8 @@ LeftExpc
 Conjunction
 	= head:LeftExpc tail:(__ $AndToken __ LeftExpc)+
 		{
-			return buildLogicalExpression(head,tail,location());
+      log('Conjunction');
+			return buildLogicalExpression(head,tail,location(), text());
 		}
 
 TxtExpb
@@ -558,7 +620,8 @@ LeftExpb
 Disjunction
 	= head:LeftExpb tail:(__ $OrToken __ LeftExpb)+
 		{
-			return buildLogicalExpression(head,tail,location());
+      log('Disjunction');
+			return buildLogicalExpression(head,tail,location(), text());
 		}
 
 TxtExpa
@@ -574,49 +637,57 @@ LeftExpa
 FunctionDefinition
     = FunctionToken "(" params:(__ FormalParameters)? __ ")" __ body:FunctionBody
         {
-            return new ast.FunctionDefinitionNode(extractOptional(params,1),body,location());
+            log('FunctionDefinition');
+            return new ast.FunctionDefinitionNode(extractOptional(params,1),body,location(), text());
         }
 
 FunctionBody
     = extern:(ExternalToken __)? expr:Expression
         {
-            return new ast.FunctionBodyNode(expr,extractOptional(extern,0),location());
+            log('FunctionBody');
+            return new ast.FunctionBodyNode(expr,extractOptional(extern,0),location(), text());
         }
 
 FormalParameters
     = head:Name tail:(__ "," __ Name)*
         {
+            log('FormalParameters');
             return buildList(head,tail,3);
         }
 
 ForExpression
     = $ForToken __ head:InExpressions __ $ReturnToken __ tail:Expression
         {
-            return new ast.ForExpressionNode(head,tail,location());
+            log('ForExpression');
+            return new ast.ForExpressionNode(head,tail,location(), text());
         }
 
 InExpressions
     = head:InExpression tail:(__ "," __ InExpression)*
         {
+            log('InExpressions');
             return buildList(head,tail,3);
         }
 
 InExpression
     = head:Name __ InToken __ tail:Expression
         {
-            return new ast.InExpressionNode(head,tail,location());
+            log('InExpression');
+            return new ast.InExpressionNode(head,tail,location(), text());
         }
 
 IfExpression
     = $IfToken __ condition:Expression __ $ThenToken __ thenExpr:Expression __ $ElseToken __ elseExpr:Expression
         {
-            return new ast.IfExpressionNode(condition,thenExpr,elseExpr,location());
+            log('IfExpression');
+            return new ast.IfExpressionNode(condition,thenExpr,elseExpr,location(), text());
         }
 
 QuantifiedExpression
     = quantity:$(SomeToken/EveryToken) WhiteSpace+ head:InExpressions __ $SatisfiesToken __ tail:Expression
         {
-            return new ast.QuantifiedExpressionNode(quantity,head,tail,location());
+            log('QuantifiedExpression');
+            return new ast.QuantifiedExpressionNode(quantity,head,tail,location(), text());
         }
 
 BoxedExpression
@@ -627,19 +698,22 @@ BoxedExpression
 List
     = "[" __ list:ListEntries? __ "]"
         {
-            return new ast.ListNode(list,location());
+            log('List');
+            return new ast.ListNode(list,location(), text());
         }
 
 ListEntries
     = head:Expression tail:(__ "," __ Expression)*
       {
+        log('ListEntries');
         return buildList(head,tail,3);
       }
 
 Context
     = "{" entries:(__ ContextEntries)? __ "}"
         {
-            return new ast.ContextNode(extractOptional(entries,1),location());
+            log('Context');
+            return new ast.ContextNode(extractOptional(entries,1),location(), text());
         }
 
 Key
@@ -649,13 +723,15 @@ Key
 ContextEntry
     = head:Key __ ":" __ tail:Expression
         {
-            return new ast.ContextEntryNode(head,tail,location());
+            log('ContextEntry');
+            return new ast.ContextEntryNode(head,tail,location(), text());
         }
     ;
 
 ContextEntries
     = head:ContextEntry? tail:(__ "," __ ContextEntry)*
         {
+            log('ContextEntries');
             return buildList(head,tail,3);
         }
 

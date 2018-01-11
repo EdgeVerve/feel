@@ -10,8 +10,18 @@ const _ = require('lodash');
 const { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD } = require('./value');
 const { date, time, 'date and time': dateandtime } = require('../built-in-functions');
 const { logger } = require('../../logger');
+const { enableExecutionLogging } = require('../../settings');
 
-const log = logger('fn-generator');
+const $log = logger('fn-generator');
+const log = {};
+
+Object.keys($log).forEach((key) => {
+  log[key] = (...args) => {
+    if (enableExecutionLogging) {
+      $log[key](...args);
+    }
+  };
+});
 /*
 dateTimeComponent contains the list of properties required for comparision.
 property collection is in the order of priority of check
