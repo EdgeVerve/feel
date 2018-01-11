@@ -28,6 +28,7 @@ Object.keys($log).forEach((k) => {
 
 module.exports = function (ast) {
   ast.ProgramNode.prototype.build = function (data = {}, env = {}, type = 'output') {
+    const self = this;
     return new Promise((resolve, reject) => {
       let args = {};
       if (!data.isContextBuilt) {
@@ -40,6 +41,7 @@ module.exports = function (ast) {
       const options = (args && args.context && args.context.options) || {};
       // bodybuilding starts here...
       // let's pump some code ;)
+
       this.body.build(args)
         .then((result) => {
           if (type === 'input') {
@@ -58,7 +60,7 @@ module.exports = function (ast) {
           }
         })
         .catch((err) => {
-          $log.error(options, `ProgramNode build failed with error - ${err},text: ${this.text}`);
+          $log.error(options, `ProgramNode build failed with error - ${err},text: ${self.text}`);
           reject(err);
         });
     });
