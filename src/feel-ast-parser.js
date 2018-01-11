@@ -15,6 +15,13 @@ const resolveName = require('../utils/helper/name-resolution.js');
 const { logger } = require('../logger');
 const { enableExecutionLogging } = require('../settings');
 
+const stringify = (obj) => {
+  if (typeof obj === 'function') {
+    return obj.toString();
+  }
+  return JSON.stringify(obj);
+};
+
 const $log = logger('feel-ast-parser');
 const log = {};
 
@@ -28,7 +35,7 @@ Object.keys($log).forEach((k) => {
 
 module.exports = function (ast) {
   ast.ProgramNode.prototype.build = function (data = {}, env = {}, type = 'output') {
-    const self = this;
+    // const self = this;
     return new Promise((resolve, reject) => {
       let args = {};
       if (!data.isContextBuilt) {
@@ -51,16 +58,16 @@ module.exports = function (ast) {
               const fnResult = function (x) {
                 return x === result;
               };
-              $log.info(options, `ProgramNode build success with result - ${result.toString()}`);
+              $log.info(options, `ProgramNode build success with result - ${stringify(result)}, text: ${this.text}`);
               resolve(fnResult);
             }
           } else {
-            $log.info(options, `ProgramNode build success with result - ${result}`);
+            $log.info(options, `ProgramNode build success with result - ${stringify(result)}, text: ${this.text}`);
             resolve(result);
           }
         })
         .catch((err) => {
-          $log.error(options, `ProgramNode build failed with error - ${err},text: ${self.text}`);
+          $log.error(options, `ProgramNode build failed with error - ${err},text: ${this.text}`);
           reject(err);
         });
     });
@@ -84,7 +91,7 @@ module.exports = function (ast) {
       Promise.all([this.startpoint.build(args), this.endpoint.build(args)])
         .then(([startpoint, endpoint]) => processIntervalStartAndEnd(startpoint, endpoint))
         .then((result) => {
-          log.debug(options, `IntervalNode build success with result - ${result}`);
+          log.debug(options, `IntervalNode build success with result - ${stringify(result)}, text: ${this.text}`);
           resolve(result);
         })
         .catch((err) => {
@@ -99,7 +106,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       this.operand.build(args)
         .then((result) => {
-          log.debug(options, `SimplePositiveUnaryTestNode build success with result - ${this.operator} ${result}`);
+          log.debug(options, `SimplePositiveUnaryTestNode build success with result - ${this.operator} ${stringify(result)}, text: ${this.text}`);
           resolve(fnGen(this.operator || '==')(_, result));
         })
         .catch((err) => {
@@ -116,7 +123,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
-          log.debug(options, 'SimpleUnaryTestsNode build success');
+          log.debug(options, `SimpleUnaryTestsNode build success, text: ${stringify(this.text)}`);
           if (this.not) {
             const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
@@ -128,7 +135,7 @@ module.exports = function (ast) {
           reject(err);
         });
       } else {
-        log.debug(options, 'SimpleUnaryTestsNode encountered "-" - resolved to true');
+        log.debug(options, `SimpleUnaryTestsNode encountered "-" - resolved to true, text: ${this.text}`);
         resolve(() => true);
       }
     });
@@ -139,7 +146,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       if (this.expr) {
         Promise.all(this.expr.map(d => d.build(args))).then((results) => {
-          log.debug(options, `UnaryTestsNode build success with result - ${results}`);
+          log.debug(options, `UnaryTestsNode build success with result - ${stringify(results)}, text: ${this.text}`);
           if (this.not) {
             const negResults = results.map(result => args.context.not(result));
             resolve(x => negResults.reduce((result, next) => result && next(x), true));
@@ -176,7 +183,7 @@ module.exports = function (ast) {
         return firstResult;
       })
       .then((result) => {
-        log.debug(options, `QualifiedNameNode build success with result - ${result}`);
+        log.debug(options, `QualifiedNameNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       })
       .catch((err) => {
@@ -198,7 +205,7 @@ module.exports = function (ast) {
       }))
         .then(([first, second]) => {
           const result = fnGen(this.operator)(first, second);
-          log.debug(options, `ArithmeticExpressionNode build success with result - ${result}`);
+          log.debug(options, `ArithmeticExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
           resolve(result);
         })
         .catch((err) => {
@@ -220,7 +227,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       Promise.all(this.simpleExpressions.map(d => d.build(args)))
       .then((results) => {
-        log.debug(options, `SimpleExpressionsNode build success with result - ${results}`);
+        log.debug(options, `SimpleExpressionsNode build success with result - ${stringify(results)}, text: ${this.text}`);
         resolve(results);
       })
       .catch((err) => {
@@ -243,7 +250,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       resolveName(name, args, this.isResult)
       .then((result) => {
-        log.debug(options, `NameNode build success with result - ${result}`);
+        log.debug(options, `NameNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       })
       .catch((err) => {
@@ -255,7 +262,7 @@ module.exports = function (ast) {
 
   ast.LiteralNode.prototype.build = function (args) {
     const options = (args && args.context && args.context.options) || {};
-    log.debug(options, `LiteralNode build success with value - ${this.value}`);
+    log.debug(options, `LiteralNode build success with value - ${this.value}, text: ${this.text}`);
     return Promise.resolve(this.value);
   };
 
@@ -265,7 +272,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       Promise.all(this.params.map(d => d.build(args))).then((params) => {
         const result = fn(...params);
-        log.debug(options, `DateTimeLiteralNode build success with result - ${result}`);
+        log.debug(options, `DateTimeLiteralNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       }).catch((err) => {
         log.error(options, `DateTimeLiteralNode build failed with error - ${err},text: ${this.text}`);
@@ -341,7 +348,7 @@ module.exports = function (ast) {
       this.fnName.build(args)
       .then(processFnMeta)
       .then((result) => {
-        log.debug(options, `FunctionInvocationNode build success with result - ${result}`);
+        log.debug(options, `FunctionInvocationNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       })
       .catch((err) => {
@@ -356,7 +363,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       Promise.all(this.params.map(d => d.build(args))).then((results) => {
         const result = Object.assign.apply({}, results);
-        log.debug(options, `NamedParametersNode build success with result - ${result}`);
+        log.debug(options, `NamedParametersNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       }).catch((err) => {
         log.error(options, `NamedParametersNode build failed with error - ${err},text: ${this.text}`);
@@ -372,7 +379,7 @@ module.exports = function (ast) {
       .then(([value, paramName]) => {
         const obj = {};
         obj[paramName] = value;
-        log.debug(options, `NamedParameterNode build success with result - ${obj}`);
+        log.debug(options, `NamedParameterNode build success with result - ${stringify(obj)}, text: ${this.text}`);
         resolve(obj);
       })
       .catch((err) => {
@@ -387,7 +394,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       Promise.all(this.params.map(d => d.build(args)))
       .then((results) => {
-        log.debug(options, `PositionalParametersNode build success with result - ${results}`);
+        log.debug(options, `PositionalParametersNode build success with result - ${stringify(results)}, text: ${this.text}`);
         resolve(results);
       })
       .catch((err) => {
@@ -414,7 +421,7 @@ module.exports = function (ast) {
         }, Promise.resolve(args))
         .then((result) => {
           const value = result.context ? result.context : result;
-          log.debug(options, `PathExpressionNode build success with result - ${value}`);
+          log.debug(options, `PathExpressionNode build success with result - ${value},text: ${this.text}`);
           resolve(value);
         })
         .catch((err) => {
@@ -453,7 +460,7 @@ module.exports = function (ast) {
         return processLists(variables, lists);
       })
       .then((result) => {
-        log.debug(options, `ForExpressionNode build success with result - ${result}`);
+        log.debug(options, `ForExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       })
       .catch((err) => {
@@ -473,7 +480,7 @@ module.exports = function (ast) {
           reject("'In Expression' expects an array to operate on");
         } else {
           const obj = { list, variable };
-          log.debug(options, `InExpressionNode build success with result - ${obj}`);
+          log.debug(options, `InExpressionNode build success with result - ${stringify(obj)},text: ${this.text}`);
           resolve(obj);
         }
       })
@@ -499,7 +506,7 @@ module.exports = function (ast) {
         return returnPromise;
       })
       .then((result) => {
-        log.debug(options, `IfExpressionNode build success with result - ${result}`);
+        log.debug(options, `IfExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       })
       .catch((err) => {
@@ -560,7 +567,7 @@ module.exports = function (ast) {
         res[0] = results[0] || Boolean(results[0]); // to handle null and undefined
         res[1] = results[1] || Boolean(results[1]); // to handle null and undefined
         const result = fnGen(this.operator)(res[0])(res[1]);
-        log.debug(options, `LogicalExpressionNode build success with result - ${result}`);
+        log.debug(options, `LogicalExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
         resolve(result);
       }).catch((err) => {
         log.error(options, `LogicalExpressionNode build failed with error - ${err},text: ${this.text}`);
@@ -582,7 +589,7 @@ module.exports = function (ast) {
             } else {
               result = false;
             }
-            log.debug(options, `ComparisionExpressionNode - between - build success with result - ${result}`);
+            log.debug(options, `ComparisionExpressionNode - between - build success with result - ${stringify(result)}, text: ${this.text}`);
             resolve(result);
           }).catch((err) => {
             log.error(options, `ComparisionExpressionNode - between - build failed with error - ${err},text: ${this.text}`);
@@ -597,7 +604,7 @@ module.exports = function (ast) {
         this.expr_1.build(args)
         .then(operand => processExpr(operand))
         .then((result) => {
-          log.debug(options, `ComparisionExpressionNode - in - build success with result - ${result}`);
+          log.debug(options, `ComparisionExpressionNode - in - build success with result - ${stringify(result)}, text: ${this.text}`);
           resolve(result);
         })
         .catch((err) => {
@@ -609,7 +616,7 @@ module.exports = function (ast) {
           .then((results) => {
             operator = operator !== '=' ? operator : '==';
             const result = fnGen(operator)(results[0])(results[1]);
-            log.debug(options, `ComparisionExpressionNode build success with result - ${result}`);
+            log.debug(options, `ComparisionExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
             resolve(result);
           }).catch((err) => {
             log.error(options, `ComparisionExpressionNode build failed with error - ${err},text: ${this.text}`);
@@ -625,11 +632,11 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       this.expr.build(args).then((exprResult) => {
-        log.debug(options, `FilterExpressionNode - expr build success with result - ${exprResult}`);
+        log.debug(options, `FilterExpressionNode - expr build success with result - ${exprResult},text: ${this.text}`);
         const result = exprResult.context ? exprResult.context : exprResult;
         if (this.filterExpr instanceof ast.LiteralNode) {
           this.filterExpr.build(args).then((value) => {
-            log.debug(options, `FilterExpressionNode  - filterExpr build success with result - ${value}`);
+            log.debug(options, `FilterExpressionNode  - filterExpr build success with result - ${stringify(value)},text: ${this.text}`);
             resolve(result[value]);
           }).catch((err) => {
             log.error(options, `FilterExpressionNode - filterExpr build failed with error - ${err},text: ${this.text}`);
@@ -649,7 +656,7 @@ module.exports = function (ast) {
               return this.filterExpr.build(kwargsNew);
             })).then((booleanValues) => {
               const truthyValues = result.filter((d, i) => booleanValues[i]);
-              log.debug(options, `FilterExpressionNode build success with result- filtered values - ${truthyValues}`);
+              log.debug(options, `FilterExpressionNode build success with result- filtered values - ${stringify(truthyValues)},text: ${this.text}`);
               resolve(truthyValues);
             }).catch((err) => {
               log.error(options, `FilterExpressionNode build failed with error - ${err},text: ${this.text}`);
@@ -680,7 +687,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       if (this.exprList && this.exprList.length) {
         Promise.all(this.exprList.map(d => d.build(args))).then((result) => {
-          log.debug(options, `ListNode - build success with result - ${result}`);
+          log.debug(options, `ListNode - build success with result - ${stringify(result)}, text: ${this.text}`);
           resolve(result);
         }).catch((err) => {
           log.error(options, `ListNode - build failed with error - ${err},text: ${this.text}`);
@@ -701,7 +708,7 @@ module.exports = function (ast) {
         Promise.all(this.formalParams.map(d => d.build(null, false))).then((results) => {
           fnDfn.fn = this.body;
           fnDfn.params = results;
-          log.debug(options, `FunctionDefinitionNode build success - body - ${this.body}, params - ${results}`);
+          log.debug(options, `FunctionDefinitionNode build success - body - ${stringify(this.body)}, params - ${stringify(results)}, text: ${this.text}`);
           resolve(fnDfn);
         }).catch((err) => {
           log.error(options, `FunctionDefinitionNode build failed with error - ${err},text: ${this.text}`);
@@ -710,7 +717,7 @@ module.exports = function (ast) {
       } else {
         fnDfn.fn = this.body;
         fnDfn.params = null;
-        log.debug(options, `FunctionDefinitionNode build success - body - ${this.body}, params - none`);
+        log.debug(options, `FunctionDefinitionNode build success - body - ${stringify(this.body)}, params - none, text: ${this.text}`);
         resolve(fnDfn);
       }
     });
@@ -724,7 +731,7 @@ module.exports = function (ast) {
         try {
           this.expr.build({}).then((bodyMeta) => {
             externalFn(Object.assign({}, args.context, args.kwargs), bodyMeta).then((res) => {
-              log.debug(options, `FunctionBodyNode build success with result - ${res}`);
+              log.debug(options, `FunctionBodyNode build success with result - ${res}, text: ${this.text}`);
               resolve(res);
             }).catch((err) => {
               log.error(options, `FunctionBodyNode build failed with error from externalFn - ${err},text: ${this.text}`);
@@ -740,7 +747,7 @@ module.exports = function (ast) {
         }
       } else {
         this.expr.build(args).then((res) => {
-          log.debug(options, `FunctionBodyNode build success with result - ${res}`);
+          log.debug(options, `FunctionBodyNode build success with result - ${stringify(res)}, text: ${this.text}`);
           resolve(res);
         }).catch((err) => {
           log.error(options, `FunctionBodyNode build failed with error - ${err},text: ${this.text}`);
@@ -759,10 +766,10 @@ module.exports = function (ast) {
           .then((ctx) => {
             if (ctx.kwargs) {
               if (typeof ctx.kwargs.result !== 'undefined') {
-                log.debug(options, `ContextNode build success - result context entry exists - ${ctx.kwargs.result}`);
+                log.debug(options, `ContextNode build success - result context entry exists - ${stringify(ctx.kwargs.result)}, text: ${this.text}`);
                 resolve(ctx.kwargs.result);
               } else {
-                log.debug(options, `ContextNode build success - result context entry does not exist - ${ctx.kwargs}`);
+                log.debug(options, `ContextNode build success - result context entry does not exist - ${stringify(ctx.kwargs)}, text: ${this.text}`);
                 resolve(ctx.kwargs);
               }
             } else {
@@ -788,7 +795,7 @@ module.exports = function (ast) {
         const obj = {};
         obj[key] = value;
         const argsNew = addKwargs(args, obj);
-        log.debug(options, `ContextEntryNode build success with result - ${argsNew}`);
+        log.debug(options, `ContextEntryNode build success with result - ${stringify(argsNew)}, text: ${this.text}`);
         resolve(argsNew);
       })
       .catch((err) => {
