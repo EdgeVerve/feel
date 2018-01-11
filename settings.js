@@ -16,8 +16,10 @@ module.exports = {
     streams: [
       {
         stream: process.stdout,
-        level: 'error',
+        level: 'debug',
       },
     ],
   },
+  enableLexerLogging: false,
+  enableExecutionLogging: false,
 };
