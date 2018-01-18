@@ -12,12 +12,12 @@ describe('individual sheets...', function(){
   var i = 0;
   var path;
   var xlArr = [
-    // 'ExamEligibility.xlsx',
-    // 'Adjustments.xlsx',
+    'ExamEligibility.xlsx',
+    'Adjustments2.xlsx',
     'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx',
     'Discount.xlsx', 'ElectricityBill.xlsx',
     'Holidays.xlsx',
-    // 'PostBureauRiskCategory.xlsx',
+    'PostBureauRiskCategory.xlsx',
     'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx'
   ];
 
@@ -31,37 +31,37 @@ describe('individual sheets...', function(){
   var runTest = function(path, name, payload, suiteCb, testCb) {
     var decisionMap = parseWorkbook(path);
     var ast = createDecisionGraphAST(decisionMap);
-    return executeDecisionService(ast, name, payload)
+    return executeDecisionService(ast, name, payload, 'a' + i)
     // .then(result => testCb(result))
     // .catch(suiteCb);
   };
-  // it('ExamEligibility.xlsx', function(done) {
-  //   var payload = {
-  //     GPA: 7,
-  //     d: "1995-11-22"
-  //   };
+  it('ExamEligibility.xlsx', function(done) {
+    var payload = {
+      GPA: 7,
+      d: "1995-11-22"
+    };
 
-  //   runTest(path, 'ExamEligibility', payload)
-  //     .then(results => {
-  //       expect(results.Eligible).to.be.true;
-  //       done();
-  //     })
-  //     .catch(done);
-  // });
+    runTest(path, 'ExamEligibility', payload)
+      .then(results => {
+        expect(results.Eligible).to.be.true;
+        done();
+      })
+      .catch(done);
+  });
 
-  // it('Adjustments.xlsx', function(done){
-  //   var payload = {
-  //     Customer: "Private",
-  //     "Order size": 12
-  //   };
-
-  //   runTest(path, 'Adjustments', payload).then(result => {
-  //     expect(result.Shipping).to.equal('Air');
-  //     expect(result.Discount).to.equal(0.05);
-  //     done();
-  //   })
-  //   .catch(done);
-  // });
+  it('Adjustments2.xlsx', function(done){
+    var payload = {
+      Customer: "Private",
+      "Order size": 12
+    };
+    debugger;
+    runTest(path, 'Adjustments', payload).then(result => {
+      expect(result.Shipping).to.equal('Air');
+      expect(result.Discount).to.equal(0.05);
+      done();
+    })
+    .catch(done);
+  });
 
   it('Applicant_Risk_Rating.xlsx', function(done){
     var payload = {
@@ -130,16 +130,16 @@ describe('individual sheets...', function(){
     .catch(done);
   });
 
-  // it(`PostBureauRiskCategory.xlsx`, function(done) { //PostBureauRiskCategory
-  //   var payload = {"Applicant": {"ExistingCustomer" : true}, "Report": {"CreditScore" : 600}, "b" : 60};
-  //   runTest(path, 'PostBureauRiskCategory', payload)
-  //   .then(results => {
-  //     expect(results.PostBureauRiskCategory).to.equal('MEDIUM');
-  //     done();
+  it(`PostBureauRiskCategory.xlsx`, function(done) { //PostBureauRiskCategory
+    var payload = {"Applicant": {"ExistingCustomer" : true}, "Report": {"CreditScore" : 600}, "b" : 60};
+    runTest(path, 'PostBureauRiskCategory', payload)
+    .then(results => {
+      expect(results.PostBureauRiskCategory).to.equal('MEDIUM');
+      done();
 
-  //   })
-  //   .catch(done);
-  // });
+    })
+    .catch(done);
+  });
 
   it('RoutingRules.xlsx', function(done) {
     var payload = {
