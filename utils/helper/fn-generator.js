@@ -267,7 +267,9 @@ const operatorMap = {
       } else if (x.isDtd && y.isDtd) {
         return valueInverseDTD(valueDTD(x) - valueDTD(y));
       } else if ((x.isDateTime || x.isDate) && y.isYmd) {
-        return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // fix for https://github.com/EdgeVerve/feel/issues/11 by a-hegerath
+        return dateandtime(date((x.year - y.years) + Math.floor((x.month - y.months) / 12), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
       } else if (x.isYmd && (y.isDateTime || y.isDate)) {
         throw new Error(`${x.type} - ${y.type} : operation unsupported for one or more operands types`);
       } else if ((x.isDateTime || x.isDate) && y.isDtd) {
