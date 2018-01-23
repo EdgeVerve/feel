@@ -341,12 +341,41 @@ function checkEquality(x, y, props) {
 
 function checkInequality(op) {
   const fn = operatorMap[op];
+  const equalsFn = operatorMap['=='];
+  let fallThrough = true;
+  const $fn = (a, b) => {
+    fallThrough = false;
+    return fn(a, b);
+  };
+
+  const $eq = (a, b) => {
+    fallThrough = true;
+    return equalsFn(a, b);
+  };
+  // const checkFn = (a, b) => equalsFn(a, b) || fn(a, b);
+  // const checkFn = (a,b) => fallThrough && ($eq(a,b) || $fn(a,b));
+  const checkFn = (a, b) => $eq(a, b) || $fn(a, b);
+
   return function (x, y, props) {
-    if (op === '>=' || op === '<=') {
-      return props.every(prop => fn(x[prop], y[prop]));
+    // if (op === '>=' || op === '<=') {
+    //   return props.every(prop => fn(x[prop], y[prop]));
+    // }
+
+    // return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    // let fallThrough = true;
+    // return props.reduce((prevResult, key) => {
+    //   if (prevResult && fallThrough) {
+    //     return checkFn(x[key], y[key]);
+    //   }
+    //   return prevResult;
+    // }, true);
+    let result = true;
+    for (let i = 0; i < props.length && result && fallThrough; i += 1) {
+      const key = props[i];
+      result = checkFn(x[key], y[key]);
     }
 
-    return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    return result;
   };
 }
 
