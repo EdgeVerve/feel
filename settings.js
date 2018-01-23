@@ -28,5 +28,5 @@ module.exports = {
     ],
   },
   enableLexerLogging: false,
-  enableExecutionLogging: true,
+  enableExecutionLogging: false,
 };
