@@ -267,7 +267,9 @@ const operatorMap = {
       } else if (x.isDtd && y.isDtd) {
         return valueInverseDTD(valueDTD(x) - valueDTD(y));
       } else if ((x.isDateTime || x.isDate) && y.isYmd) {
-        return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // fix for https://github.com/EdgeVerve/feel/issues/11 by a-hegerath
+        return dateandtime(date((x.year - y.years) + Math.floor((x.month - y.months) / 12), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
       } else if (x.isYmd && (y.isDateTime || y.isDate)) {
         throw new Error(`${x.type} - ${y.type} : operation unsupported for one or more operands types`);
       } else if ((x.isDateTime || x.isDate) && y.isDtd) {
@@ -339,8 +341,41 @@ function checkEquality(x, y, props) {
 
 function checkInequality(op) {
   const fn = operatorMap[op];
+  const equalsFn = operatorMap['=='];
+  let fallThrough = true;
+  const $fn = (a, b) => {
+    fallThrough = false;
+    return fn(a, b);
+  };
+
+  const $eq = (a, b) => {
+    fallThrough = true;
+    return equalsFn(a, b);
+  };
+  // const checkFn = (a, b) => equalsFn(a, b) || fn(a, b);
+  // const checkFn = (a,b) => fallThrough && ($eq(a,b) || $fn(a,b));
+  const checkFn = (a, b) => $eq(a, b) || $fn(a, b);
+
   return function (x, y, props) {
-    return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    // if (op === '>=' || op === '<=') {
+    //   return props.every(prop => fn(x[prop], y[prop]));
+    // }
+
+    // return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    // let fallThrough = true;
+    // return props.reduce((prevResult, key) => {
+    //   if (prevResult && fallThrough) {
+    //     return checkFn(x[key], y[key]);
+    //   }
+    //   return prevResult;
+    // }, true);
+    let result = true;
+    for (let i = 0; i < props.length && result && fallThrough; i += 1) {
+      const key = props[i];
+      result = checkFn(x[key], y[key]);
+    }
+
+    return result;
   };
 }
 

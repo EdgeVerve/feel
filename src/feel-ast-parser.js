@@ -243,7 +243,7 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     const name = this.nameChars;
     if (!_fetch) {
-      log.debug(options, `NameNode - fetch set to false - skipping build with result - ${name}`);
+      log.debug(options, `NameNode - fetch set to false - skipping build with result - ${name}, text: ${this.text}`);
       return Promise.resolve(name);
     }
 
