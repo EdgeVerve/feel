@@ -343,11 +343,10 @@ function checkInequality(op) {
   const fn = operatorMap[op];
   return function (x, y, props) {
     if (op === '>=' || op === '<=') {
-      return props.every(prop => fn(x[prop], y[prop]))
+      return props.every(prop => fn(x[prop], y[prop]));
     }
-    else {
-      return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
-    }
+
+    return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
   };
 }
 
