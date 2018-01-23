@@ -148,5 +148,5 @@ gulp.task('watch', () => {
   gulp.watch('./grammar/*', ['build']);
   gulp.watch('./src/*.pegjs',['generate:parser']);
   gulp.watch('./src/*.js', ['dist:feel:ast', 'dist:feel:ast:parser']);
-  gulp.watch('./utils/*.js', ['utils:lint']);
+  gulp.watch('./utils/**/*.js', ['utils:lint']);
 });

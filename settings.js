@@ -9,6 +9,9 @@
  * All the library wide settings can be configured in this file.
  * This is a collection of the default settings.
 */
+// const fs = require('fs');
+
+// const logFile = fs.createWriteStream('output2.log');
 
 module.exports = {
   logger: {
@@ -16,10 +19,14 @@ module.exports = {
     streams: [
       {
         stream: process.stdout,
-        level: 'debug',
+        level: 'info',
       },
+      // {
+      //   stream: logFile,
+      //   level: 'debug',
+      // },
     ],
   },
   enableLexerLogging: false,
-  enableExecutionLogging: false,
+  enableExecutionLogging: true,
 };
