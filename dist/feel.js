@@ -143,13 +143,13 @@ function peg$parse(input, options) {
 
       peg$c0 = function(program) {
                   log(`Start ${text()}`);
-                  return new ast.ProgramNode(extractOptional(program,0),location(), text());
+                  return new ast.ProgramNode(extractOptional(program,0),location(), text(), rule());
               },
       peg$c1 = ",",
       peg$c2 = peg$literalExpectation(",", false),
       peg$c3 = function(head, tail) {
                 log(`SimpleExpressions (${text()})`);
-                return new ast.SimpleExpressionsNode(buildList(head,tail,3), location(), text());
+                return new ast.SimpleExpressionsNode(buildList(head,tail,3), location(), text(), rule());
               },
       peg$c4 = "(",
       peg$c5 = peg$literalExpectation("(", false),
@@ -185,16 +185,16 @@ function peg$parse(input, options) {
       peg$c26 = peg$literalExpectation("time zone", false),
       peg$c27 = function(head, tail) {
                   log(`Name (${text()})`);
-                  return new ast.NameNode(buildName(head,tail,0),location(), text());
+                  return new ast.NameNode(buildName(head,tail,0),location(), text(), rule());
               },
       peg$c28 = function() {
-                  return new ast.LiteralNode(null, location(), text());
+                  return new ast.LiteralNode(null, location(), text(), rule());
               },
       peg$c29 = function() {
-                  return new ast.LiteralNode(true, location(), text());
+                  return new ast.LiteralNode(true, location(), text(), rule());
               },
       peg$c30 = function() {
-                  return new ast.LiteralNode(false, location(), text());
+                  return new ast.LiteralNode(false, location(), text(), rule());
               },
       peg$c31 = /^[0-9]/,
       peg$c32 = peg$classExpectation([["0", "9"]], false, false),
@@ -202,7 +202,7 @@ function peg$parse(input, options) {
       peg$c34 = peg$literalExpectation("-", false),
       peg$c35 = function(negative, number) {
                   log(`NumericLiteral (${text()})`);
-                  return new ast.LiteralNode(Number((negative || "") + number),location(), text());
+                  return new ast.LiteralNode(Number((negative || "") + number),location(), text(), rule());
               },
       peg$c36 = ".",
       peg$c37 = peg$literalExpectation(".", false),
@@ -223,13 +223,13 @@ function peg$parse(input, options) {
       peg$c43 = peg$literalExpectation("\"", false),
       peg$c44 = function(chars) {
             log(`StringLiteral:1 (${text()})`);
-            return new ast.LiteralNode(chars.join(""),location(), text());
+            return new ast.LiteralNode(chars.join(""),location(), text(), rule());
           },
       peg$c45 = "'",
       peg$c46 = peg$literalExpectation("'", false),
       peg$c47 = function(chars) {
              log(`StringLiteral:2 (${text()})`)
-             return new ast.LiteralNode(chars.join(""),location(), text());
+             return new ast.LiteralNode(chars.join(""),location(), text(), rule());
           },
       peg$c48 = "\\",
       peg$c49 = peg$literalExpectation("\\", false),
@@ -271,13 +271,13 @@ function peg$parse(input, options) {
       peg$c85 = peg$literalExpectation("\u2029", false),
       peg$c86 = function(symbol, head, tail) {
               log(`DateTimeLiteral (${text()})`);
-              return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location(), text());
+              return new ast.DateTimeLiteralNode(symbol[0], buildList(head, tail, 3), location(), text(), rule());
           },
       peg$c87 = "..",
       peg$c88 = peg$literalExpectation("..", false),
       peg$c89 = function(head, tail) {
                    log(`SimplePositiveUnaryTest (${text()})`);
-                   return new ast.SimplePositiveUnaryTestNode(extractOptional(head,0),tail,location(), text());
+                   return new ast.SimplePositiveUnaryTestNode(extractOptional(head,0),tail,location(), text(), rule());
               },
       peg$c90 = "<=",
       peg$c91 = peg$literalExpectation("<=", false),
@@ -297,23 +297,23 @@ function peg$parse(input, options) {
       peg$c105 = peg$literalExpectation("**", false),
       peg$c106 = function(start, first, second, end) {
                   log(`Interval (${text()})`);
-                  return new ast.IntervalNode(start,first,second,end,location(), text());
+                  return new ast.IntervalNode(start,first,second,end,location(), text(), rule());
               },
       peg$c107 = function() {
                   log(`IntervalStart:1 (${text()})`);
-                  return new ast.IntervalStartLiteralNode("<",location(), text());
+                  return new ast.IntervalStartLiteralNode("<",location(), text(), rule());
               },
       peg$c108 = function() {
                   log(`IntervalStart:2 (${text()})`);
-                  return new ast.IntervalStartLiteralNode("<=",location(), text());
+                  return new ast.IntervalStartLiteralNode("<=",location(), text(), rule());
               },
       peg$c109 = function() {
                   log(`IntervalEnd:1 (${text()})`);
-                  return new ast.IntervalEndLiteralNode(">",location(), text());
+                  return new ast.IntervalEndLiteralNode(">",location(), text(), rule());
               },
       peg$c110 = function() {
                   log(`IntervalEnd:2 (${text()})`);
-                  return new ast.IntervalEndLiteralNode(">=",location(), text());
+                  return new ast.IntervalEndLiteralNode(">=",location(), text(), rule());
               },
       peg$c111 = "]",
       peg$c112 = peg$literalExpectation("]", false),
@@ -323,19 +323,19 @@ function peg$parse(input, options) {
       peg$c116 = peg$literalExpectation("->", false),
       peg$c117 = function(head, tail) {
                    log(`QualifiedName (${text()})`);
-                   return new ast.QualifiedNameNode(buildList(head,tail,3),location(), text());
+                   return new ast.QualifiedNameNode(buildList(head,tail,3),location(), text(), rule());
               },
       peg$c118 = function(expr) {
             log(`SimpleUnaryTests:1 (${text()})`);
-      			return new ast.SimpleUnaryTestsNode(expr,null,location(), text(), text());
+      			return new ast.SimpleUnaryTestsNode(expr,null,location(), text(), rule());
       		},
       peg$c119 = function(not, expr) {
             log(`SimpleUnaryTests:2 (${text()})`);
-      			return new ast.SimpleUnaryTestsNode(expr,not,location(), text());
+      			return new ast.SimpleUnaryTestsNode(expr,not,location(), text(), rule());
       		},
       peg$c120 = function() {
             log(`SimpleUnaryTests:3 (${text()})`);
-      			return new ast.SimpleUnaryTestsNode(null,null,location(), text());
+      			return new ast.SimpleUnaryTestsNode(null,null,location(), text(), rule());
       		},
       peg$c121 = function(head, tail) {
           log(`SimplePositiveUnaryTests (${text()})`);
@@ -343,7 +343,7 @@ function peg$parse(input, options) {
       	},
       peg$c122 = function(head) {
           log(`PositiveUnaryTest (${text()})`);
-          return new ast.SimplePositiveUnaryTestNode(null,head,location(), text());
+          return new ast.SimplePositiveUnaryTestNode(null,head,location(), text(), rule());
         },
       peg$c123 = function(head, tail) {
           log(`PositiveUnaryTests (${text()})`);
@@ -351,88 +351,88 @@ function peg$parse(input, options) {
       	},
       peg$c124 = function(expr) {
             log(`UnaryTests:1 (${text()})`);
-      			return ast.UnaryTestsNode(expr,null,location(), text());
+      			return ast.UnaryTestsNode(expr,null,location(), text(), rule());
       		},
       peg$c125 = function(not, expr) {
             log(`UnaryTests:2 (${text()})`);
-      			return ast.UnaryTestsNode(expr,not,location(), text());
+      			return ast.UnaryTestsNode(expr,not,location(), text(), rule());
       		},
       peg$c126 = function() {
             log(`UnaryTests:3 (${text()})`);
-      		 	return ast.UnaryTestsNode(null,null,location(), text());
+      		 	return ast.UnaryTestsNode(null,null,location(), text(), rule());
       		},
       peg$c127 = function(head, tail) {
                   log(`FilterExpression (${text()})`);
-                  return new ast.FilterExpressionNode(head,tail,location(), text());
+                  return new ast.FilterExpressionNode(head,tail,location(), text(), rule());
               },
       peg$c128 = function(fnName, params) {
                   log(`FunctionInvocation (${text()})`);
-                  return new ast.FunctionInvocationNode(fnName,extractOptional(params,1),location(), text());
+                  return new ast.FunctionInvocationNode(fnName,extractOptional(params,1),location(), text(), rule());
               },
       peg$c129 = function(head, tail) {
                   log(`NamedParameters (${text()})`);
-                  return new ast.NamedParametersNode(buildList(head,tail,3),location(), text());
+                  return new ast.NamedParametersNode(buildList(head,tail,3),location(), text(), rule());
               },
       peg$c130 = ":",
       peg$c131 = peg$literalExpectation(":", false),
       peg$c132 = function(head, tail) {
                    log(`NamedParameter (${text()})`);
-                   return new ast.NamedParameterNode(head,tail,location(), text());
+                   return new ast.NamedParameterNode(head,tail,location(), text(), rule());
               },
       peg$c133 = function(head, tail) {
                   log(`PositionalParameters (${text()})`);
-                  return new ast.PositionalParametersNode(buildList(head,tail,3),location(), text());
+                  return new ast.PositionalParametersNode(buildList(head,tail,3),location(), text(), rule());
               },
       peg$c134 = function(head, tail) {
                   log(`PathExpression (${text()})`);
-                  return new ast.PathExpressionNode(buildList(head,tail,3),location(), text());
+                  return new ast.PathExpressionNode(buildList(head,tail,3),location(), text(), rule());
               },
       peg$c135 = function(expr, type) {
             log(`InstanceOf (${text()})`);
-      			return new ast.InstanceOfNode(expr,type,location(), text());
+      			return new ast.InstanceOfNode(expr,type,location(), text(), rule());
       		},
       peg$c136 = function(expr) {
                   log(`ArithmeticNegation (${text()})`);
-                  return buildBinaryExpression(null, [[null,"-",null,expr]], location(), text());
+                  return buildBinaryExpression(null, [[null,"-",null,expr]], location(), text(), rule());
               },
       peg$c137 = function(head, tail) {
             log(`Exponentiation (${text()})`);
-            return buildBinaryExpression(head, tail, location(), text());
+            return buildBinaryExpression(head, tail, location(), text(), rule());
           },
-      peg$c138 = function(head, tail) { log(`Multiplicative (${text()})`); return buildBinaryExpression(head, tail, location(), text()); },
-      peg$c139 = function(head, tail) { log(`Additive (${text()})`); return buildBinaryExpression(head, tail, location(), text()); },
+      peg$c138 = function(head, tail) { log(`Multiplicative (${text()})`); return buildBinaryExpression(head, tail, location(), text(), rule()); },
+      peg$c139 = function(head, tail) { log(`Additive (${text()})`); return buildBinaryExpression(head, tail, location(), text(), rule()); },
       peg$c140 = "=",
       peg$c141 = peg$literalExpectation("=", false),
       peg$c142 = "!=",
       peg$c143 = peg$literalExpectation("!=", false),
-      peg$c144 = function(head, tail) { log(`Comparision:1 (${text()})`);return buildComparisionExpression(head,tail,location(), text()); },
+      peg$c144 = function(head, tail) { log(`Comparision:1 (${text()})`);return buildComparisionExpression(head,tail,location(), text(), rule()); },
       peg$c145 = function(head, operator, first, and, second) {
                   log(`Comparision:2 (${text()})`);
-                  return new ast.ComparisionExpressionNode(operator,head,first,second,location(), text());
+                  return new ast.ComparisionExpressionNode(operator,head,first,second,location(), text(), rule());
               },
       peg$c146 = function(head, operator, tail) {
                   log(`Comparision:3 (${text()})`);
-                  return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text());
+                  return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text(), rule());
               },
       peg$c147 = function(head, operator, tail) {
                   log(`Comparision:4 (${text()})`);
-                  return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text());
+                  return new ast.ComparisionExpressionNode(operator,head,tail,null,location(), text(), rule());
               },
       peg$c148 = function(head, tail) {
             log(`Conjunction (${text()})`);
-      			return buildLogicalExpression(head,tail,location(), text());
+      			return buildLogicalExpression(head,tail,location(), text(), rule());
       		},
       peg$c149 = function(head, tail) {
             log(`Disjunction (${text()})`);
-      			return buildLogicalExpression(head,tail,location(), text());
+      			return buildLogicalExpression(head,tail,location(), text(), rule());
       		},
       peg$c150 = function(params, body) {
                   log(`FunctionDefinition (${text()})`);
-                  return new ast.FunctionDefinitionNode(extractOptional(params,1),body,location(), text());
+                  return new ast.FunctionDefinitionNode(extractOptional(params,1),body,location(), text(), rule());
               },
       peg$c151 = function(extern, expr) {
                   log(`FunctionBody (${text()})`);
-                  return new ast.FunctionBodyNode(expr,extractOptional(extern,0),location(), text());
+                  return new ast.FunctionBodyNode(expr,extractOptional(extern,0),location(), text(), rule());
               },
       peg$c152 = function(head, tail) {
                   log(`FormalParameters (${text()})`);
@@ -440,7 +440,7 @@ function peg$parse(input, options) {
               },
       peg$c153 = function(head, tail) {
                   log(`ForExpression (${text()})`);
-                  return new ast.ForExpressionNode(head,tail,location(), text());
+                  return new ast.ForExpressionNode(head,tail,location(), text(), rule());
               },
       peg$c154 = function(head, tail) {
                   log(`InExpressions (${text()})`);
@@ -448,19 +448,19 @@ function peg$parse(input, options) {
               },
       peg$c155 = function(head, tail) {
                   log(`InExpression (${text()})`);
-                  return new ast.InExpressionNode(head,tail,location(), text());
+                  return new ast.InExpressionNode(head,tail,location(), text(), rule());
               },
       peg$c156 = function(condition, thenExpr, elseExpr) {
                   log(`IfExpression (${text()})`);
-                  return new ast.IfExpressionNode(condition,thenExpr,elseExpr,location(), text());
+                  return new ast.IfExpressionNode(condition,thenExpr,elseExpr,location(), text(), rule());
               },
       peg$c157 = function(quantity, head, tail) {
                   log(`QuantifiedExpression (${text()})`);
-                  return new ast.QuantifiedExpressionNode(quantity,head,tail,location(), text());
+                  return new ast.QuantifiedExpressionNode(quantity,head,tail,location(), text(), rule());
               },
       peg$c158 = function(list) {
                   log(`List (${text()})`);
-                  return new ast.ListNode(list,location(), text());
+                  return new ast.ListNode(list,location(), text(), rule());
               },
       peg$c159 = function(head, tail) {
               log(`ListEntries (${text()})`);
@@ -472,11 +472,11 @@ function peg$parse(input, options) {
       peg$c163 = peg$literalExpectation("}", false),
       peg$c164 = function(entries) {
                   log(`Context (${text()})`);
-                  return new ast.ContextNode(extractOptional(entries,1),location(), text());
+                  return new ast.ContextNode(extractOptional(entries,1),location(), text(), rule());
               },
       peg$c165 = function(head, tail) {
                   log(`ContextEntry (${text()})`);
-                  return new ast.ContextEntryNode(head,tail,location(), text());
+                  return new ast.ContextEntryNode(head,tail,location(), text(), rule());
               },
       peg$c166 = function(head, tail) {
                   log(`ContextEntries (${text()})`);
@@ -8002,6 +8002,17 @@ function peg$parse(input, options) {
     }
   };
 
+  let initialized = false;
+  let ruleName = 'default';
+
+  function rule() {
+    if (!initialized) {
+      ruleName = options.ruleName
+      initialized = true
+    }
+    return ruleName;
+  }
+
   function extractOptional(optional, index) {
     log('_extractOptional');
     return optional ? optional[index] : null;
@@ -8033,20 +8044,20 @@ function peg$parse(input, options) {
   }
 
 
-  function buildBinaryExpression(head, tail, loc, text) {
+  function buildBinaryExpression(head, tail, loc, text, rule) {
     log('_buildBinaryExpression');
-    return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc, text), head);
+    return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc, text, rule), head);
   }
 
-  function buildComparisionExpression(head, tail, loc, text) {
+  function buildComparisionExpression(head, tail, loc, text, rule) {
     log('_buildComparisionExpression');
     return tail.reduce((result, element) => {
       const operator = Array.isArray(element[1]) ? element[1][0] : element[1];
-      return new ast.ComparisionExpressionNode(operator, result, element[3], null, loc, text);
+      return new ast.ComparisionExpressionNode(operator, result, element[3], null, loc, text, rule);
     }, head);
   }
 
-  function buildLogicalExpression(head, tail, loc, text) {
+  function buildLogicalExpression(head, tail, loc, text, rule) {
     log('_buildLogicalExpression');
     return tail.reduce((result, element) => {
       let operator = element[1];
@@ -8055,7 +8066,7 @@ function peg$parse(input, options) {
       } else if (operator === 'or') {
         operator = '||';
       }
-      return new ast.LogicalExpressionNode(operator, result, element[3], loc, text);
+      return new ast.LogicalExpressionNode(operator, result, element[3], loc, text, rule);
     }, head);
   }
 
