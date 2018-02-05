@@ -46,11 +46,17 @@ Object.keys($log).forEach((k) => {
 
   rlog[k] = (...args) => {
     if (enableExecutionLogging) {
-      const options = args.shift();
-      if (!logResult) {
-        args.pop();
+      // const options = args.shift();
+      // if (!logResult) {
+      //   args.pop();
+      // }
+      // $log[k].call($log, options, util.format(msg, ...args));
+      const [options, message, rule, text, result] = args;
+      if (logResult) {
+        $log[k].call($log, options, util.format(msg, message, rule, text, result));
+      } else {
+        $log[k].call($log, options, util.format(msg, message, rule, text));
       }
-      $log[k].call($log, options, util.format(msg, ...args));
     }
   };
 });
