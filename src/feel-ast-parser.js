@@ -47,7 +47,9 @@ Object.keys($log).forEach((k) => {
   rlog[k] = (...args) => {
     if (enableExecutionLogging) {
       const options = args.shift();
-
+      if (!logResult) {
+        args.pop();
+      }
       $log[k].call($log, options, util.format(msg, ...args));
     }
   };
