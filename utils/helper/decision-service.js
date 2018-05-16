@@ -19,7 +19,7 @@ const createDecisionGraphAST = (decisionMap) => {
   const graphAST = Object.keys(decisionMap).reduce((recur, next) => {
     const value = decisionMap[next];
     const r = recur;
-    r[next] = FEEL.parse(value);
+    r[next] = FEEL.parse(value, { ruleName: next });
     return r;
   }, {});
   return graphAST;

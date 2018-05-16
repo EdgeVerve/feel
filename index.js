@@ -10,6 +10,7 @@ const decisionLogic = require('./utils/helper/decision-logic');
 const feel = require('./dist/feel');
 const decisionService = require('./utils/helper/decision-service');
 const { configureLogger } = require('./logger');
+const feelSettings = require('./settings');
 
 const jsFeel = {
   decisionTable,
@@ -19,8 +20,17 @@ const jsFeel = {
 };
 
 jsFeel.init = function (settings) {
-  const { logger } = settings;
+  const { logger, enableLexerLogging, enableExecutionLogging, logResult } = settings;
   configureLogger(logger);
+  if (enableExecutionLogging !== undefined) {
+    feelSettings.enableExecutionLogging = enableExecutionLogging;
+  }
+  if (enableLexerLogging !== undefined) {
+    feelSettings.enableLexerLogging = enableLexerLogging;
+  }
+  if (logResult !== undefined) {
+    feelSettings.logResult = logResult;
+  }
 };
 
 jsFeel.use = function (plugin) {

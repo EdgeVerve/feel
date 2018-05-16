@@ -15,7 +15,7 @@ const { logger: loggerSettings } = require('./settings');
 let logger = (name) => {
   const settings = Object.assign({}, loggerSettings, { name });
   const defaultLogger = bunyan.createLogger(settings);
-  const levels = ['trace', 'info', 'warn', 'error', 'debug', 'fatal'];
+  const levels = ['trace', 'info', 'warn', 'error', 'debug', 'fatal', 'ast'];
   const modifiedLogger = {};
   levels.forEach((level) => {
     modifiedLogger[level] = (...args) => {

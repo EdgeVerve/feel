@@ -1,13 +1,12 @@
 build_job:
   script:
-    - evf-paas login -u admin -p Anything_f9 evfapp.dev -d && source $HOME/evf-paas/evfapp.dev/install_env.sh
     - npm config set registry $NPM_REGISTRY
     - npm config set fetch-retries 0
     - npm config set loglevel warn
     - time npm install --no-optional
-    - gulp lint
+    - ./node_modules/.bin/gulp lint
     - export exit_status=0
-    - if gulp test-ci-html; then exit_status=0; else exit_status=1; fi
+    - if ./node_modules/.bin/gulp test-ci-html; then exit_status=0; else exit_status=1; fi
     # - if echo $CI_BUILD_REPO | grep "oecloud.io/feel.git"; then export MAIN_BRANCH=1; else export MAIN_BRANCH=0; fi
     # - export MAIN_BRANCH=1
     # - if [ $MAIN_BRANCH -eq 0 ]; then echo "Not the main project, hence not sending coverage report to evgit..."; exit $exit_status; fi
@@ -21,4 +20,4 @@ build_job:
     # - echo "Coverage report updated"
     - exit $exit_status
   tags:
-    - EVF-PAAS
+    - CEP_RUNNER

@@ -251,7 +251,12 @@ const executeDecisionTable = (id, table, payload, cb) => {
     rootMapId = `${graphName}${id}`;
   }
   if (rootMap[rootMapId] == null || rootMap[rootMapId] === 'undefined') {
-    rootMap[rootMapId] = tree.createTree(table);
+    try {
+      rootMap[rootMapId] = tree.createTree(table);
+    } catch (e) {
+      cb(e);
+      return;
+    }
   }
   tree.traverseTree(rootMap[rootMapId], payload)
       .then(result => cb(null, result))

@@ -60,7 +60,7 @@ Each cell in the body of the decision table has to be a valid FEEL expression. T
 ### Excel to Decision Table
 
 ```javascript
-const { decisionTable } = require('feel');
+const { decisionTable } = require('feel')();
 
 const csv = decisionTable.xls_to_csv('./test/StudentFinancialPackageEligibility.xlsx');
 const decision_table = decisionTable.csv_to_decision_table(csv[0]);
@@ -81,7 +81,7 @@ decisionTable.execute_decision_table("StudentFinancialPackageEligibility", decis
 ## Using [FEEL](https://github.com/EdgeVerve/feel/wiki/What-is-FEEL%3F) Standalone
 
 ```javascript
-const {feel} = require('feel');
+const {feel} = require('feel')();
 
 const rule = 'a + b - c';
 const context = {

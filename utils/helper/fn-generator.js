@@ -10,8 +10,18 @@ const _ = require('lodash');
 const { valueT, valueInverseT, valueDT, valueInverseDT, valueDTD, valueInverseDTD, valueYMD, valueInverseYMD } = require('./value');
 const { date, time, 'date and time': dateandtime } = require('../built-in-functions');
 const { logger } = require('../../logger');
+const { enableExecutionLogging } = require('../../settings');
 
-const log = logger('fn-generator');
+const $log = logger('fn-generator');
+const log = {};
+
+Object.keys($log).forEach((key) => {
+  log[key] = (...args) => {
+    if (enableExecutionLogging) {
+      $log[key](...args);
+    }
+  };
+});
 /*
 dateTimeComponent contains the list of properties required for comparision.
 property collection is in the order of priority of check
@@ -35,7 +45,7 @@ const operatorMap = {
   '<': _.curry((x, y) => {
     try {
       if (presencetypeEq(x, y)) {
-        log.info(`performing operation - ${x} < ${y}`);
+        log.debug(`performing operation - ${x} < ${y}`);
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lt(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -65,7 +75,7 @@ const operatorMap = {
   '<=': _.curry((x, y) => {
     try {
       if (presencetypeEq(x, y)) {
-        log.info(`performing operation - ${x} <= ${y}`);
+        log.debug(`performing operation - ${x} <= ${y}`);
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).lte(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -95,7 +105,7 @@ const operatorMap = {
   '>': _.curry((x, y) => {
     try {
       if (presencetypeEq(x, y)) {
-        log.info(`performing operation - ${x} > ${y}`);
+        log.debug(`performing operation - ${x} > ${y}`);
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gt(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -125,7 +135,7 @@ const operatorMap = {
   '>=': _.curry((x, y) => {
     try {
       if (presencetypeEq(x, y)) {
-        log.info(`performing operation - ${x} >= ${y}`);
+        log.debug(`performing operation - ${x} >= ${y}`);
         if (typeof x === 'number' && typeof y === 'number') {
           return Big(x).gte(y);
         } else if (typeof x === 'string' && typeof y === 'string') {
@@ -153,7 +163,7 @@ const operatorMap = {
     }
   }),
   '==': _.curry((x, y) => {
-    log.info(`performing operation - ${x} = ${y}`);
+    log.debug(`performing operation - ${x} = ${y}`);
     try {
       if (typeof x === 'undefined' && typeof y === 'undefined') {
         return true;
@@ -190,7 +200,7 @@ const operatorMap = {
     }
   }),
   '!=': _.curry((x, y) => {
-    log.info(`performing operation - ${x} != ${y}`);
+    log.debug(`performing operation - ${x} != ${y}`);
     try {
       return !(operatorMap['=='](x, y));
     } catch (err) {
@@ -198,16 +208,16 @@ const operatorMap = {
     }
   }),
   '||': _.curry((x, y) => {
-    log.info(`performing operation - ${x} or ${y}`);
+    log.debug(`performing operation - ${x} or ${y}`);
     return x || y;
   }),
   '&&': _.curry((x, y) => {
-    log.info(`performing operation - ${x} and ${y}`);
+    log.debug(`performing operation - ${x} and ${y}`);
     return x && y;
   }),
   '+': _.curry((x, y) => {
     if (presence(x, y)) {
-      log.info(`performing operation - ${x} + ${y}`);
+      log.debug(`performing operation - ${x} + ${y}`);
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).plus(y));
       } else if (typeof x === 'string' && typeof y === 'string') {
@@ -243,7 +253,7 @@ const operatorMap = {
       return -y;
     }
     if (presence(x, y)) {
-      log.info(`performing operation - ${x} - ${y}`);
+      log.debug(`performing operation - ${x} - ${y}`);
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).minus(y));
       } else if (typeof x === 'string' && typeof y === 'string') {
@@ -257,7 +267,9 @@ const operatorMap = {
       } else if (x.isDtd && y.isDtd) {
         return valueInverseDTD(valueDTD(x) - valueDTD(y));
       } else if ((x.isDateTime || x.isDate) && y.isYmd) {
-        return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // return dateandtime(date(x.year - (y.years + Math.floor((x.month - y.months) / 12)), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
+        // fix for https://github.com/EdgeVerve/feel/issues/11 by a-hegerath
+        return dateandtime(date((x.year - y.years) + Math.floor((x.month - y.months) / 12), (x.month - y.months) - (Math.floor((x.month - y.months) / 12) * 12), x.day), time(x));
       } else if (x.isYmd && (y.isDateTime || y.isDate)) {
         throw new Error(`${x.type} - ${y.type} : operation unsupported for one or more operands types`);
       } else if ((x.isDateTime || x.isDate) && y.isDtd) {
@@ -276,7 +288,7 @@ const operatorMap = {
 
   '*': _.curry((x, y) => {
     if (presence(x, y)) {
-      log.info(`performing operation - ${x} * ${y}`);
+      log.debug(`performing operation - ${x} * ${y}`);
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).times(y));
       } else if (x.isYmd && typeof y === 'number') {
@@ -294,7 +306,7 @@ const operatorMap = {
   }),
   '/': _.curry((x, y) => {
     if (presence(x, y)) {
-      log.info(`performing operation - ${x} / ${y}`);
+      log.debug(`performing operation - ${x} / ${y}`);
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).div(y));
       } else if (x.isYmd && typeof y === 'number') {
@@ -313,7 +325,7 @@ const operatorMap = {
 
   '**': _.curry((x, y) => {
     if (presence(x, y)) {
-      log.info(`performing operation - ${x} ** ${y}`);
+      log.debug(`performing operation - ${x} ** ${y}`);
       if (typeof x === 'number' && typeof y === 'number') {
         return Number(Big(x).pow(y));
       }
@@ -329,8 +341,41 @@ function checkEquality(x, y, props) {
 
 function checkInequality(op) {
   const fn = operatorMap[op];
+  const equalsFn = operatorMap['=='];
+  let fallThrough = true;
+  const $fn = (a, b) => {
+    fallThrough = false;
+    return fn(a, b);
+  };
+
+  const $eq = (a, b) => {
+    fallThrough = true;
+    return equalsFn(a, b);
+  };
+  // const checkFn = (a, b) => equalsFn(a, b) || fn(a, b);
+  // const checkFn = (a,b) => fallThrough && ($eq(a,b) || $fn(a,b));
+  const checkFn = (a, b) => $eq(a, b) || $fn(a, b);
+
   return function (x, y, props) {
-    return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    // if (op === '>=' || op === '<=') {
+    //   return props.every(prop => fn(x[prop], y[prop]));
+    // }
+
+    // return props.reduce((recur, next) => recur || fn(x[next], y[next]), false);
+    // let fallThrough = true;
+    // return props.reduce((prevResult, key) => {
+    //   if (prevResult && fallThrough) {
+    //     return checkFn(x[key], y[key]);
+    //   }
+    //   return prevResult;
+    // }, true);
+    let result = true;
+    for (let i = 0; i < props.length && result && fallThrough; i += 1) {
+      const key = props[i];
+      result = checkFn(x[key], y[key]);
+    }
+
+    return result;
   };
 }
 

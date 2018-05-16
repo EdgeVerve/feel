@@ -95,6 +95,7 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
     it('Successfully compare dates with ">"', function(done) {
         var text = 'date("2012-12-25") > date("2012-12-24")';
         var parsedGrammar = FEEL.parse(text);
+        debugger;
         parsedGrammar.build().then(result => {
             expect(result).to.be.true;
             done();
@@ -352,6 +353,26 @@ describe(chalk.blue('Comparision expression ast parsing test'), function() {
             expect(result).to.be.true;
             done();
         }).catch(err => done(err));
+    });
+
+    it('Successfully subtract duration from date', function(done) {
+        var text = 'date and time("2018-03-01T00:00:00Z") - duration("P3M") = date and time("2017-12-01T00:00:00Z")';
+        var parsedGrammar = FEEL.parse(text);
+        parsedGrammar.build().then(result => {
+            expect(result).to.be.true;
+            done();
+        }).catch(err => done(err));
+    });
+
+    it('Successfully compare dates with ">="', function(done) {
+      var text = 'date("2012-12-23") >= date("2012-12-24")';
+      // another error case: var text = 'date("2011-12-25") > date("2012-12-24")';
+      var parsedGrammar = FEEL.parse(text);
+      // debugger;
+      parsedGrammar.build().then(result => {
+        expect(result).to.be.false;
+        done();
+      }).catch(err => done(err));
     });
 
 });
