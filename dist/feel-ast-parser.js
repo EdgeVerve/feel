@@ -371,7 +371,7 @@ module.exports = function (ast) {
           return fnMeta(...[...values, args.context]);
         }
         log.debug(options, 'FunctionInvocationNode - Processing in-built function');
-        return fnMeta(Object.assign({}, args.context, args.kwargs, { graphName: args.graphName }), values);
+        return fnMeta(Object.assign({}, args.context, args.kwargs, { graphName: args.graphName, decisionMap: args.decisionMap }), values);
       });
 
       const processDecision = (fnMeta) => {
