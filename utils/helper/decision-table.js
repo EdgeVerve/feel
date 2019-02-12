@@ -27,6 +27,8 @@ const parseXLS = (path) => {
 
 const getFormattedValue = str => str.replace(/\"{2,}/g, '\"').replace(/^\"|\"$/g, '');
 
+const DEVELOPMENT = 'development';
+
 const parseContext = (csv) => {
   let context = {};
   let i = 1;
@@ -245,20 +247,29 @@ const createDecisionTable = (commaSeparatedValue) => {
 // }
 
 const executeDecisionTable = (id, table, payload, cb) => {
-  const graphName = payload.graphName;
-  let rootMapId = id;
-  if (graphName) {
-    rootMapId = `${graphName}${id}`;
-  }
-  if (rootMap[rootMapId] == null || rootMap[rootMapId] === 'undefined') {
-    try {
-      rootMap[rootMapId] = tree.createTree(table);
-    } catch (e) {
-      cb(e);
-      return;
+  const environment = process.env.FEEL_ENV || 'development';
+  let ast = null;
+
+  if (environment === DEVELOPMENT) {
+    ast = tree.createTree(table);
+  } else { // begin - production case
+    const graphName = payload.graphName;
+    let rootMapId = id;
+    if (graphName) {
+      rootMapId = `${graphName}${id}`;
     }
-  }
-  tree.traverseTree(rootMap[rootMapId], payload)
+    if (rootMap[rootMapId] == null || typeof (rootMap[rootMapId]) === 'undefined') {
+      try {
+        ast = tree.createTree(table);
+        rootMap[rootMapId] = ast;
+      } catch (e) {
+        cb(e);
+        return;
+      }
+    }
+  } // end - production case
+
+  tree.traverseTree(ast, payload)
       .then(result => cb(null, result))
       .catch(err => cb(err));
 };
