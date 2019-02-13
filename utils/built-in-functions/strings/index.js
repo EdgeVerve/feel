@@ -1,5 +1,15 @@
-const substring = (text, start, length) => length ? text.substr(start, start + length) : text.substr(start); // eslint-disable-line no-confusing-arrow
+// const substring = (text, start, length) => length ? text.substr(start - 1, length) : text.substr(start - 1); // eslint-disable-line no-confusing-arrow
+const substring = (text, start, length) => {
+  if (length && start > -1) {
+    return text.substr(start - 1, length);
+  } else if (length && start <= -1) {
+    return text.substr(start, length);
+  } else if (start > -1) {
+    return text.substr(start - 1);
+  }
 
+  return text.substr(start);
+};
 const stringLength = text => text.length;
 
 const upperCase = text => text.toUpperCase();
