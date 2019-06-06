@@ -147,7 +147,16 @@ const resolveConflictRules = (root, payload, rules) => {
     });
 
     arr = arr.filter((item, index) => arr.indexOf(item) === index);
-    output = output.length > 0 ? arr.filter(d => output.indexOf(d) > -1) : arr;
+    if (i === 0) {
+      output = arr;
+    } else if (output.length > 0) {
+      output = arr.filter(d => output.indexOf(d) > -1);
+    } else {
+      return false;
+    }
+
+    // output = output.length > 0 ? arr.filter(d => output.indexOf(d) > -1) : arr;
+
     return true;
   });
 
