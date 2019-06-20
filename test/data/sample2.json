@@ -1,0 +1,4 @@
+{
+    "final dec": "decision table(input expression list : ['test1','name'],outputs : \"outstring\",input values list : [[],[]],output values : [[]],rule list : [['\"Hiii\"','\"Ram\"','\"Hi ram\"'],['\"Hi\"','\"Rajesh\"','\"Hi rajesh\"']],id : 'final dec',hit policy : 'U')",
+    "test1": "decision table(input expression list : ['msg'],outputs : \"out\",input values list : [[]],output values : [[]],rule list : [['\"Hi\"','\"Hiii\"'],['\"H\"','\"Hi\"']],id : 'test1',hit policy : 'U')"
+}

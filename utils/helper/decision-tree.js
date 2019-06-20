@@ -163,12 +163,35 @@ const traverseDecisionTreeUtil = (root, payload) => {
     Promise.all(classArr.map((classKey) => {
       const node = root.children[classKey];
       const sentinelKeys = Object.keys(node.children);
+      const { decisionMap } = payload;
+
       return new Promise((resolve, reject) => {
-        Promise.all(sentinelKeys.map(key => node.children[key].ast.build(payload, {}, 'input'))).then((results) => {
-          let res = results.map((f, i) => ({ value: f(payload[classKey]), index: i })).filter(d => d.value === true);
-          res = res.map(obj => obj.index);
-          resolve(res);
-        }).catch(err => reject(err));
+        const inputExpressionValue = payload[classKey];
+        if (typeof inputExpressionValue !== 'undefined') {
+          //! the input expression is resolved from payload
+          Promise.all(sentinelKeys.map(key => node.children[key].ast.build(payload, {}, 'input'))).then((results) => {
+            let res = results.map((f, i) => ({ value: f(inputExpressionValue), index: i })).filter(d => d.value === true);
+            res = res.map(obj => obj.index);
+            resolve(res);
+          }).catch(err => reject(err));
+        } else if (decisionMap[classKey]) {
+          //! the input expression can be resolved from the decisionMap
+          const decision = decisionMap[classKey];
+          decision.build(payload)
+            .then((value) => {
+              Promise.all(sentinelKeys.map(key => node.children[key].ast.build(payload, {}, 'input')))
+                .then((results) => {
+                  let res = results.map((f, i) => ({ value, index: i }))
+                    .filter(d => d.value);
+                  res = res.map(obj => obj.index);
+                  resolve(res);
+                })
+                .catch(reject);
+            })
+            .catch(reject);
+        } else {
+          reject(new Error(`Cannot resolve decision table input expression: ${classKey}`));
+        }
       });
     })).then(results =>
         resolveConflictRules(root, payload, results).then(results =>

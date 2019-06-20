@@ -66,7 +66,7 @@ gulp.task('clean:src:feel', () => gulp.src('./src/feel.pegjs', {
 })
 		.pipe(clean()));
 
-gulp.task('generate:parser',['clean:dist:feel'], () => gulp.src('src/feel.pegjs')
+gulp.task('generate:parser',['clean:dist:feel', 'concat:feel'], () => gulp.src('src/feel.pegjs')
 		.pipe(peg({
   format: 'commonjs',
   cache: true,
@@ -142,7 +142,7 @@ gulp.task('test-ci-html', ['pre-test-ci'], function () {
 
 gulp.task('build', ['initialize:feel', 'clean:src:feel', 'concat:feel', 'clean:temp']);
 
-gulp.task('default', ['build', 'generate', 'mocha']);
+gulp.task('default', ['build', 'generate:parser', 'mocha']);
 
 gulp.task('watch', () => {
   gulp.watch('./grammar/*', ['build']);
@@ -150,3 +150,5 @@ gulp.task('watch', () => {
   gulp.watch('./src/*.js', ['dist:feel:ast', 'dist:feel:ast:parser']);
   gulp.watch('./utils/**/*.js', ['utils:lint']);
 });
+
+gulp.task('dist', ['build', 'dist:feel:ast', 'dist:feel:ast:parser', 'generate:parser']);
