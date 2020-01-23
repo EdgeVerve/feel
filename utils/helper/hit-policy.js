@@ -109,17 +109,17 @@ const checkEntriesEquality = (output) => {
 };
 
 const getValidationErrors = output =>
-   output.filter(ruleStatus => ruleStatus.isValid === false).map((rule) => {
-     const newRule = rule;
-     delete newRule.isValid;
-     return newRule;
-   });
+  output.filter(ruleStatus => ruleStatus.isValid === false).map((rule) => {
+    const newRule = rule;
+    delete newRule.isValid;
+    return newRule;
+  });
 
 const hitPolicyPass = (hitPolicy, output) => new Promise((resolve, reject) => {
   const policy = hitPolicy.charAt(0);
   let ruleOutput = [];
   switch (policy) {
-// Single hit policies
+    // Single hit policies
     case 'U':
       ruleOutput = output.length > 1 ? {} : output[0];
       break;
@@ -132,7 +132,7 @@ const hitPolicyPass = (hitPolicy, output) => new Promise((resolve, reject) => {
     case 'F':
       ruleOutput = output[0];
       break;
-// Multiple hit policies
+      // Multiple hit policies
     case 'C': {
       const operator = hitPolicy.charAt(1);
       if (operator.length > 0 && output.length > 0) {

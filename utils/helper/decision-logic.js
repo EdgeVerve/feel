@@ -27,7 +27,7 @@ const parseXLS = (path) => {
 
   const csv = [];
   workbook.SheetNames.forEach((sheetName) => {
- /* iterate through sheets */
+    /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
     const csvString = XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter, RS: rowDelimiter, blankrows: false });
 
@@ -80,7 +80,7 @@ function processString(inputString) {
     return inputString
       .match(rCaptureQuotes)
       .map(s => s.replace(/""/g, '"')).join(',');
-      // .split(',');
+    // .split(',');
   } else if (isType2String(inputString)) {
     return inputString.substring(1, inputString.length - 1).replace(/""/g, '"');
   }
