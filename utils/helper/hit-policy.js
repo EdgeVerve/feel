@@ -178,6 +178,17 @@ const prepareOutputOrder = (output, priorityList) => {
   return outputList;
 };
 
+const ruleSorter = function (a, b) {
+  const left = parseInt(a.substr(4), 10);
+  const right = parseInt(b.substr(4), 10);
+  if (left < right) {
+    return -1;
+  } else if (left > right) {
+    return 1;
+  }
+  return 0;
+};
+
 const getOrderedOutput = (root, outputList) => {
   const policy = root.hitPolicy.charAt(0);
   let outputOrderedList = [];
@@ -189,10 +200,10 @@ const getOrderedOutput = (root, outputList) => {
       outputOrderedList = prepareOutputOrder(outputList, root.priorityList);
       break;
     case 'F':
-      outputOrderedList = outputList.sort().slice(0, 1);
+      outputOrderedList = outputList.sort(ruleSorter).slice(0, 1);
       break;
     case 'R':
-      outputOrderedList = outputList.sort();
+      outputOrderedList = outputList.sort(ruleSorter);
       break;
     default :
       outputOrderedList = outputList;

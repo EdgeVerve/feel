@@ -38,7 +38,7 @@
     "lodash": "4.17.15",
     "moment": "2.24.0",
     "moment-timezone": "0.5.27",
-    "xlsx": "0.8.8"
+    "xlsx": "0.15.6"
   },
   "devDependencies": {
     "chai": "3.4.1",
