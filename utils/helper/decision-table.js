@@ -17,7 +17,7 @@ const parseXLS = (path) => {
   const workbook = XLSX.readFile(path);
   const csv = [];
   workbook.SheetNames.forEach((sheetName) => {
- /* iterate through sheets */
+    /* iterate through sheets */
     const worksheet = workbook.Sheets[sheetName];
     csv.push(XLSX.utils.sheet_to_csv(worksheet, { FS: delimiter }));
   });
@@ -111,7 +111,7 @@ const createDecisionTable = (commaSeparatedValue) => {
   const classArr = csv[i].split(delimiter);
   decisionTable.hitPolicy = classArr[0];
 
-    // input and output classes
+  // input and output classes
   classArr.slice(1).every((classValue, index) => {
     if (index < numOfConditions) {
       inputExpressionList.push(classValue);
@@ -126,7 +126,7 @@ const createDecisionTable = (commaSeparatedValue) => {
   });
   i += 1;
   let values = csv[i].split(/&SP(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/);
-    // if there is a output label which contains the output component names
+  // if there is a output label which contains the output component names
   if (outputLabel) {
     outputs = [];
     numOfActions = 0;
@@ -138,7 +138,7 @@ const createDecisionTable = (commaSeparatedValue) => {
     i += 1;
     values = csv[i].split(/&SP(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/);
   }
-    // "Collect" Hit Policy Check
+  // "Collect" Hit Policy Check
   if (decisionTable.hitPolicy && decisionTable.hitPolicy.charAt(0) === 'C' && decisionTable.hitPolicy.charAt(1) !== '' && numOfActions > 1) {
     throw new Error({
       hitPolicy: decisionTable.hitPolicy,
@@ -147,7 +147,7 @@ const createDecisionTable = (commaSeparatedValue) => {
     });
   }
 
-    // input and output values
+  // input and output values
   if (values[0] === '') {
     values.slice(1).forEach((classValue, index) => {
       let value = classValue;
@@ -184,7 +184,7 @@ const createDecisionTable = (commaSeparatedValue) => {
     });
   }
 
-// rulelist
+  // rulelist
   let prevRuleRow = [];
 
   const processCellValue = (value, index) => {
@@ -205,7 +205,7 @@ const createDecisionTable = (commaSeparatedValue) => {
         inputValuesSet[inputExpressionList[index]].push(cellValue);
       } else if (index >= numOfConditions && outputValuesList[index - numOfConditions].indexOf(cellValue) === -1) {
         outputValuesList[index - numOfConditions].push(cellValue);
-                // problem in xls 0.10 is treated as 0.1 but string treats 0.10 as 0.10
+        // problem in xls 0.10 is treated as 0.1 but string treats 0.10 as 0.10
       }
     }
     return cellValue;
@@ -259,8 +259,8 @@ const executeDecisionTable = (id, table, payload, cb) => {
     }
   }
   tree.traverseTree(rootMap[rootMapId], payload)
-      .then(result => cb(null, result))
-      .catch(err => cb(err));
+    .then(result => cb(null, result))
+    .catch(err => cb(err));
 };
 
 module.exports = {

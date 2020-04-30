@@ -129,7 +129,7 @@ const distinctValues = (list) => {
 const flatten = (...args) => _.flatten(args);
 
 module.exports = {
-  listContains,
+  'list contains': listContains,
   count,
   min,
   max,
@@ -139,11 +139,11 @@ module.exports = {
   or,
   append,
   concatenate,
-  insertBefore,
+  'insert before': insertBefore,
   remove,
   reverse,
-  indexOf,
+  'index of': indexOf,
   union,
-  distinctValues,
+  'distinct values': distinctValues,
   flatten,
 };

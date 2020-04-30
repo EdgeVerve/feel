@@ -9,7 +9,7 @@ var chai = require('chai');
 var expect = chai.expect;
 var DTable = require('../../utils/helper/decision-table');
 var DTree = require('../../utils/helper/decision-tree');
-var xlArr = ['ExamEligibility.xlsx','Adjustments.xlsx', 'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx', 'Discount.xlsx', 'ElectricityBill.xlsx', 'Holidays.xlsx', 'PostBureauRiskCategory.xlsx', 'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx'];
+var xlArr = ['ExamEligibility.xlsx','Adjustments.xlsx', 'Applicant_Risk_Rating.xlsx', 'ApplicantRiskRating.xlsx', 'Discount.xlsx', 'ElectricityBill.xlsx', 'Holidays.xlsx', 'PostBureauRiskCategory.xlsx', 'RoutingRules.xlsx', 'StudentFinancialPackageEligibility.xlsx', 'empty-output-check.xlsx'];
 var decision_table = {};
 var csv = {};
 var i = 0;
@@ -128,7 +128,7 @@ describe(chalk.blue('Decision table evaluation'), function () {
             if(err){
                 return done(err);
             }
-            console.log(results)
+            //console.log(results)
             expect(results.length).to.equal(2);
             expect(results[0].Routing).to.equal('Refer');
             expect(results[0]['Review level']).to.equal('Level1');
@@ -149,6 +149,24 @@ describe(chalk.blue('Decision table evaluation'), function () {
             expect(results.length).to.equal(2);
             expect(results[0]['Student Financial Package Eligibility List']).to.equal('20% Scholarship');
             expect(results[1]['Student Financial Package Eligibility List']).to.equal('30% Loan');
+            done();
+        });
+    });
+
+    it('empty-output-check table evaluation', function (done) {
+        var payload = {
+            "P": "B",
+            "Q": 700,
+            "R": 50,
+            "S": 0.1,
+            "T": "N",
+            "U": "A"
+        };
+        DTable.execute_decision_table("empty-output-check", decision_table, payload, (err, results)=> {
+            if(err){
+                return done(err);
+            }
+            expect(results.length).to.equal(0);
             done();
         });
     });

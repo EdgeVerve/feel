@@ -216,7 +216,7 @@ module.exports = function (ast) {
     return new Promise((resolve, reject) => {
       const [first, ...remaining] = this.names;
       const processRemaining = firstResult => Promise.all(remaining.map(name => name.build(null, false)))
-            .then(remResults => remResults.reduce((prev, next) => prev[next], firstResult));
+        .then(remResults => remResults.reduce((prev, next) => prev[next], firstResult));
 
       first.build(args).then((firstResult) => {
         if (remaining.length) {
@@ -224,16 +224,16 @@ module.exports = function (ast) {
         }
         return firstResult;
       })
-      .then((result) => {
+        .then((result) => {
         // log.debug(options, `QualifiedNameNode build success with result - ${stringify(result)}, text: ${this.text}`);
-        rlog.debug(options, 'QualifiedNameNode build success', this.rule, this.text, stringify(result));
-        resolve(result);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'QualifiedNameNode build success', this.rule, this.text, stringify(result));
+          resolve(result);
+        })
+        .catch((err) => {
         // log.error(options, `QualifiedNameNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'QualifiedNameNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'QualifiedNameNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -272,16 +272,16 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       Promise.all(this.simpleExpressions.map(d => d.build(args)))
-      .then((results) => {
+        .then((results) => {
         // log.debug(options, `SimpleExpressionsNode build success with result - ${stringify(results)}, text: ${this.text}`);
-        rlog.debug(options, 'SimpleExpressionsNode build success', this.rule, this.text, stringify(results));
-        resolve(results);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'SimpleExpressionsNode build success', this.rule, this.text, stringify(results));
+          resolve(results);
+        })
+        .catch((err) => {
         // log.error(options, `SimpleExpressionsNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'SimpleExpressionsNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'SimpleExpressionsNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -298,16 +298,16 @@ module.exports = function (ast) {
 
     return new Promise((resolve, reject) => {
       resolveName(name, args, this.isResult)
-      .then((result) => {
+        .then((result) => {
         // log.debug(options, `NameNode build success with result - ${stringify(result)}, text: ${this.text}`);
-        rlog.debug(options, 'NameNode build success', this.rule, this.text, stringify(result));
-        resolve(result);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'NameNode build success', this.rule, this.text, stringify(result));
+          resolve(result);
+        })
+        .catch((err) => {
         // log.error(options, `NameNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'NameNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'NameNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -382,7 +382,7 @@ module.exports = function (ast) {
             .then(fnMeta => processUserDefinedFunction(fnMeta));
         }
         return processFormalParameters()
-            .then(argsNew => expr.build(argsNew));
+          .then(argsNew => expr.build(argsNew));
       };
 
       const processFnMeta = (fnMeta) => {
@@ -400,17 +400,17 @@ module.exports = function (ast) {
       this.fnName.isResult = true;
 
       this.fnName.build(args)
-      .then(processFnMeta)
-      .then((result) => {
+        .then(processFnMeta)
+        .then((result) => {
         // log.debug(options, `FunctionInvocationNode build success with result - ${stringify(result)}, text: ${this.text}`);
-        rlog.debug(options, 'FunctionInvocationNode build success', this.rule, this.text, stringify(result));
-        resolve(result);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'FunctionInvocationNode build success', this.rule, this.text, stringify(result));
+          resolve(result);
+        })
+        .catch((err) => {
         // log.error(options, `FunctionInvocationNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'FunctionInvocationNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'FunctionInvocationNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -434,18 +434,18 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       Promise.all([this.expr.build(args), this.paramName.build(null, false)])
-      .then(([value, paramName]) => {
-        const obj = {};
-        obj[paramName] = value;
-        // log.debug(options, `NamedParameterNode build success with result - ${stringify(obj)}, text: ${this.text}`);
-        rlog.debug(options, 'NamedParameterNode build success', this.rule, this.text, stringify(obj));
-        resolve(obj);
-      })
-      .catch((err) => {
+        .then(([value, paramName]) => {
+          const obj = {};
+          obj[paramName] = value;
+          // log.debug(options, `NamedParameterNode build success with result - ${stringify(obj)}, text: ${this.text}`);
+          rlog.debug(options, 'NamedParameterNode build success', this.rule, this.text, stringify(obj));
+          resolve(obj);
+        })
+        .catch((err) => {
         // log.error(options, `NamedParameterNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'NamedParameterNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'NamedParameterNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -453,16 +453,16 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       Promise.all(this.params.map(d => d.build(args)))
-      .then((results) => {
+        .then((results) => {
         // log.debug(options, `PositionalParametersNode build success with result - ${stringify(results)}, text: ${this.text}`);
-        rlog.debug(options, 'PositionalParametersNode build success', this.rule, this.text, stringify(results));
-        resolve(results);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'PositionalParametersNode build success', this.rule, this.text, stringify(results));
+          resolve(results);
+        })
+        .catch((err) => {
         // log.error(options, `PositionalParametersNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'PositionalParametersNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'PositionalParametersNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -474,8 +474,8 @@ module.exports = function (ast) {
           return p.then((argsNew) => {
             if (Array.isArray(argsNew)) {
               const pArray = (argsNew.context || argsNew.kwargs)
-                                    ? argsNew.map(arg => expr.build(arg))
-                                    : argsNew.map(arg => expr.build({ kwargs: arg }));
+                ? argsNew.map(arg => expr.build(arg))
+                : argsNew.map(arg => expr.build({ kwargs: arg }));
               return Promise.all(pArray);
             }
             return (argsNew.context || argsNew.kwargs) ? expr.build(argsNew) : expr.build({ kwargs: argsNew });
@@ -517,23 +517,23 @@ module.exports = function (ast) {
       const processLists = (variables, lists) => Promise.all(zipLists(variables, lists));
 
       Promise.all(this.inExprs.map(d => d.build(args)))
-      .then((exprs) => {
-        const variables = exprs.map(expr => expr.variable);
-        const lists = exprs.map(expr => expr.list);
-        // log.debug(options, `ForExpressionNode: variables - ${variables}, lists - ${lists}`);
-        rlog.debug(options, 'ForExpressionNode build success', this.rule, this.text, `variables: ${variables}, list: ${lists}`);
-        return processLists(variables, lists);
-      })
-      .then((result) => {
+        .then((exprs) => {
+          const variables = exprs.map(expr => expr.variable);
+          const lists = exprs.map(expr => expr.list);
+          // log.debug(options, `ForExpressionNode: variables - ${variables}, lists - ${lists}`);
+          rlog.debug(options, 'ForExpressionNode build success', this.rule, this.text, `variables: ${variables}, list: ${lists}`);
+          return processLists(variables, lists);
+        })
+        .then((result) => {
         // log.debug(options, `ForExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
-        rlog.debug(options, 'ForExpressionNode build success', this.rule, this.text, stringify(result));
-        resolve(result);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'ForExpressionNode build success', this.rule, this.text, stringify(result));
+          resolve(result);
+        })
+        .catch((err) => {
         // log.error(options, `ForExpressionNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'ForExpressionNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'ForExpressionNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -541,23 +541,23 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       Promise.all([this.name.build(null, false), this.expr.build(args)])
-      .then(([variable, list]) => {
-        if (!Array.isArray(list)) {
+        .then(([variable, list]) => {
+          if (!Array.isArray(list)) {
           // log.error(options, `InExpressionNode - expects an array - ${typeof list} found,text: ${this.text}`);
-          rlog.error(options, 'InExpressionNode build failed', this.rule, this.text, `Expected array. Got type: ${typeof list}`);
-          reject("'In Expression' expects an array to operate on");
-        } else {
-          const obj = { list, variable };
-          // log.debug(options, `InExpressionNode build success with result - ${stringify(obj)},text: ${this.text}`);
-          rlog.debug(options, 'InExpressionNode build success', this.rule, this.text, stringify(obj));
-          resolve(obj);
-        }
-      })
-      .catch((err) => {
+            rlog.error(options, 'InExpressionNode build failed', this.rule, this.text, `Expected array. Got type: ${typeof list}`);
+            reject("'In Expression' expects an array to operate on");
+          } else {
+            const obj = { list, variable };
+            // log.debug(options, `InExpressionNode build success with result - ${stringify(obj)},text: ${this.text}`);
+            rlog.debug(options, 'InExpressionNode build success', this.rule, this.text, stringify(obj));
+            resolve(obj);
+          }
+        })
+        .catch((err) => {
         // log.error(options, `InExpressionNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'InExpressionNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'InExpressionNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -565,26 +565,26 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       this.condition.build(args)
-      .then((condition) => {
-        log.debug(options, `IfExpressionNode - condition - ${condition}`);
-        let returnPromise;
-        if (condition) {
-          returnPromise = this.thenExpr.build(args);
-        } else {
-          returnPromise = this.elseExpr.build(args);
-        }
-        return returnPromise;
-      })
-      .then((result) => {
+        .then((condition) => {
+          log.debug(options, `IfExpressionNode - condition - ${condition}`);
+          let returnPromise;
+          if (condition) {
+            returnPromise = this.thenExpr.build(args);
+          } else {
+            returnPromise = this.elseExpr.build(args);
+          }
+          return returnPromise;
+        })
+        .then((result) => {
         // log.debug(options, `IfExpressionNode build success with result - ${stringify(result)}, text: ${this.text}`);
-        rlog.debug(options, 'IfExpressionNode build success', this.rule, this.text, stringify(result));
-        resolve(result);
-      })
-      .catch((err) => {
+          rlog.debug(options, 'IfExpressionNode build success', this.rule, this.text, stringify(result));
+          resolve(result);
+        })
+        .catch((err) => {
         // log.error(options, `IfExpressionNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'IfExpressionNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'IfExpressionNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -610,26 +610,26 @@ module.exports = function (ast) {
       const processLists = (variables, lists) => Promise.all(zipLists(variables, lists));
 
       Promise.all(this.inExprs.map(d => d.build(args)))
-      .then((exprs) => {
-        const variables = exprs.map(expr => expr.variable);
-        const lists = exprs.map(expr => expr.list);
-        return processLists(variables, lists);
-      })
-      .then((results) => {
-        const truthy = results.filter(d => Boolean(d) === true).length;
-        // log.debug(options, `QuantifiedExpressionNode - truthy length - ${truthy}, results length - ${results.length}`);
-        rlog.debug(options, 'QuantifiedExpressionNode build success', this.rule, this.text, `Truthy length: ${truthy}, Results length: ${results.length}`);
-        if (this.quantity === 'some') {
-          resolve(Boolean(truthy));
-        } else {
-          resolve(truthy === results.length);
-        }
-      })
-      .catch((err) => {
+        .then((exprs) => {
+          const variables = exprs.map(expr => expr.variable);
+          const lists = exprs.map(expr => expr.list);
+          return processLists(variables, lists);
+        })
+        .then((results) => {
+          const truthy = results.filter(d => Boolean(d) === true).length;
+          // log.debug(options, `QuantifiedExpressionNode - truthy length - ${truthy}, results length - ${results.length}`);
+          rlog.debug(options, 'QuantifiedExpressionNode build success', this.rule, this.text, `Truthy length: ${truthy}, Results length: ${results.length}`);
+          if (this.quantity === 'some') {
+            resolve(Boolean(truthy));
+          } else {
+            resolve(truthy === results.length);
+          }
+        })
+        .catch((err) => {
         // log.error(options, `QuantifiedExpressionNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'QuantifiedExpressionNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'QuantifiedExpressionNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 
@@ -677,20 +677,20 @@ module.exports = function (ast) {
         const processExpr = (operand) => {
           this.expr_2 = Array.isArray(this.expr_2) ? this.expr_2 : [this.expr_2];
           return Promise.all(this.expr_2.map(d => d.build(args)))
-          .then(tests => tests.map(test => test(operand)).reduce((accu, next) => accu || next, false));
+            .then(tests => tests.map(test => test(operand)).reduce((accu, next) => accu || next, false));
         };
         this.expr_1.build(args)
-        .then(operand => processExpr(operand))
-        .then((result) => {
+          .then(operand => processExpr(operand))
+          .then((result) => {
           // log.debug(options, `ComparisionExpressionNode - in - build success with result - ${stringify(result)}, text: ${this.text}`);
-          rlog.debug(options, 'ComparisionExpressionNode build success (in)', this.rule, this.text, stringify(result));
-          resolve(result);
-        })
-        .catch((err) => {
+            rlog.debug(options, 'ComparisionExpressionNode build success (in)', this.rule, this.text, stringify(result));
+            resolve(result);
+          })
+          .catch((err) => {
           // log.error(options, `ComparisionExpressionNode - in - build failed with error - ${err},text: ${this.text}`);
-          rlog.error(options, 'ComparisionExpressionNode build failed (in)', this.rule, this.text, err);
-          reject(err);
-        });
+            rlog.error(options, 'ComparisionExpressionNode build failed (in)', this.rule, this.text, err);
+            reject(err);
+          });
       } else {
         Promise.all([this.expr_1, this.expr_2].map(d => d.build(args)))
           .then((results) => {
@@ -896,19 +896,19 @@ module.exports = function (ast) {
     const options = (args && args.context && args.context.options) || {};
     return new Promise((resolve, reject) => {
       Promise.all([this.expr.build(args), this.key.build(null, false)])
-      .then(([value, key]) => {
-        const obj = {};
-        obj[key] = value;
-        const argsNew = addKwargs(args, obj);
-        // log.debug(options, `ContextEntryNode build success with result - ${stringify(argsNew)}, text: ${this.text}`);
-        rlog.debug(options, 'ContextNode build success', this.rule, this.text, stringify(argsNew));
-        resolve(argsNew);
-      })
-      .catch((err) => {
+        .then(([value, key]) => {
+          const obj = {};
+          obj[key] = value;
+          const argsNew = addKwargs(args, obj);
+          // log.debug(options, `ContextEntryNode build success with result - ${stringify(argsNew)}, text: ${this.text}`);
+          rlog.debug(options, 'ContextNode build success', this.rule, this.text, stringify(argsNew));
+          resolve(argsNew);
+        })
+        .catch((err) => {
         // log.error(options, `ContextEntryNode build failed with error - ${err},text: ${this.text}`);
-        rlog.error(options, 'ContextEntryNode build failed', this.rule, this.text, err);
-        reject(err);
-      });
+          rlog.error(options, 'ContextEntryNode build failed', this.rule, this.text, err);
+          reject(err);
+        });
     });
   };
 };

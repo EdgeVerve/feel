@@ -111,9 +111,9 @@ const createDecisionTree = (dTable) => {
 };
 
 const prepareOutput = (outputSet, output, payload) =>
-new Promise((resolve, reject) => {
-  Promise.all(output.map((i) => {
-    const keys = Object.keys(outputSet[i]);
+  new Promise((resolve, reject) => {
+    Promise.all(output.map((i) => {
+      const keys = Object.keys(outputSet[i]);
       return new Promise((resolve, reject) => { // eslint-disable-line
         Promise.all(keys.map(k => outputSet[i][k].ast.build(payload))).then((results) => {
           resolve(results.reduce((res, val, j) => {
@@ -123,9 +123,9 @@ new Promise((resolve, reject) => {
           }, {}));
         }).catch(err => reject(err));
       });
-  })).then(results =>
-        resolve(results)).catch(err => reject(err));
-});
+    })).then(results =>
+      resolve(results)).catch(err => reject(err));
+  });
 
 const resolveConflictRules = (root, payload, rules) => {
   let output = [];
@@ -147,7 +147,16 @@ const resolveConflictRules = (root, payload, rules) => {
     });
 
     arr = arr.filter((item, index) => arr.indexOf(item) === index);
-    output = output.length > 0 ? arr.filter(d => output.indexOf(d) > -1) : arr;
+    if (i === 0) {
+      output = arr;
+    } else if (output.length > 0) {
+      output = arr.filter(d => output.indexOf(d) > -1);
+    } else {
+      return false;
+    }
+
+    // output = output.length > 0 ? arr.filter(d => output.indexOf(d) > -1) : arr;
+
     return true;
   });
 
@@ -194,8 +203,8 @@ const traverseDecisionTreeUtil = (root, payload) => {
         }
       });
     })).then(results =>
-        resolveConflictRules(root, payload, results).then(results =>
-            resolve(results))).catch(err => reject(err));
+      resolveConflictRules(root, payload, results).then(results =>
+        resolve(results))).catch(err => reject(err));
   });
 };
 
@@ -208,13 +217,13 @@ const prepareContext = (root, payload) => {
 
 const traverseDecisionTree = (root, payload) => new Promise((resolve, reject) => {
   prepareContext(root, payload)
-  .then((context) => {
-    const ctx = Object.assign({}, payload, context);
-    return traverseDecisionTreeUtil(root, ctx);
-  })
-  .then(results => hitPolicyPass(root.hitPolicy, results))
-  .then(output => resolve(output))
-  .catch(err => reject(err));
+    .then((context) => {
+      const ctx = Object.assign({}, payload, context);
+      return traverseDecisionTreeUtil(root, ctx);
+    })
+    .then(results => hitPolicyPass(root.hitPolicy, results))
+    .then(output => resolve(output))
+    .catch(err => reject(err));
 });
 
 module.exports = {

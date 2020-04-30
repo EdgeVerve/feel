@@ -6,8 +6,8 @@
 */
 
 module.exports = Object.assign({},
-require('./time'),
-require('./date-time'),
-require('./date'),
-require('./duration'),
-require('./misc'));
+  require('./time'),
+  require('./date-time'),
+  require('./date'),
+  require('./duration'),
+  require('./misc'));
