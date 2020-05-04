@@ -8,19 +8,23 @@
 
 // ast nodes are the constructors used to construct the ast for the parsed grammar
 const ast = require('./feel-ast');
-const { enableLexerLogging } = require('../settings');
+// const { enableLexerLogging } = require('../settings');
 
-const {logger} = require('../logger');
+// const {logger} = require('../logger');
 // adding build methods to prototype of each constructor
 require('./feel-ast-parser')(ast);
-const _log = logger('feel-grammer-parser');
-let loggerOptions;
-function log(msg) {
-  loggerOptions = options.loggerOptions || {};
-  if (enableLexerLogging) {
-    _log.debug(loggerOptions, msg)
-  }
-};
+// const _log = logger('feel-grammer-parser');
+// let loggerOptions;
+// function log(msg) {
+//   loggerOptions = options.loggerOptions || {};
+//   if (enableLexerLogging) {
+//     _log.debug(loggerOptions, msg)
+//   }
+// };
+
+function log() {
+  // empty function
+}
 
 let initialized = false;
 let ruleName = 'default';
@@ -34,12 +38,12 @@ function rule() {
 }
 
 function extractOptional(optional, index) {
-  log('_extractOptional');
+  //log('_extractOptional');
   return optional ? optional[index] : null;
 }
 
 function flatten(list) {
-  log('_flatten');
+  //log('_flatten');
   return list.filter( d => d && d.length).reduce((recur, next) => {
     if(next && Array.isArray(next)) {
       return [].concat.call(recur, flatten(next));
@@ -49,28 +53,28 @@ function flatten(list) {
 }
 
 function extractList(list, index) {
-  log('_extractList');
+  //log('_extractList');
   return list.map(element => element[index]);
 }
 
 function buildList(head, tail, index) {
-  log('_buildList')
+  //log('_buildList')
   return [head].concat(extractList(tail, index));
 }
 
 function buildName(head, tail, index) {
-  log('_buildName');
+  //log('_buildName');
   return tail && tail.length ? [...head, ...flatten(tail)].join("") : head.join("");
 }
 
 
 function buildBinaryExpression(head, tail, loc, text, rule) {
-  log('_buildBinaryExpression');
+  //log('_buildBinaryExpression');
   return tail.reduce((result, element) => new ast.ArithmeticExpressionNode(element[1], result, element[3], loc, text, rule), head);
 }
 
 function buildComparisionExpression(head, tail, loc, text, rule) {
-  log('_buildComparisionExpression');
+  //log('_buildComparisionExpression');
   return tail.reduce((result, element) => {
     const operator = Array.isArray(element[1]) ? element[1][0] : element[1];
     return new ast.ComparisionExpressionNode(operator, result, element[3], null, loc, text, rule);
@@ -78,7 +82,7 @@ function buildComparisionExpression(head, tail, loc, text, rule) {
 }
 
 function buildLogicalExpression(head, tail, loc, text, rule) {
-  log('_buildLogicalExpression');
+  //log('_buildLogicalExpression');
   return tail.reduce((result, element) => {
     let operator = element[1];
     if (operator === 'and') {
