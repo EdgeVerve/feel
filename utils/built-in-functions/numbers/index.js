@@ -1,4 +1,7 @@
-const decimal = (n, scale) => n.toFixed(scale);
+const decimal = (n, scale) => {
+  const pow = 10 ** scale;
+  return Math.round(n * pow) / pow;
+};
 
 const floor = n => Math.floor(n);
 
