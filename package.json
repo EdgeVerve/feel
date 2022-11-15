@@ -34,11 +34,11 @@
   "author": "Pragyan Das <pragyandas@msn.com>",
   "dependencies": {
     "big.js": "3.2.0",
-    "bunyan": "1.8.12",
-    "lodash": "4.17.20",
-    "moment": "2.24.0",
+    "bunyan": "1.8.13",
+    "lodash": "4.17.21",
+    "moment": "2.29.4",
     "moment-timezone": "0.5.27",
-    "xlsx": "0.15.6"
+    "xlsx": "0.17.0"
   },
   "devDependencies": {
     "chai": "3.4.1",
