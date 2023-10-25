@@ -58,7 +58,7 @@
     "gulp-mocha": "7.0.2",
     "gulp-util": "3.0.8",
     "istanbul": "0.4.5",
-    "minimist": "1.2.0",
+    "minimist": "1.2.5",
     "mocha": "5.2.0",
     "pegjs": "0.10.0",
     "pegjs-backtrace": "0.1.2",
